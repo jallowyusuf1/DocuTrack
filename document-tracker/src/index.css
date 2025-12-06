@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply h-full;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply h-full m-0 p-0 font-sans antialiased;
+    @apply bg-gray-50 text-gray-900;
+    @apply overflow-x-hidden;
+  }
+
+  #root {
+    @apply h-full w-full;
+  }
+
+  /* Mobile-first typography */
+  h1 {
+    @apply text-2xl font-bold leading-tight;
+  }
+
+  h2 {
+    @apply text-xl font-semibold leading-tight;
+  }
+
+  h3 {
+    @apply text-lg font-semibold leading-tight;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+
+  /* Scrollbar styles for mobile */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+@layer components {
+  /* Mobile-optimized button base */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium;
+    @apply transition-all duration-200;
+    @apply active:scale-95;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Card component */
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
+    @apply p-4;
+  }
+}
