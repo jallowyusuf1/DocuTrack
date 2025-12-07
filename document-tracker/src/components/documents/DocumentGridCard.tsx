@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Calendar, FileText } from 'lucide-react';
 import type { Document } from '../../types';
 import { formatDate, getDaysUntil, getUrgencyLevel, type UrgencyLevel } from '../../utils/dateUtils';
+import { useImageUrl } from '../../hooks/useImageUrl';
+import { triggerHaptic } from '../../utils/animations';
 
 interface DocumentGridCardProps {
   document: Document;
@@ -65,13 +68,22 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
 
   const Icon = DOCUMENT_TYPE_ICONS[document.document_type] || FileText;
   const typeLabel = formatDocumentType(document.document_type);
+  
+  // Get signed URL for image
+  const { signedUrl: imageUrl } = useImageUrl(document.image_url);
 
   const handleClick = () => {
+    triggerHaptic('light');
     navigate(`/documents/${document.id}`);
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -4, boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
+      whileTap={{ scale: 0.98 }}
       onClick={handleClick}
       className="
         bg-white rounded-2xl shadow-sm
@@ -79,21 +91,25 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
         aspect-[3/4]
         flex flex-col
         cursor-pointer
-        transition-all duration-200
-        active:scale-98
         touch-manipulation
       "
     >
       {/* Image Section (50% of card) */}
       <div className="relative flex-1 overflow-hidden">
-        <img
-          src={document.image_url}
-          alt={document.document_name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23e5e7eb" width="200" height="200"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
-          }}
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={document.document_name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23e5e7eb" width="200" height="200"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <FileText className="w-12 h-12 text-gray-400" />
+          </div>
+        )}
         
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -106,13 +122,26 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
 
         {/* Expiry indicator */}
         <div className="absolute top-2 right-2">
-          <div
-            className={`
-              w-3 h-3 rounded-full ${urgencyColor}
-              ${isUrgent ? 'animate-pulse' : ''}
-            `}
-            title={isExpired ? 'Expired' : `${daysLeft} days left`}
-          />
+          {isUrgent ? (
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [1, 0.7, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className={`w-3 h-3 rounded-full ${urgencyColor}`}
+              title={isExpired ? 'Expired' : `${daysLeft} days left`}
+            />
+          ) : (
+            <div
+              className={`w-3 h-3 rounded-full ${urgencyColor}`}
+              title={isExpired ? 'Expired' : `${daysLeft} days left`}
+            />
+          )}
         </div>
       </div>
 
@@ -133,7 +162,7 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
           </span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -32,8 +32,8 @@ export default function ImageCaptureHandler({ onClose }: ImageCaptureHandlerProp
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        alert('Image size must be less than 10MB');
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Image size must be less than 50MB');
         return;
       }
       setImageFile(file);

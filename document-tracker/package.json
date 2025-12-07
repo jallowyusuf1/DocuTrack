@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "validate-imports": "node scripts/validate-imports.js",
+    "prebuild": "npm run validate-imports",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -13,6 +15,8 @@
     "@supabase/supabase-js": "^2.86.2",
     "autoprefixer": "^10.4.22",
     "date-fns": "^4.1.0",
+    "dexie": "^4.2.1",
+    "framer-motion": "^12.23.25",
     "lucide-react": "^0.556.0",
     "postcss": "^8.5.6",
     "react": "^19.2.0",

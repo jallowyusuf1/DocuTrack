@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import type { Document } from '../../types';
 import { formatDate, getDaysUntil, getUrgencyLevel, getUrgencyBorderColor, getUrgencyTextColor } from '../../utils/dateUtils';
 import { FileText } from 'lucide-react';
 import Button from '../ui/Button';
+import { triggerHaptic } from '../../utils/animations';
 
 interface DocumentCardProps {
   document: Document;
@@ -16,7 +18,14 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
   const textColor = getUrgencyTextColor(urgency);
 
   return (
-    <div className={`bg-white rounded-xl p-4 border-l-4 ${borderColor} shadow-sm`}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -2, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+      whileTap={{ scale: 0.98 }}
+      className={`bg-white rounded-xl p-4 border-l-4 ${borderColor} shadow-sm`}
+    >
       {/* Document Type Badge */}
       <div className="flex items-center gap-2 mb-3">
         <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-full">
@@ -59,12 +68,15 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
           variant="primary"
           size="small"
           className="flex-1"
-          onClick={() => onMarkRenewed(document)}
+          onClick={() => {
+            triggerHaptic('medium');
+            onMarkRenewed(document);
+          }}
         >
           Mark Renewed
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

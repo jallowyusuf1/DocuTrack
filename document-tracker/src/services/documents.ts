@@ -1,4 +1,6 @@
 import { supabase } from '../config/supabase';
+import { uploadDocumentImage as uploadImage } from '../utils/imageHandler';
+import { createNotifications, cancelNotifications } from './notifications';
 import type { Document, DocumentFormData } from '../types';
 
 const BUCKET_NAME = 'document-images';
@@ -6,38 +8,11 @@ const BUCKET_NAME = 'document-images';
 export const documentService = {
   /**
    * Upload document image to Supabase Storage
+   * Uses imageHandler.uploadDocumentImage which handles compression automatically
    */
   async uploadDocumentImage(file: File | Blob, userId: string, documentId?: string): Promise<string> {
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(7);
-    const fileExt = file instanceof File 
-      ? (file.type === 'application/pdf' ? 'pdf' : file.name.split('.').pop() || 'jpg')
-      : 'jpg';
-    const fileName = documentId
-      ? `${userId}/${documentId}-${timestamp}.${fileExt}`
-      : `${userId}/${timestamp}-${randomId}.${fileExt}`;
-
-    // Upload to Supabase Storage
-    const { data, error: uploadError } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(fileName, file, {
-        contentType: file instanceof File ? file.type : 'image/jpeg',
-        cacheControl: '3600',
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      throw new Error(`Failed to upload image: ${uploadError.message}`);
-    }
-
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(data.path);
-
-    return urlData.publicUrl;
+    // Use the imageHandler function which already handles compression
+    return uploadImage(file, userId, documentId);
   },
 
   /**
@@ -88,6 +63,15 @@ export const documentService = {
     }
 
     console.log('Document created successfully:', data);
+    
+    // Create notification reminders
+    try {
+      await createNotifications(data.id, userId, data.expiration_date);
+    } catch (notifError) {
+      console.error('Failed to create notifications:', notifError);
+      // Don't fail document creation if notifications fail
+    }
+    
     return data;
   },
 
@@ -141,12 +125,13 @@ export const documentService = {
   ): Promise<Document> {
     const updateData: any = {};
 
-    // Handle image upload if provided
+    // Handle image upload if provided (compress first for faster upload)
+    let imageUploadPromise: Promise<string> | null = null;
     if (updates.image) {
-      updateData.image_url = await this.uploadDocumentImage(updates.image, userId);
+      imageUploadPromise = this.uploadDocumentImage(updates.image, userId, documentId);
     }
 
-    // Map form data to database fields
+    // Map form data to database fields (don't wait for image upload)
     if (updates.document_type !== undefined) updateData.document_type = updates.document_type;
     if (updates.document_name !== undefined) updateData.document_name = updates.document_name;
     if (updates.document_number !== undefined) updateData.document_number = updates.document_number || null;
@@ -155,6 +140,12 @@ export const documentService = {
     if (updates.category !== undefined) updateData.category = updates.category;
     if (updates.notes !== undefined) updateData.notes = updates.notes || null;
 
+    // Wait for image upload if needed, then update database
+    if (imageUploadPromise) {
+      updateData.image_url = await imageUploadPromise;
+    }
+
+    // Update database (this is fast, usually < 100ms)
     const { data, error } = await supabase
       .from('documents')
       .update(updateData)
@@ -165,6 +156,19 @@ export const documentService = {
 
     if (error) {
       throw new Error(`Failed to update document: ${error.message}`);
+    }
+
+    // Update notifications if expiration date changed
+    if (updates.expiration_date && data) {
+      try {
+        // Cancel old notifications
+        await cancelNotifications(documentId);
+        // Create new notifications
+        await createNotifications(documentId, userId, updates.expiration_date);
+      } catch (notifError) {
+        console.error('Failed to update notifications:', notifError);
+        // Don't fail document update if notifications fail
+      }
     }
 
     return data;
@@ -182,6 +186,14 @@ export const documentService = {
 
     if (error) {
       throw new Error(`Failed to delete document: ${error.message}`);
+    }
+
+    // Cancel pending notifications
+    try {
+      await cancelNotifications(documentId);
+    } catch (notifError) {
+      console.error('Failed to cancel notifications:', notifError);
+      // Don't fail document deletion if notifications fail
     }
   },
 
@@ -233,12 +245,32 @@ export const documentService = {
   /**
    * Delete document image from storage
    */
-  async deleteDocumentImage(imageUrl: string, userId: string): Promise<void> {
+  async deleteDocumentImage(imageUrl: string, _userId: string): Promise<void> {
     try {
-      // Extract file path from URL
-      const urlParts = imageUrl.split('/');
-      const fileName = urlParts[urlParts.length - 1];
-      const filePath = `${userId}/${fileName}`;
+      // Extract path from full URL
+      let filePath = imageUrl;
+      
+      // If it's a full URL, extract the path part
+      if (imageUrl.includes('/storage/v1/object/public/')) {
+        const parts = imageUrl.split('/storage/v1/object/public/');
+        if (parts.length > 1) {
+          // Remove bucket name, keep userId/filename
+          const bucketAndPath = parts[1];
+          const bucketPathParts = bucketAndPath.split('/');
+          if (bucketPathParts.length > 1) {
+            filePath = bucketPathParts.slice(1).join('/');
+          } else {
+            filePath = bucketPathParts[0];
+          }
+        }
+      } else if (imageUrl.includes('/')) {
+        // If it's just a path, use it directly
+        const urlParts = imageUrl.split('/');
+        filePath = urlParts.slice(urlParts.length - 2).join('/'); // Get userId/filename
+      } else {
+        // Fallback: just filename
+        filePath = imageUrl;
+      }
 
       const { error } = await supabase.storage
         .from(BUCKET_NAME)

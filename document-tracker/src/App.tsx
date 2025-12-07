@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import AuthProvider from './components/auth/AuthProvider';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -14,11 +15,12 @@ import Dates from './pages/dates/Dates';
 import Profile from './pages/profile/Profile';
 import ChangePassword from './pages/profile/ChangePassword';
 
-function App() {
+function AppRoutes() {
+  const location = useLocation();
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public routes */}
         <Route
           path="/login"
@@ -71,7 +73,16 @@ function App() {
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   );

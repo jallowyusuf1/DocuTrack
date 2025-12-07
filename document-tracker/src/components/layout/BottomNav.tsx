@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Clock, FolderOpen, Calendar, User } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useState, useEffect } from 'react';
+import { triggerHaptic, pulse } from '../../utils/animations';
 
 interface NavItem {
   path: string;
@@ -75,56 +77,72 @@ export default function BottomNav() {
           const showBadge = item.badge !== undefined && item.badge > 0;
 
           return (
-            <Link
+            <motion.div
               key={item.path}
-              to={item.path}
-              className={`
-                flex flex-col items-center justify-center
-                flex-1 h-full min-h-[48px]
-                transition-all duration-200
-                select-none touch-manipulation
-                ${active ? 'text-primary-600' : 'text-[#64748B]'}
-                active:scale-95
-              `}
+              whileTap={{ scale: 0.9 }}
+              className="flex-1 h-full"
             >
-              <div className="relative flex items-center justify-center">
-                <Icon 
-                  className={`w-6 h-6 transition-colors duration-200 ${
-                    active ? 'text-primary-600' : 'text-[#64748B]'
-                  }`}
-                />
-                {showBadge && (
-                  <span className="
-                    absolute -top-1 -right-1
-                    min-w-[18px] h-[18px]
-                    flex items-center justify-center
-                    bg-red-500 text-white
-                    text-[10px] font-semibold
-                    rounded-full
-                    px-1
-                    z-10
-                  ">
-                    {item.badge! >= 10 ? '9+' : item.badge}
-                  </span>
-                )}
-                {/* Active indicator dot */}
-                {active && (
-                  <span className="
-                    absolute -top-0.5 left-1/2 -translate-x-1/2
-                    w-1.5 h-1.5
-                    bg-primary-600
-                    rounded-full
-                  " />
-                )}
-              </div>
-              <span className={`
-                text-[11px] mt-1
-                transition-all duration-200
-                ${active ? 'font-semibold text-primary-600' : 'font-medium text-[#64748B]'}
-              `}>
-                {item.label}
-              </span>
-            </Link>
+              <Link
+                to={item.path}
+                onClick={() => triggerHaptic('light')}
+                className={`
+                  flex flex-col items-center justify-center
+                  h-full min-h-[48px]
+                  select-none touch-manipulation
+                  ${active ? 'text-primary-600' : 'text-[#64748B]'}
+                `}
+              >
+                <div className="relative flex items-center justify-center">
+                  <Icon 
+                    className={`w-6 h-6 transition-colors duration-200 ${
+                      active ? 'text-primary-600' : 'text-[#64748B]'
+                    }`}
+                  />
+                  {showBadge && (
+                    <motion.span
+                      animate="animate"
+                      variants={pulse}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                      className="
+                        absolute -top-1 -right-1
+                        min-w-[18px] h-[18px]
+                        flex items-center justify-center
+                        bg-red-500 text-white
+                        text-[10px] font-semibold
+                        rounded-full
+                        px-1
+                        z-10
+                      "
+                    >
+                      {item.badge! >= 10 ? '9+' : item.badge}
+                    </motion.span>
+                  )}
+                  {/* Active indicator dot */}
+                  {active && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="
+                        absolute -top-0.5 left-1/2 -translate-x-1/2
+                        w-1.5 h-1.5
+                        bg-primary-600
+                        rounded-full
+                      "
+                    />
+                  )}
+                </div>
+                <motion.span
+                  animate={{ fontWeight: active ? 600 : 500 }}
+                  className={`
+                    text-[11px] mt-1
+                    transition-colors duration-200
+                    ${active ? 'text-primary-600' : 'text-[#64748B]'}
+                  `}
+                >
+                  {item.label}
+                </motion.span>
+              </Link>
+            </motion.div>
           );
         })}
       </div>

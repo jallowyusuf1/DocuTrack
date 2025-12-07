@@ -58,29 +58,43 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
     }, [isOpen]);
 
     const handleSelect = (optionValue: string) => {
+      setIsOpen(false);
+      setSearchQuery('');
+
       if (onChange) {
         // Create a proper event-like object for react-hook-form
+        // React-hook-form's register() returns onChange that expects { target: { value, name } }
         const syntheticEvent = {
           target: {
             value: optionValue,
             name: name || '',
             type: 'select-one',
-          },
+          } as HTMLSelectElement,
           currentTarget: {
             value: optionValue,
             name: name || '',
             type: 'select-one',
-          },
+          } as HTMLSelectElement,
           type: 'change',
           preventDefault: () => {},
           stopPropagation: () => {},
+          nativeEvent: new Event('change'),
+          bubbles: true,
+          cancelable: true,
+          defaultPrevented: false,
+          eventPhase: 0,
+          isTrusted: true,
+          timeStamp: Date.now(),
         };
-        
-        // Call onChange with the synthetic event
-        (onChange as any)(syntheticEvent);
+
+        // Call onChange synchronously - react-hook-form handles it properly
+        try {
+          (onChange as any)(syntheticEvent);
+        } catch (err) {
+          console.error('Error calling onChange:', err);
+        }
       }
-      setIsOpen(false);
-      setSearchQuery('');
+
       onBlur?.();
     };
 

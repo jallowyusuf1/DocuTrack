@@ -1,0 +1,38 @@
+# DocuTrack Development Rules
+
+## Import Safety Rules
+
+1. **Always verify exports exist before importing**
+   - Check library documentation for available exports
+   - Use TypeScript's type checking to catch missing exports
+   - Never import types/values that don't exist in the library
+
+2. **Framer Motion Specific Rules**
+   - `Variants` is a valid export - use `import type { Variants } from 'framer-motion'`
+   - `Transition` is NOT exported - define custom type instead
+   - Always use `import type` for TypeScript-only imports
+   - Test imports in a simple file before using in production code
+
+3. **Type-Only Imports**
+   - Use `import type` for TypeScript types/interfaces
+   - Use regular `import` only for runtime values
+   - This prevents runtime errors from type-only imports
+
+4. **Library Version Compatibility**
+   - Check package.json for installed versions
+   - Verify exports match library version documentation
+   - When upgrading libraries, check for breaking changes in exports
+
+5. **Error Prevention Checklist**
+   - [ ] Verify all imports exist in library
+   - [ ] Use `import type` for TypeScript-only imports
+   - [ ] Test build after adding new imports
+   - [ ] Check console for import errors before committing
+   - [ ] Review library changelog for export changes
+
+## Build Validation
+
+- Always run `npm run build` after adding new imports
+- Fix TypeScript errors before committing
+- Never commit code with import errors
+

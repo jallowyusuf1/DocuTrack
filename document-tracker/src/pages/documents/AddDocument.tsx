@@ -95,8 +95,8 @@ export default function AddDocument() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('Image size must be less than 10MB', 'error');
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('Image size must be less than 50MB', 'error');
         return;
       }
       setSelectedImage(file);
@@ -175,22 +175,10 @@ export default function AddDocument() {
         return;
       }
 
-      // Compress image before upload
-      const { compressImage } = await import('../../utils/imageHandler');
-      showToast('Compressing image...', 'info');
-      const compressed = await compressImage(selectedImage, 1920, 1920, 0.85);
-      const compressedFile = compressed instanceof File 
-        ? compressed 
-        : new File([compressed], selectedImage.name, { type: 'image/jpeg' });
-
-      console.log('Image compressed:', { 
-        originalSize: selectedImage.size, 
-        compressedSize: compressedFile.size 
-      });
-
+      // Compression will happen automatically in uploadDocumentImage
       const formData: DocumentFormData = {
         ...data,
-        image: compressedFile,
+        image: selectedImage,
         category: data.category || data.document_type,
       };
 

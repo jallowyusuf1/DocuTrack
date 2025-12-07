@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { bottomSheet, scaleInCenter, getTransition, transitions, triggerHaptic } from '../../utils/animations';
 
 interface ModalProps {
   isOpen: boolean;
@@ -40,8 +42,6 @@ export default function Modal({
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const sizeStyles = {
     small: 'max-w-sm',
     medium: 'max-w-md',
@@ -50,15 +50,32 @@ export default function Modal({
 
   if (type === 'bottom') {
     return (
-      <div
-        className="fixed inset-0 z-50 flex items-end bg-black bg-opacity-50 animate-fade-in"
-        onClick={onClose}
-      >
-        <div
-          ref={modalRef}
-          className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={getTransition(transitions.fast)}
+              className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm"
+              onClick={() => {
+                triggerHaptic('light');
+                onClose();
+              }}
+            />
+            {/* Bottom Sheet */}
+            <motion.div
+              ref={modalRef}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={bottomSheet}
+              transition={getTransition(transitions.spring)}
+              className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
           {/* Handle bar */}
           <div className="flex justify-center pt-3 pb-2">
             <div className="w-10 h-1 bg-gray-300 rounded-full" />
@@ -69,54 +86,84 @@ export default function Modal({
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h2 className="text-xl font-bold text-gray-900">{title}</h2>
               {showCloseButton && (
-                <button
-                  onClick={onClose}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    triggerHaptic('light');
+                    onClose();
+                  }}
                   className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5 text-gray-600" />
-                </button>
+                </motion.button>
               )}
             </div>
           )}
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">{children}</div>
-        </div>
-      </div>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto">{children}</div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     );
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        ref={modalRef}
-        className={`bg-white rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-scale-in`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-            {showCloseButton && (
-              <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
-            )}
-          </div>
-        )}
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={getTransition(transitions.fast)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4"
+            onClick={() => {
+              triggerHaptic('light');
+              onClose();
+            }}
+          >
+            {/* Center Modal */}
+            <motion.div
+              ref={modalRef}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={scaleInCenter}
+              transition={getTransition(transitions.spring)}
+              className={`bg-white rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col shadow-2xl`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              {title && (
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+                  {showCloseButton && (
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        onClose();
+                      }}
+                      className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                      aria-label="Close modal"
+                    >
+                      <X className="w-5 h-5 text-gray-600" />
+                    </motion.button>
+                  )}
+                </div>
+              )}
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">{children}</div>
-      </div>
-    </div>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto">{children}</div>
+            </motion.div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 

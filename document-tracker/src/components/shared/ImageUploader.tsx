@@ -1,6 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Camera, Upload, X } from 'lucide-react';
-import { openCamera, selectImageFromGallery, getImagePreview, revokeImagePreview, validateImage, compressImage } from '../../utils/imageHandler';
+import { useState, useEffect, useRef } from 'react';
+import { Camera, Upload, X, RotateCw } from 'lucide-react';
+import { 
+  openCamera, 
+  selectImageFromGallery, 
+  getImagePreview, 
+  revokeImagePreview, 
+  validateImage, 
+  compressImage,
+  rotateImage
+} from '../../utils/imageHandler';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Spinner from '../ui/Spinner';
@@ -9,18 +17,29 @@ interface ImageUploaderProps {
   onImageSelected: (file: File) => void;
   currentImage?: string | null;
   onRemove?: () => void;
+  maxSize?: number;
 }
 
 export default function ImageUploader({
   onImageSelected,
   currentImage,
   onRemove,
+  maxSize = 10 * 1024 * 1024, // 10MB default
 }: ImageUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [processingStep, setProcessingStep] = useState<string>('');
+  const [fileInfo, setFileInfo] = useState<{ size: number; dimensions?: { width: number; height: number } } | null>(null);
+  const [rotation, setRotation] = useState(0);
+  
+  // Touch gesture state for preview
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const touchStartRef = useRef<{ x: number; y: number; distance: number } | null>(null);
 
   useEffect(() => {
     return () => {
@@ -31,9 +50,29 @@ export default function ImageUploader({
     };
   }, [previewUrl]);
 
+  const getImageDimensions = async (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ width: img.width, height: img.height });
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load image'));
+      };
+      
+      img.src = url;
+    });
+  };
+
   const handleFileSelect = async (file: File) => {
     setError(null);
     setIsProcessing(true);
+    setProcessingStep('Validating image...');
 
     try {
       // Validate
@@ -44,30 +83,62 @@ export default function ImageUploader({
         return;
       }
 
+      // Check custom max size
+      if (file.size > maxSize) {
+        setError(`File too large. Maximum size is ${(maxSize / (1024 * 1024)).toFixed(0)}MB`);
+        setIsProcessing(false);
+        return;
+      }
+
+      setProcessingStep('Processing image...');
+      
+      // Get dimensions
+      try {
+        const dimensions = await getImageDimensions(file);
+        setFileInfo({ size: file.size, dimensions });
+      } catch {
+        setFileInfo({ size: file.size });
+      }
+
+      setProcessingStep('Compressing...');
+      
       // Compress if needed
-      const processedFile = await compressImage(file, 1920, 1920, 0.85);
-      const finalFile = processedFile instanceof File ? processedFile : new File([processedFile], file.name, { type: 'image/jpeg' });
+      const processedBlob = await compressImage(file, 1920, 1920, 0.85);
+      const finalFile = processedBlob instanceof File 
+        ? processedBlob 
+        : new File([processedBlob], file.name, { type: 'image/jpeg' });
 
       setSelectedFile(finalFile);
       const preview = getImagePreview(finalFile);
       setPreviewUrl(preview);
       onImageSelected(finalFile);
       setShowOptions(false);
+      setShowPreview(true);
     } catch (err: any) {
       setError(err.message || 'Failed to process image');
     } finally {
       setIsProcessing(false);
+      setProcessingStep('');
     }
   };
 
   const handleTakePhoto = async () => {
     try {
+      setProcessingStep('Opening camera...');
       const file = await openCamera();
       if (file) {
         await handleFileSelect(file);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to open camera');
+      if (err.message?.includes('permission')) {
+        setError('Camera permission denied. Please enable camera access in your browser settings.');
+      } else if (err.message?.includes('not available')) {
+        setError('Camera not available. Please use "Choose from Gallery" instead.');
+      } else {
+        setError(err.message || 'Failed to open camera');
+      }
+    } finally {
+      setProcessingStep('');
     }
   };
 
@@ -82,6 +153,34 @@ export default function ImageUploader({
     }
   };
 
+  const handleRotate = async () => {
+    if (!selectedFile) return;
+    
+    setIsProcessing(true);
+    setProcessingStep('Rotating image...');
+    
+    try {
+      const newRotation = (rotation + 90) % 360;
+      const rotatedFile = await rotateImage(selectedFile, 90);
+      
+      setSelectedFile(rotatedFile);
+      setRotation(newRotation);
+      
+      // Update preview
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        revokeImagePreview(previewUrl);
+      }
+      const newPreview = getImagePreview(rotatedFile);
+      setPreviewUrl(newPreview);
+      onImageSelected(rotatedFile);
+    } catch (err: any) {
+      setError(err.message || 'Failed to rotate image');
+    } finally {
+      setIsProcessing(false);
+      setProcessingStep('');
+    }
+  };
+
   const handleRemove = () => {
     if (previewUrl && previewUrl.startsWith('blob:')) {
       revokeImagePreview(previewUrl);
@@ -89,6 +188,11 @@ export default function ImageUploader({
     setSelectedFile(null);
     setPreviewUrl(null);
     setError(null);
+    setShowPreview(false);
+    setRotation(0);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    setFileInfo(null);
     onRemove?.();
   };
 
@@ -98,23 +202,86 @@ export default function ImageUploader({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // Touch gesture handlers for preview
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      touchStartRef.current = {
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2,
+        distance,
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartRef.current) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      const scale = distance / touchStartRef.current.distance;
+      setZoom(Math.max(1, Math.min(5, zoom * scale)));
+      touchStartRef.current.distance = distance;
+    } else if (e.touches.length === 1 && zoom > 1) {
+      const touch = e.touches[0];
+      setPan({
+        x: pan.x + (touch.clientX - (touchStartRef.current?.x || touch.clientX)) * 0.1,
+        y: pan.y + (touch.clientY - (touchStartRef.current?.y || touch.clientY)) * 0.1,
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartRef.current = null;
+  };
+
+  const handleDoubleTap = () => {
+    setZoom(zoom === 1 ? 2 : 1);
+    if (zoom === 2) {
+      setPan({ x: 0, y: 0 });
+    }
+  };
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-semibold text-gray-700">
         Document Image <span className="text-red-500">*</span>
       </label>
 
-      {previewUrl ? (
+      {previewUrl && showPreview ? (
         <div className="relative">
-          <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden">
+          <div 
+            className="relative w-full h-64 bg-gray-100 rounded-xl overflow-hidden touch-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onDoubleClick={handleDoubleTap}
+          >
             <img
               src={previewUrl}
               alt="Document preview"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain transition-transform duration-200"
+              style={{
+                transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                transformOrigin: 'center',
+              }}
             />
-            {selectedFile && (
+            {fileInfo && (
               <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                {formatFileSize(selectedFile.size)}
+                {formatFileSize(fileInfo.size)}
+                {fileInfo.dimensions && (
+                  <span className="ml-2">
+                    {fileInfo.dimensions.width}×{fileInfo.dimensions.height}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -122,9 +289,21 @@ export default function ImageUploader({
             <Button
               variant="secondary"
               size="small"
-              onClick={() => setShowOptions(true)}
+              onClick={() => {
+                setShowPreview(false);
+                setShowOptions(true);
+              }}
             >
               Change Image
+            </Button>
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={handleRotate}
+              icon={<RotateCw className="w-4 h-4" />}
+              disabled={isProcessing}
+            >
+              Rotate
             </Button>
             {onRemove && (
               <Button
@@ -143,7 +322,7 @@ export default function ImageUploader({
           {isProcessing ? (
             <div className="flex flex-col items-center gap-3">
               <Spinner size="large" />
-              <p className="text-sm text-gray-600">Processing image...</p>
+              <p className="text-sm text-gray-600">{processingStep || 'Processing image...'}</p>
             </div>
           ) : (
             <>
@@ -161,7 +340,9 @@ export default function ImageUploader({
       )}
 
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
       )}
 
       {/* Image Selection Modal */}
@@ -174,6 +355,7 @@ export default function ImageUploader({
         <div className="p-6 space-y-4">
           <button
             onClick={handleTakePhoto}
+            disabled={isProcessing}
             className="
               w-full h-14 rounded-xl
               bg-blue-50 border-2 border-blue-500
@@ -181,6 +363,7 @@ export default function ImageUploader({
               text-blue-700 font-medium
               transition-all duration-200
               active:scale-98
+              disabled:opacity-50 disabled:cursor-not-allowed
             "
           >
             <Camera className="w-6 h-6" />
@@ -189,6 +372,7 @@ export default function ImageUploader({
 
           <button
             onClick={handleUploadImage}
+            disabled={isProcessing}
             className="
               w-full h-14 rounded-xl
               bg-gray-50 border-2 border-gray-300
@@ -196,6 +380,7 @@ export default function ImageUploader({
               text-gray-700 font-medium
               transition-all duration-200
               active:scale-98
+              disabled:opacity-50 disabled:cursor-not-allowed
             "
           >
             <Upload className="w-6 h-6" />
@@ -206,4 +391,3 @@ export default function ImageUploader({
     </div>
   );
 }
-

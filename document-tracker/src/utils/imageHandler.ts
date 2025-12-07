@@ -1,7 +1,7 @@
 import { supabase } from '../config/supabase';
 
 const BUCKET_NAME = 'document-images';
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB as per spec
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
 const MIN_DIMENSIONS = { width: 100, height: 100 };
 const MAX_DIMENSIONS = { width: 4096, height: 4096 };
@@ -156,22 +156,17 @@ export async function compressImage(
     img.onload = () => {
       URL.revokeObjectURL(url);
 
-      // Calculate new dimensions
+      // Calculate new dimensions - always resize if larger than max
       let width = img.width;
       let height = img.height;
 
       if (width > maxWidth || height > maxHeight) {
         const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = width * ratio;
-        height = height * ratio;
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
       }
 
-      // If image is already smaller, return original
-      if (width >= img.width && height >= img.height) {
-        resolve(file);
-        return;
-      }
-
+      // Always compress to JPEG for consistency and smaller file size
       // Create canvas and compress
       const canvas = document.createElement('canvas');
       canvas.width = width;
@@ -183,8 +178,13 @@ export async function compressImage(
         return;
       }
 
+      // Use better image rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
       ctx.drawImage(img, 0, 0, width, height);
 
+      // Always compress to JPEG
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -223,27 +223,42 @@ export function revokeImagePreview(url: string): void {
 
 /**
  * Upload document image to Supabase Storage
+ * Compresses image first, then uploads
  */
 export async function uploadDocumentImage(
   file: File | Blob,
   userId: string,
   documentId?: string
 ): Promise<string> {
+  // Compress image first if it's an image (not PDF)
+  let fileToUpload: File | Blob = file;
+  if (file instanceof File && file.type !== 'application/pdf' && file.type.startsWith('image/')) {
+    try {
+      const compressed = await compressImage(file, 1920, 1920, 0.85);
+      // Convert blob to file
+      const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+      fileToUpload = new File([compressed], fileName, { type: 'image/jpeg' });
+    } catch (err) {
+      console.warn('Compression failed, using original:', err);
+      // Continue with original if compression fails
+    }
+  }
+
   // Generate unique filename
   const timestamp = Date.now();
-  const randomId = Math.random().toString(36).substring(7);
-  const fileExt = file instanceof File && file.type === 'application/pdf' ? 'pdf' : 'jpg';
+  const fileExt = fileToUpload instanceof File && fileToUpload.type === 'application/pdf' ? 'pdf' : 'jpg';
+  // Use folder structure: userId/filename
   const fileName = documentId
     ? `${userId}/${documentId}-${timestamp}.${fileExt}`
-    : `${userId}/${timestamp}-${randomId}.${fileExt}`;
+    : `${userId}/${timestamp}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
   // Upload to Supabase Storage
   const { data, error } = await supabase.storage
     .from(BUCKET_NAME)
-    .upload(fileName, file, {
-      contentType: file instanceof File ? file.type : 'image/jpeg',
+    .upload(fileName, fileToUpload, {
+      contentType: fileToUpload instanceof File ? fileToUpload.type : 'image/jpeg',
       cacheControl: '3600',
-      upsert: false,
+      upsert: true, // Allow overwriting existing files
     });
 
   if (error) {
@@ -260,8 +275,24 @@ export async function uploadDocumentImage(
 
 /**
  * Get image URL from Supabase Storage path
+ * Returns signed URL for private buckets, public URL for public buckets
  */
-export function getImageUrl(imagePath: string): string {
+export async function getImageUrl(imagePath: string, useSignedUrl: boolean = true): Promise<string> {
+  if (useSignedUrl) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .createSignedUrl(imagePath, 3600); // 1 hour expiry
+      
+      if (!error && data?.signedUrl) {
+        return data.signedUrl;
+      }
+    } catch (err) {
+      console.warn('Failed to get signed URL, falling back to public URL:', err);
+    }
+  }
+  
+  // Fallback to public URL
   const { data } = supabase.storage
     .from(BUCKET_NAME)
     .getPublicUrl(imagePath);
@@ -273,14 +304,22 @@ export function getImageUrl(imagePath: string): string {
  * Delete image from Supabase Storage
  */
 export async function deleteDocumentImage(imagePath: string): Promise<boolean> {
-  // Extract path from full URL if needed
-  const path = imagePath.includes('/storage/v1/object/public/')
-    ? imagePath.split('/storage/v1/object/public/')[1]?.split('/').slice(1).join('/')
-    : imagePath;
+  // Extract filename from full URL if needed (flat structure)
+  let fileName = imagePath;
+
+  if (imagePath.includes('/storage/v1/object/public/')) {
+    // Extract everything after the bucket name
+    const parts = imagePath.split(`/storage/v1/object/public/${BUCKET_NAME}/`);
+    fileName = parts[1] || imagePath;
+  } else if (imagePath.includes('/')) {
+    // If it's a path like "userId/filename.jpg", get just the filename
+    const parts = imagePath.split('/');
+    fileName = parts[parts.length - 1];
+  }
 
   const { error } = await supabase.storage
     .from(BUCKET_NAME)
-    .remove([path]);
+    .remove([fileName]);
 
   return !error;
 }

@@ -211,8 +211,8 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('Image size must be less than 10MB', 'error');
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('Image size must be less than 50MB', 'error');
         return;
       }
       setSelectedImage(file);
@@ -316,8 +316,8 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
           </div>
 
           {/* Image Preview */}
-          <div className="space-y-2 relative z-0">
-            <label className="block text-sm font-medium text-gray-700">
+          <div className="space-y-2 relative z-0 mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Image <span className="text-red-500">*</span>
             </label>
             {imagePreview ? (
@@ -330,7 +330,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 text-sm text-blue-600 font-medium block w-full text-left"
+                  className="mt-2 text-sm text-blue-600 font-medium block w-full text-left min-h-[44px] flex items-center"
                 >
                   Change Image
                 </button>
@@ -341,7 +341,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-sm text-blue-600 font-medium"
+                  className="text-sm text-blue-600 font-medium min-h-[44px] px-4 flex items-center justify-center"
                 >
                   Select Image
                 </button>

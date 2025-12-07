@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import type { Document } from '../../types';
 import { getDaysUntil } from '../../utils/dateUtils';
+import { staggerContainer, staggerItem, fadeInUp, float, getTransition, transitions } from '../../utils/animations';
 import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import UrgencySummaryCard from '../../components/documents/UrgencySummaryCard';
 import DocumentCard from '../../components/documents/DocumentCard';
@@ -190,8 +192,13 @@ export default function Dashboard() {
 
       {/* Urgency Summary Cards */}
       <div className="px-5 mb-6">
-        <div className="flex gap-3">
-          <div className="w-[31%]">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="flex gap-3"
+        >
+          <motion.div variants={staggerItem} className="w-[31%]">
             <UrgencySummaryCard
               count={urgentCount}
               label="URGENT"
@@ -200,8 +207,8 @@ export default function Dashboard() {
               textColor="text-red-600"
               iconColor="text-red-500"
             />
-          </div>
-          <div className="w-[31%]">
+          </motion.div>
+          <motion.div variants={staggerItem} className="w-[31%]">
             <UrgencySummaryCard
               count={soonCount}
               label="SOON"
@@ -210,8 +217,8 @@ export default function Dashboard() {
               textColor="text-orange-600"
               iconColor="text-orange-500"
             />
-          </div>
-          <div className="w-[31%]">
+          </motion.div>
+          <motion.div variants={staggerItem} className="w-[31%]">
             <UrgencySummaryCard
               count={upcomingCount}
               label="UPCOMING"
@@ -220,8 +227,8 @@ export default function Dashboard() {
               textColor="text-yellow-600"
               iconColor="text-yellow-500"
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* Pull to Refresh Indicator */}
@@ -241,10 +248,21 @@ export default function Dashboard() {
       >
         {documents.length === 0 ? (
           // Empty State
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={fadeInUp}
+            transition={getTransition(transitions.medium)}
+            className="flex flex-col items-center justify-center py-16 px-4"
+          >
+            <motion.div
+              animate="animate"
+              variants={float}
+              transition={getTransition({ duration: 2, repeat: Infinity, ease: 'easeInOut' })}
+              className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4"
+            >
               <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
+            </motion.div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">All Good!</h2>
             <p className="text-sm text-gray-600 text-center mb-2">
               No items expiring in next 30 days
@@ -252,18 +270,26 @@ export default function Dashboard() {
             <p className="text-xs text-gray-500 text-center">
               Tap the + button to add documents, warranties, license plates, and more
             </p>
-          </div>
+          </motion.div>
         ) : (
-          documents.map((document) => (
-            <DocumentCard
-              key={document.id}
-              document={document}
-              onMarkRenewed={(doc) => {
-                setSelectedDocument(doc);
-                setIsModalOpen(true);
-              }}
-            />
-          ))
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="space-y-3"
+          >
+            {documents.map((document) => (
+              <motion.div key={document.id} variants={staggerItem}>
+                <DocumentCard
+                  document={document}
+                  onMarkRenewed={(doc) => {
+                    setSelectedDocument(doc);
+                    setIsModalOpen(true);
+                  }}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
 

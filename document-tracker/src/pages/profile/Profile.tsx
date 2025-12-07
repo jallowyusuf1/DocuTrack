@@ -29,6 +29,7 @@ import TimePickerModal from '../../components/profile/TimePickerModal';
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
 import LogoutConfirmationModal from '../../components/profile/LogoutConfirmationModal';
 import ExportDataModal from '../../components/profile/ExportDataModal';
+import NotificationPreferencesModal from '../../components/profile/NotificationPreferencesModal';
 import Skeleton from '../../components/ui/Skeleton';
 import { useToast } from '../../hooks/useToast';
 import Toast from '../../components/ui/Toast';
@@ -62,6 +63,7 @@ export default function Profile() {
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isExportDataOpen, setIsExportDataOpen] = useState(false);
+  const [isNotificationPreferencesOpen, setIsNotificationPreferencesOpen] = useState(false);
 
   // Get user initials
   const getUserInitials = () => {
@@ -557,6 +559,11 @@ export default function Profile() {
           onClose={() => setIsExportDataOpen(false)}
         />
       )}
+
+      <NotificationPreferencesModal
+        isOpen={isNotificationPreferencesOpen}
+        onClose={() => setIsNotificationPreferencesOpen(false)}
+      />
 
       {/* Toast Notifications */}
       {toasts.map((toast) => (

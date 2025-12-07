@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Search, X, Filter, ChevronDown, FolderOpen, XCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
@@ -7,6 +8,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
 import type { Document, DocumentType } from '../../types';
 import { getDaysUntil, getUrgencyLevel } from '../../utils/dateUtils';
+import { staggerContainer, staggerItem, fadeInUp } from '../../utils/animations';
 import DocumentGridCard from '../../components/documents/DocumentGridCard';
 import CategoryTabs from '../../components/documents/CategoryTabs';
 import SortModal, { type SortOption } from '../../components/documents/SortModal';
@@ -14,6 +16,7 @@ import FilterModal, { type FilterState } from '../../components/documents/Filter
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import Toast from '../../components/ui/Toast';
+import EmptyState from '../../components/ui/EmptyState';
 
 const getSortLabel = (sort: SortOption): string => {
   switch (sort) {
@@ -309,29 +312,40 @@ export default function Documents() {
             </Button>
           </div>
         ) : showNoDocuments ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FolderOpen className="w-16 h-16 text-gray-400 mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No Documents Yet</h2>
-            <p className="text-gray-600 mb-4">Add your first document to get started</p>
-            <Button onClick={() => navigate('/add-document')} variant="primary">
-              Add Document
-            </Button>
-          </div>
+          <EmptyState
+            icon={<FolderOpen className="w-16 h-16" />}
+            title="No Documents Yet"
+            description="Add your first document to get started"
+            action={
+              <Button onClick={() => navigate('/add-document')} variant="primary">
+                Add Document
+              </Button>
+            }
+          />
         ) : showNoResults ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Search className="w-16 h-16 text-gray-400 mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No Results Found</h2>
-            <p className="text-gray-600 mb-4">Try different search terms</p>
-            <Button onClick={handleClearSearch} variant="secondary">
-              Clear Search
-            </Button>
-          </div>
+          <EmptyState
+            icon={<Search className="w-16 h-16" />}
+            title="No Results Found"
+            description="Try different search terms"
+            action={
+              <Button onClick={handleClearSearch} variant="secondary">
+                Clear Search
+              </Button>
+            }
+          />
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 gap-3"
+          >
             {filteredAndSortedDocuments.map((document) => (
-              <DocumentGridCard key={document.id} document={document} />
+              <motion.div key={document.id} variants={staggerItem}>
+                <DocumentGridCard document={document} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 

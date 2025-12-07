@@ -5,11 +5,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useToast } from '../../hooks/useToast';
 import { formatDate, getDaysUntil, getUrgencyLevel } from '../../utils/dateUtils';
+import { useImageUrl } from '../../hooks/useImageUrl';
 import type { Document } from '../../types';
 import Button from '../../components/ui/Button';
 import MenuDropdown from '../../components/documents/MenuDropdown';
 import RenewalModal from '../../components/documents/RenewalModal';
 import DeleteConfirmationModal from '../../components/documents/DeleteConfirmationModal';
+import NotesModal from '../../components/documents/NotesModal';
+import ImageFullscreenModal from '../../components/documents/ImageFullscreenModal';
 import Skeleton from '../../components/ui/Skeleton';
 import Toast from '../../components/ui/Toast';
 
@@ -32,9 +35,13 @@ export default function DocumentDetail() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isImageFullscreenOpen, setIsImageFullscreenOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
+  
+  // Use hook to get signed URL
+  const { signedUrl: imageUrl, loading: imageUrlLoading } = useImageUrl(document?.image_url);
 
   // Fetch document
   useEffect(() => {
@@ -43,6 +50,7 @@ export default function DocumentDetail() {
       
       setLoading(true);
       setError(null);
+      setImageError(false);
       
       try {
         const doc = await documentService.getDocumentById(id, user.id);
@@ -123,10 +131,10 @@ export default function DocumentDetail() {
 
   // Handle download
   const handleDownload = async () => {
-    if (!document) return;
+    if (!document || !imageUrl) return;
     
     try {
-      const response = await fetch(document.image_url);
+      const response = await fetch(imageUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = window.document.createElement('a');
@@ -145,11 +153,11 @@ export default function DocumentDetail() {
 
   // Handle share
   const handleShare = async () => {
-    if (!document) return;
+    if (!document || !imageUrl) return;
     
     try {
       // Fetch image as blob
-      const response = await fetch(document.image_url);
+      const response = await fetch(imageUrl);
       const blob = await response.blob();
       const file = new File([blob], `${document.document_name}.jpg`, { type: blob.type });
       
@@ -247,21 +255,27 @@ export default function DocumentDetail() {
       <div className="overflow-y-auto">
         {/* Document Image */}
         <div className="relative w-full bg-gray-100 aspect-[4/3] flex items-center justify-center">
-          {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center">
+          {imageUrlLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
               <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
             </div>
           )}
-          {!imageError ? (
+          {!imageError && imageUrl ? (
             <img
-              src={document.image_url}
+              src={imageUrl}
               alt={document.document_name}
-              className={`w-full h-full object-contain ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-              onLoad={() => setImageLoading(false)}
-              onError={() => {
-                setImageError(true);
-                setImageLoading(false);
+              className={`w-full h-full object-contain cursor-pointer ${imageUrlLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+              onLoad={() => {
+                setImageError(false);
               }}
+              onError={(e) => {
+                console.error('Image load error:', e);
+                console.error('Failed image URL:', imageUrl);
+                console.error('Stored image_url:', document.image_url);
+                setImageError(true);
+              }}
+              onClick={() => setIsImageFullscreenOpen(true)}
+              crossOrigin="anonymous"
             />
           ) : (
             <div className="flex flex-col items-center justify-center text-gray-400">
@@ -272,8 +286,15 @@ export default function DocumentDetail() {
                 size="small"
                 className="mt-2"
                 onClick={() => {
+                  // Retry by reloading the image
                   setImageError(false);
-                  setImageLoading(true);
+                  if (imageUrl && document) {
+                    // Force reload by adding timestamp
+                    const img = window.document.querySelector(`img[alt="${document.document_name}"]`) as HTMLImageElement;
+                    if (img) {
+                      img.src = imageUrl + '?t=' + Date.now();
+                    }
+                  }
                 }}
               >
                 Retry
@@ -358,11 +379,17 @@ export default function DocumentDetail() {
           {document.notes && (
             <div className="mt-6">
               <h3 className="text-base font-bold text-gray-900 mb-2">Notes</h3>
-              <div className="bg-gray-50 rounded-xl p-4 max-h-[200px] overflow-y-auto">
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <button
+                onClick={() => setIsNotesModalOpen(true)}
+                className="w-full bg-gray-50 rounded-xl p-4 max-h-[200px] overflow-y-auto text-left hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              >
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap line-clamp-6">
                   {document.notes}
                 </p>
-              </div>
+                {document.notes.length > 200 && (
+                  <p className="text-xs text-blue-600 mt-2 font-medium">Tap to view full notes</p>
+                )}
+              </button>
             </div>
           )}
         </div>
@@ -408,6 +435,26 @@ export default function DocumentDetail() {
         documentName={document.document_name}
         isLoading={isDeleting}
       />
+
+      {/* Notes Modal */}
+      {document.notes && (
+        <NotesModal
+          isOpen={isNotesModalOpen}
+          onClose={() => setIsNotesModalOpen(false)}
+          notes={document.notes}
+          documentName={document.document_name}
+        />
+      )}
+
+      {/* Fullscreen Image Modal */}
+      {imageUrl && (
+        <ImageFullscreenModal
+          isOpen={isImageFullscreenOpen}
+          onClose={() => setIsImageFullscreenOpen(false)}
+          imageUrl={imageUrl}
+          alt={document.document_name}
+        />
+      )}
 
       {/* Toast Notifications */}
       {toasts.map((toast) => (

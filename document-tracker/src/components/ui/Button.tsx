@@ -1,5 +1,7 @@
 import { type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import { triggerHaptic } from '../../utils/animations';
 
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> {
   children: ReactNode;
@@ -49,16 +51,23 @@ export default function Button({
       e.preventDefault();
       return;
     }
+    triggerHaptic('light');
     onClick?.(e);
   };
 
+  const motionProps = {
+    whileTap: disabled || loading ? undefined : { scale: 0.95 },
+    whileHover: disabled || loading ? undefined : { scale: 1.02 },
+  };
+
   return (
-    <button
+    <motion.button
+      {...motionProps}
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${disabledStyle} ${iconGap} ${className} flex items-center justify-center`}
       disabled={disabled || loading}
       onClick={handleClick}
       aria-busy={loading}
-      {...props}
+      {...(props as any)}
     >
       {loading ? (
         <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
@@ -69,6 +78,6 @@ export default function Button({
           {icon && iconPosition === 'right' && <span className="flex-shrink-0">{icon}</span>}
         </>
       )}
-    </button>
+    </motion.button>
   );
 }

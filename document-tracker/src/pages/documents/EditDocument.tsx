@@ -127,8 +127,8 @@ export default function EditDocument() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('Image size must be less than 10MB', 'error');
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('Image size must be less than 50MB', 'error');
         return;
       }
       setSelectedImage(file);
@@ -206,13 +206,22 @@ export default function EditDocument() {
         updateData.image = selectedImage;
       }
 
+      // Start the update (this will compress and upload image, then update DB)
+      const startTime = Date.now();
       await documentService.updateDocument(id, user.id, updateData);
+      const elapsed = Date.now() - startTime;
+      
+      // If it took less than 500ms, wait a bit to show the success state
+      if (elapsed < 500) {
+        await new Promise(resolve => setTimeout(resolve, 500 - elapsed));
+      }
+      
       showToast('Document updated successfully!', 'success');
       
       // Navigate back after a short delay to show toast
       setTimeout(() => {
         navigate(`/documents/${id}`, { replace: true });
-      }, 1000);
+      }, 800);
     } catch (error: any) {
       console.error('Failed to update document:', error);
       const errorMessage = error.message || 'Failed to update document. Please try again.';
