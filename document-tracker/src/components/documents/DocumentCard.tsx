@@ -51,13 +51,13 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
       {/* Action Buttons */}
       <div className="flex gap-2">
         <Link to="/documents" className="flex-1">
-          <Button variant="secondary" size="sm" className="w-full">
+          <Button variant="secondary" size="small" className="w-full">
             View
           </Button>
         </Link>
         <Button
           variant="primary"
-          size="sm"
+          size="small"
           className="flex-1"
           onClick={() => onMarkRenewed(document)}
         >

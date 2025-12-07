@@ -3,11 +3,17 @@ import type { ImportantDate, DateFormData } from '../types';
 
 export const dateService = {
   // Get all important dates for the current user
-  async getDates(): Promise<ImportantDate[]> {
-    const { data, error } = await supabase
+  async getDates(userId?: string): Promise<ImportantDate[]> {
+    let query = supabase
       .from('important_dates')
       .select('*')
       .order('date', { ascending: true });
+    
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data || [];

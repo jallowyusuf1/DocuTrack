@@ -11,7 +11,8 @@ import AddDocument from './pages/documents/AddDocument';
 import DocumentDetail from './pages/documents/DocumentDetail';
 import EditDocument from './pages/documents/EditDocument';
 import Dates from './pages/dates/Dates';
-import Profile from './pages/dashboard/Profile';
+import Profile from './pages/profile/Profile';
+import ChangePassword from './pages/profile/ChangePassword';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="add-document" element={<AddDocument />} />
           <Route path="dates" element={<Dates />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="profile/change-password" element={<ChangePassword />} />
         </Route>
 
         {/* Document detail and edit routes (outside MainLayout) */}

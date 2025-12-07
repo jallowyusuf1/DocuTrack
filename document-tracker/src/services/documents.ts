@@ -7,28 +7,37 @@ export const documentService = {
   /**
    * Upload document image to Supabase Storage
    */
-  async uploadDocumentImage(file: File, userId: string): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = fileName;
+  async uploadDocumentImage(file: File | Blob, userId: string, documentId?: string): Promise<string> {
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(7);
+    const fileExt = file instanceof File 
+      ? (file.type === 'application/pdf' ? 'pdf' : file.name.split('.').pop() || 'jpg')
+      : 'jpg';
+    const fileName = documentId
+      ? `${userId}/${documentId}-${timestamp}.${fileExt}`
+      : `${userId}/${timestamp}-${randomId}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    // Upload to Supabase Storage
+    const { data, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
-      .upload(filePath, file, {
+      .upload(fileName, file, {
+        contentType: file instanceof File ? file.type : 'image/jpeg',
         cacheControl: '3600',
         upsert: false,
       });
 
     if (uploadError) {
+      console.error('Upload error:', uploadError);
       throw new Error(`Failed to upload image: ${uploadError.message}`);
     }
 
     // Get public URL
-    const { data } = supabase.storage
+    const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
+      .getPublicUrl(data.path);
 
-    return data.publicUrl;
+    return urlData.publicUrl;
   },
 
   /**
@@ -36,7 +45,19 @@ export const documentService = {
    */
   async createDocument(formData: DocumentFormData, userId: string): Promise<Document> {
     // Upload image first
-    const imageUrl = await this.uploadDocumentImage(formData.image, userId);
+    let imageUrl = '';
+    
+    if (formData.image) {
+      try {
+        imageUrl = await this.uploadDocumentImage(formData.image, userId);
+        console.log('Image uploaded successfully:', imageUrl);
+      } catch (uploadError: any) {
+        console.error('Image upload failed:', uploadError);
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+    } else {
+      throw new Error('Image is required');
+    }
 
     // Create document record
     const { data, error } = await supabase
@@ -58,9 +79,15 @@ export const documentService = {
       .single();
 
     if (error) {
+      console.error('Database insert error:', error);
       throw new Error(`Failed to create document: ${error.message}`);
     }
 
+    if (!data) {
+      throw new Error('Document created but no data returned');
+    }
+
+    console.log('Document created successfully:', data);
     return data;
   },
 

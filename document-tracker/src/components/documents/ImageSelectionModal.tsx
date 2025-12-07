@@ -1,19 +1,19 @@
-import { Camera, Upload } from 'lucide-react';
+import { Upload, FileText } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface ImageSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onTakePhoto: () => void;
   onUploadImage: () => void;
 }
 
 export default function ImageSelectionModal({
   isOpen,
   onClose,
-  onTakePhoto,
   onUploadImage,
 }: ImageSelectionModalProps) {
+  const navigate = useNavigate();
   const modalRef = useRef<HTMLDivElement>(null);
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
@@ -55,6 +55,11 @@ export default function ImageSelectionModal({
     isDragging.current = false;
   };
 
+  const handleAddWithoutImage = () => {
+    onClose();
+    navigate('/add-document');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -80,9 +85,9 @@ export default function ImageSelectionModal({
           <h2 className="text-xl font-bold text-gray-900 mb-6">Add Document</h2>
 
           <div className="space-y-4">
-            {/* Take Photo Button */}
+            {/* Upload Image Button */}
             <button
-              onClick={onTakePhoto}
+              onClick={onUploadImage}
               className="
                 w-full h-14 rounded-xl
                 bg-blue-50 border-2 border-blue-500
@@ -93,13 +98,13 @@ export default function ImageSelectionModal({
                 touch-manipulation
               "
             >
-              <Camera className="w-6 h-6" />
-              <span className="flex-1 text-left">Take Photo</span>
+              <Upload className="w-6 h-6" />
+              <span className="flex-1 text-left">Choose from Gallery</span>
             </button>
 
-            {/* Upload Image Button */}
+            {/* Add Without Image Button */}
             <button
-              onClick={onUploadImage}
+              onClick={handleAddWithoutImage}
               className="
                 w-full h-14 rounded-xl
                 bg-gray-50 border-2 border-gray-300
@@ -110,8 +115,8 @@ export default function ImageSelectionModal({
                 touch-manipulation
               "
             >
-              <Upload className="w-6 h-6" />
-              <span className="flex-1 text-left">Choose from Gallery</span>
+              <FileText className="w-6 h-6" />
+              <span className="flex-1 text-left">Add Document Details</span>
             </button>
           </div>
 
@@ -133,4 +138,3 @@ export default function ImageSelectionModal({
     </div>
   );
 }
-

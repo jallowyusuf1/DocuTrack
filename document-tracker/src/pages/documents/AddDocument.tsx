@@ -164,19 +164,52 @@ export default function AddDocument() {
 
     setIsSaving(true);
     try {
+      console.log('Starting document creation...', { userId: user.id, hasImage: !!selectedImage });
+      
+      // Validate image first
+      const { validateImage } = await import('../../utils/imageHandler');
+      const validation = await validateImage(selectedImage);
+      if (!validation.valid) {
+        showToast(validation.error || 'Invalid image file', 'error');
+        setIsSaving(false);
+        return;
+      }
+
+      // Compress image before upload
+      const { compressImage } = await import('../../utils/imageHandler');
+      showToast('Compressing image...', 'info');
+      const compressed = await compressImage(selectedImage, 1920, 1920, 0.85);
+      const compressedFile = compressed instanceof File 
+        ? compressed 
+        : new File([compressed], selectedImage.name, { type: 'image/jpeg' });
+
+      console.log('Image compressed:', { 
+        originalSize: selectedImage.size, 
+        compressedSize: compressedFile.size 
+      });
+
       const formData: DocumentFormData = {
         ...data,
-        image: selectedImage,
+        image: compressedFile,
         category: data.category || data.document_type,
       };
 
-      await documentService.createDocument(formData, user.id);
-      showToast('Document added successfully!', 'success');
+      showToast('Uploading image...', 'info');
+      const createdDocument = await documentService.createDocument(formData, user.id);
       
-      // Navigate back after a short delay to show toast
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 1000);
+      console.log('Document created:', createdDocument);
+      
+      if (createdDocument && createdDocument.image_url) {
+        showToast('Document added successfully!', 'success');
+        
+        // Navigate back after a short delay to show toast
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 1000);
+      } else {
+        console.error('Document created but missing image_url:', createdDocument);
+        throw new Error('Document created but image URL is missing');
+      }
     } catch (error: any) {
       console.error('Failed to create document:', error);
       const errorMessage = error.message || 'Failed to add document. Please try again.';

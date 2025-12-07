@@ -78,6 +78,76 @@ const getSmartDefaults = (type: DocumentType) => {
   }
 };
 
+// Get field configuration for different document types
+const getFieldConfig = (type: DocumentType) => {
+  switch (type) {
+    case 'food':
+      return {
+        showNumberField: false,
+        showIssueDate: true,
+        issueDateLabel: 'Purchase Date',
+        numberFieldLabel: '',
+        numberFieldPlaceholder: '',
+      };
+    case 'license_plate':
+      return {
+        showNumberField: true,
+        showIssueDate: false,
+        issueDateLabel: 'Issue Date',
+        numberFieldLabel: 'Plate Number',
+        numberFieldPlaceholder: 'e.g., ABC-1234',
+      };
+    case 'registration':
+      return {
+        showNumberField: true,
+        showIssueDate: false,
+        issueDateLabel: 'Issue Date',
+        numberFieldLabel: 'Registration Number',
+        numberFieldPlaceholder: 'e.g., REG-123456',
+      };
+    case 'membership':
+      return {
+        showNumberField: true,
+        showIssueDate: false,
+        issueDateLabel: 'Issue Date',
+        numberFieldLabel: 'Membership ID',
+        numberFieldPlaceholder: 'e.g., MEM-12345',
+      };
+    case 'warranty':
+      return {
+        showNumberField: true,
+        showIssueDate: true,
+        issueDateLabel: 'Purchase Date',
+        numberFieldLabel: 'Serial Number',
+        numberFieldPlaceholder: 'e.g., SN-123456789',
+      };
+    case 'subscription':
+      return {
+        showNumberField: true,
+        showIssueDate: false,
+        issueDateLabel: 'Issue Date',
+        numberFieldLabel: 'Account Number',
+        numberFieldPlaceholder: 'e.g., ACC-12345',
+      };
+    case 'certification':
+      return {
+        showNumberField: true,
+        showIssueDate: false,
+        issueDateLabel: 'Issue Date',
+        numberFieldLabel: 'Certification Number',
+        numberFieldPlaceholder: 'e.g., CERT-12345',
+      };
+    default:
+      return {
+        showNumberField: true,
+        showIssueDate: false,
+        issueDateLabel: 'Issue Date',
+        numberFieldLabel: 'Number/ID',
+        numberFieldPlaceholder: 'e.g., ID number',
+      };
+  }
+};
+
 interface QuickAddModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -111,6 +181,8 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
 
   const watchedDocumentType = watch('document_type');
   const watchedExpirationDate = watch('expiration_date');
+  const watchedIssueDate = watch('issue_date');
+  const fieldConfig = getFieldConfig(watchedDocumentType);
 
   // Apply smart defaults when document type changes
   useEffect(() => {
@@ -205,9 +277,9 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[90] flex items-end bg-black bg-opacity-50">
       <div
-        className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto relative z-[91]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar */}
@@ -229,20 +301,22 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-6 space-y-4">
           {/* Document Type */}
-          <Select
-            label={
-              <>
-                Item Type <span className="text-red-500">*</span>
-              </>
-            }
-            options={QUICK_ADD_TYPES}
-            {...register('document_type', { required: 'Item type is required' })}
-            error={errors.document_type?.message}
-            className="h-[52px]"
-          />
+          <div className="relative z-10">
+            <Select
+              label={
+                <>
+                  Item Type <span className="text-red-500">*</span>
+                </>
+              }
+              options={QUICK_ADD_TYPES}
+              {...register('document_type', { required: 'Item type is required' })}
+              error={errors.document_type?.message}
+              className="h-[52px]"
+            />
+          </div>
 
           {/* Image Preview */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative z-0">
             <label className="block text-sm font-medium text-gray-700">
               Image <span className="text-red-500">*</span>
             </label>
@@ -256,7 +330,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 text-sm text-blue-600 font-medium"
+                  className="mt-2 text-sm text-blue-600 font-medium block w-full text-left"
                 >
                   Change Image
                 </button>
@@ -299,17 +373,54 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
             className="h-[52px]"
           />
 
-          {/* Document Number (optional) */}
-          <Input
-            label="Number/ID (Optional)"
-            placeholder="e.g., License plate number, membership ID"
-            maxLength={50}
-            {...register('document_number', {
-              maxLength: { value: 50, message: 'Number must be less than 50 characters' },
-            })}
-            error={errors.document_number?.message}
-            className="h-[52px]"
-          />
+          {/* Conditional Number Field */}
+          {fieldConfig.showNumberField && (
+            <Input
+              label={`${fieldConfig.numberFieldLabel} (Optional)`}
+              placeholder={fieldConfig.numberFieldPlaceholder}
+              maxLength={50}
+              {...register('document_number', {
+                maxLength: { value: 50, message: 'Must be less than 50 characters' },
+              })}
+              error={errors.document_number?.message}
+              className="h-[52px]"
+            />
+          )}
+
+          {/* Conditional Issue/Purchase Date */}
+          {fieldConfig.showIssueDate && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {fieldConfig.issueDateLabel} (Optional)
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setDatePickerField('issue_date');
+                  setIsDatePickerOpen(true);
+                }}
+                className={`
+                  w-full h-[52px] px-4 rounded-lg border-2
+                  flex items-center gap-3
+                  text-left
+                  ${errors.issue_date ? 'border-red-500' : 'border-black'}
+                  focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                `}
+              >
+                <AlertCircle className="w-5 h-5 text-gray-400" />
+                <span className={watchedIssueDate ? 'text-gray-900' : 'text-gray-400'}>
+                  {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : `Select ${fieldConfig.issueDateLabel.toLowerCase()}`}
+                </span>
+              </button>
+              <input
+                type="hidden"
+                {...register('issue_date')}
+              />
+              {errors.issue_date && (
+                <p className="mt-1 text-sm text-red-600">{errors.issue_date.message}</p>
+              )}
+            </div>
+          )}
 
           {/* Expiration Date */}
           <div>
@@ -405,9 +516,25 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
             setDatePickerField(null);
           }}
           onSelect={handleDateSelect}
-          selectedDate={watchedExpirationDate}
-          minDate={new Date().toISOString().split('T')[0]}
-          maxDate="2040-12-31"
+          selectedDate={
+            datePickerField === 'issue_date'
+              ? watchedIssueDate
+              : datePickerField === 'expiration_date'
+              ? watchedExpirationDate
+              : undefined
+          }
+          minDate={
+            datePickerField === 'issue_date'
+              ? '2010-01-01'
+              : datePickerField === 'expiration_date'
+              ? new Date().toISOString().split('T')[0]
+              : undefined
+          }
+          maxDate={
+            datePickerField === 'expiration_date'
+              ? '2040-12-31'
+              : undefined
+          }
         />
 
         {/* Toast Notifications */}

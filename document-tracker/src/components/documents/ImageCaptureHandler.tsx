@@ -13,23 +13,13 @@ export default function ImageCaptureHandler({ onClose }: ImageCaptureHandlerProp
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Reset inputs when modal closes
+    // Reset input when modal closes
     if (!isModalOpen && !imagePreview) {
       if (fileInputRef.current) fileInputRef.current.value = '';
-      if (cameraInputRef.current) cameraInputRef.current.value = '';
     }
   }, [isModalOpen, imagePreview]);
-
-  const handleTakePhoto = () => {
-    setIsModalOpen(false);
-    // Use camera input
-    setTimeout(() => {
-      cameraInputRef.current?.click();
-    }, 100);
-  };
 
   const handleUploadImage = () => {
     setIsModalOpen(false);
@@ -60,7 +50,6 @@ export default function ImageCaptureHandler({ onClose }: ImageCaptureHandlerProp
     setImageFile(null);
     setIsModalOpen(true);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const handleContinue = () => {
@@ -85,7 +74,6 @@ export default function ImageCaptureHandler({ onClose }: ImageCaptureHandlerProp
       <ImageSelectionModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        onTakePhoto={handleTakePhoto}
         onUploadImage={handleUploadImage}
       />
 
@@ -97,7 +85,7 @@ export default function ImageCaptureHandler({ onClose }: ImageCaptureHandlerProp
         />
       )}
 
-      {/* Hidden file inputs */}
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -105,15 +93,6 @@ export default function ImageCaptureHandler({ onClose }: ImageCaptureHandlerProp
         onChange={handleFileSelect}
         className="hidden"
       />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
     </>
   );
 }
-

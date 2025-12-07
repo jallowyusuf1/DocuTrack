@@ -269,7 +269,7 @@ export default function DocumentDetail() {
               <p className="text-sm">Failed to load image</p>
               <Button
                 variant="secondary"
-                size="sm"
+                size="small"
                 className="mt-2"
                 onClick={() => {
                   setImageError(false);
