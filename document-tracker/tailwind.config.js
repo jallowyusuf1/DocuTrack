@@ -75,7 +75,7 @@ export default {
       },
       spacing: {
         '18': '4.5rem',
-        '88': '22rem',
+        '88': '22rem', // 88px = 22rem (for bottom positioning above nav)
         '128': '32rem',
       },
       typography: {
