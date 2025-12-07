@@ -1,6 +1,8 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { shake, fadeInDown } from '../../utils/animations';
 
 interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: ReactNode;
@@ -12,47 +14,102 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, icon, required, type, className = '', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const [hasValue, setHasValue] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
     const isPassword = type === 'password';
     const inputType = isPassword && showPassword ? 'text' : type;
 
+    // Combine refs
+    useEffect(() => {
+      if (typeof ref === 'function') {
+        ref(inputRef.current);
+      } else if (ref) {
+        ref.current = inputRef.current;
+      }
+    }, [ref]);
+
+    useEffect(() => {
+      if (inputRef.current) {
+        setHasValue(!!inputRef.current.value);
+      }
+    }, [props.value]);
+
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(true);
+      props.onFocus?.(e);
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(false);
+      setHasValue(!!e.target.value);
+      props.onBlur?.(e);
+    };
+
     return (
-      <div className="w-full">
+      <motion.div
+        className="w-full"
+        animate={error ? 'shake' : 'normal'}
+        variants={shake}
+        transition={{ duration: 0.5 }}
+      >
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <motion.label
+            initial={false}
+            animate={{
+              y: isFocused || hasValue ? -4 : 0,
+              scale: isFocused || hasValue ? 0.9 : 1,
+            }}
+            transition={{ duration: 0.2 }}
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
-          </label>
+          </motion.label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <motion.div
+              animate={{
+                color: isFocused ? '#2563eb' : '#9ca3af',
+              }}
+              transition={{ duration: 0.2 }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"
+            >
               {icon}
-            </div>
+            </motion.div>
           )}
-          <input
-            ref={ref}
+          <motion.input
+            ref={inputRef}
             type={inputType}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             className={`
-              w-full h-[52px] px-4 bg-white border rounded-xl
-              text-[15px] text-gray-900
-              transition-all duration-200
+              w-full h-[52px] px-4 glass-input
+              text-[15px] text-white
               ${icon ? 'pl-11' : ''}
               ${isPassword ? 'pr-11' : ''}
               ${error 
                 ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                : 'border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20'
+                : 'focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
               }
-              ${props.disabled ? 'bg-gray-50 cursor-not-allowed' : ''}
-              placeholder:text-gray-400
+              ${props.disabled ? 'opacity-50 cursor-not-allowed' : ''}
               ${className}
             `}
+            style={{
+              boxShadow: isFocused && !error
+                ? '0 0 0 3px rgba(139, 92, 246, 0.3)'
+                : '0 0 0 0px rgba(139, 92, 246, 0)',
+            }}
+            transition={{ duration: 0.2 }}
             {...props}
           />
           {isPassword && (
-            <button
+            <motion.button
+              whileTap={{ scale: 0.9 }}
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 active:text-gray-700"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-glass-secondary hover:text-white active:text-white transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -60,16 +117,25 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               ) : (
                 <Eye className="w-5 h-5" />
               )}
-            </button>
+            </motion.button>
           )}
         </div>
-        {error && (
-          <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-600 animate-slide-down-fade-in">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-      </div>
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={fadeInDown}
+              transition={{ duration: 0.2 }}
+              className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-600"
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     );
   }
 );

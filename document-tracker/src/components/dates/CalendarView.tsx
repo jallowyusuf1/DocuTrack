@@ -90,29 +90,29 @@ export default function CalendarView({ documents, onDocumentClick, onMarkRenewed
       <div className="flex items-center justify-between h-12">
         <button
           onClick={goToPreviousMonth}
-          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
+          className="w-10 h-10 rounded-full glass-card-subtle flex items-center justify-center hover:bg-purple-500/20 active:scale-95 transition-all duration-200"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-700" />
+          <ChevronLeft className="w-5 h-5 text-glass-primary" />
         </button>
-        <h3 className="text-base font-bold text-gray-900">
+        <h3 className="text-base font-bold text-white">
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
         <button
           onClick={goToNextMonth}
-          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
+          className="w-10 h-10 rounded-full glass-card-subtle flex items-center justify-center hover:bg-purple-500/20 active:scale-95 transition-all duration-200"
         >
-          <ChevronRight className="w-5 h-5 text-gray-700" />
+          <ChevronRight className="w-5 h-5 text-glass-primary" />
         </button>
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white rounded-2xl shadow-sm p-4">
+      <div className="calendar-glass">
         {/* Day Headers */}
         <div className="grid grid-cols-7 gap-1 mb-3">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="text-center text-xs font-bold text-gray-500 py-2"
+              className="text-center text-xs font-bold text-glass-secondary py-2"
             >
               {day}
             </div>
@@ -135,16 +135,11 @@ export default function CalendarView({ documents, onDocumentClick, onMarkRenewed
                 onClick={() => handleDateClick(day)}
                 disabled={!isCurrentMonth}
                 className={`
-                  aspect-square rounded-lg text-sm font-medium
-                  transition-all duration-200
-                  ${!isCurrentMonth ? 'text-gray-300 cursor-not-allowed' : ''}
-                  ${isSelected
-                    ? 'bg-blue-100 text-blue-600 font-bold'
-                    : isTodayDate
-                    ? 'bg-blue-600 text-white font-bold'
-                    : 'text-gray-900 hover:bg-gray-50'
-                  }
-                  ${isCurrentMonth ? 'active:scale-95' : ''}
+                  calendar-day
+                  ${!isCurrentMonth ? 'text-glass-disabled cursor-not-allowed opacity-40' : ''}
+                  ${isSelected ? 'selected' : ''}
+                  ${isTodayDate ? 'today' : ''}
+                  ${!isCurrentMonth ? '' : 'cursor-pointer'}
                   flex flex-col items-center justify-center
                   relative
                 `}
@@ -172,11 +167,11 @@ export default function CalendarView({ documents, onDocumentClick, onMarkRenewed
       {/* Selected Date Documents */}
       {selectedDate && (
         <div className="space-y-3">
-          <h4 className="text-base font-bold text-gray-900">
+          <h4 className="text-base font-bold text-white">
             Documents expiring on {format(selectedDate, 'MMM d')}
           </h4>
           {selectedDateDocuments.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4">
+            <p className="text-sm text-glass-secondary text-center py-4">
               No documents expiring on this date
             </p>
           ) : (

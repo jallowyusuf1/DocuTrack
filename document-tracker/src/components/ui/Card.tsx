@@ -18,9 +18,9 @@ export default function Card({
   const baseStyles = 'rounded-xl transition-all duration-200';
   
   const variantStyles = {
-    default: 'bg-white shadow-sm',
-    bordered: 'bg-white border border-gray-200',
-    elevated: 'bg-white shadow-lg',
+    default: 'glass-card',
+    bordered: 'glass-card border border-white/10',
+    elevated: 'glass-card-elevated',
   };
 
   const paddingStyles = {
@@ -31,7 +31,7 @@ export default function Card({
   };
 
   const interactiveStyles = onClick
-    ? 'cursor-pointer active:scale-98 hover:shadow-md'
+    ? 'cursor-pointer active:scale-[0.98] hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200'
     : '';
 
   return (

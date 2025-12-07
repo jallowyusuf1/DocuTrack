@@ -69,7 +69,13 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom" style={{
+      background: 'rgba(35, 29, 51, 0.8)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+      height: '80px',
+    }}>
       <div className="flex justify-around items-center h-[72px] px-2 pb-safe">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -89,13 +95,13 @@ export default function BottomNav() {
                   flex flex-col items-center justify-center
                   h-full min-h-[48px]
                   select-none touch-manipulation
-                  ${active ? 'text-primary-600' : 'text-[#64748B]'}
+                  ${active ? 'text-purple-400' : 'text-glass-disabled'}
                 `}
               >
                 <div className="relative flex items-center justify-center">
-                  <Icon 
+                  <Icon
                     className={`w-6 h-6 transition-colors duration-200 ${
-                      active ? 'text-primary-600' : 'text-[#64748B]'
+                      active ? 'text-purple-400' : 'text-glass-disabled'
                     }`}
                   />
                   {showBadge && (
@@ -125,8 +131,9 @@ export default function BottomNav() {
                       className="
                         absolute -top-0.5 left-1/2 -translate-x-1/2
                         w-1.5 h-1.5
-                        bg-primary-600
+                        bg-purple-500
                         rounded-full
+                        shadow-[0_0_8px_rgba(139,92,246,0.6)]
                       "
                     />
                   )}
@@ -136,7 +143,7 @@ export default function BottomNav() {
                   className={`
                     text-[11px] mt-1
                     transition-colors duration-200
-                    ${active ? 'text-primary-600' : 'text-[#64748B]'}
+                    ${active ? 'text-purple-400' : 'text-glass-disabled'}
                   `}
                 >
                   {item.label}

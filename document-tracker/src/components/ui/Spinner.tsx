@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { rotate, getTransition, transitions } from '../../utils/animations';
+import { rotate, getTransition } from '../../utils/animations';
 
 interface SpinnerProps {
   size?: 'small' | 'medium' | 'large';

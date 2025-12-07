@@ -29,7 +29,7 @@ export const prefersReducedMotion = () => {
 };
 
 // Get transition with reduced motion support
-export const getTransition = (defaultTransition: Transition): Transition => {
+export const getTransition = (defaultTransition: Transition): any => {
   if (prefersReducedMotion()) {
     return { duration: 0 };
   }
@@ -127,8 +127,12 @@ export const pulse: Variants = {
 
 // Shake animation
 export const shake: Variants = {
-  animate: {
+  shake: {
     x: [0, -10, 10, -10, 10, 0],
+    transition: { duration: 0.5 },
+  },
+  normal: {
+    x: 0,
   },
 };
 

@@ -10,34 +10,36 @@ export default function FloatingActionButton({ onClick }: FloatingActionButtonPr
   return (
     <motion.button
       initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          animate={{
+            scale: 1,
+            boxShadow: [
+              '0 5px 15px rgba(139, 92, 246, 0.4)',
+              '0 5px 25px rgba(139, 92, 246, 0.6)',
+              '0 5px 15px rgba(139, 92, 246, 0.4)',
+            ],
+          }}
+          transition={{
+            scale: { type: 'spring', damping: 20, stiffness: 300 },
+            boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+          }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      animate={{
-        boxShadow: [
-          '0 5px 15px rgba(37, 99, 235, 0.3)',
-          '0 5px 25px rgba(37, 99, 235, 0.5)',
-          '0 5px 15px rgba(37, 99, 235, 0.3)',
-        ],
-      }}
-      transition={{
-        boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-        scale: { type: 'spring', damping: 20, stiffness: 300 },
-      }}
       onClick={() => {
         triggerHaptic('medium');
         onClick();
       }}
       className="
-        fixed bottom-[88px] right-5 z-40
+        fixed bottom-[100px] right-5 z-40
         w-16 h-16 rounded-full
-        bg-gradient-to-br from-blue-600 to-blue-700
-        text-white shadow-2xl
+        bg-gradient-to-br from-purple-600 to-purple-700
+        text-white
         flex items-center justify-center
         touch-manipulation
         select-none
       "
+      style={{
+        boxShadow: '0 8px 32px rgba(139, 92, 246, 0.6)',
+      }}
       aria-label="Add Document"
     >
       <Plus className="w-8 h-8" strokeWidth={2.5} />

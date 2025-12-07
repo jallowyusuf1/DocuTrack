@@ -6,6 +6,9 @@ interface SkeletonProps {
   className?: string;
 }
 
+import { motion } from 'framer-motion';
+import { fadeIn } from '../../utils/animations';
+
 export default function Skeleton({
   variant = 'rectangular',
   width,
@@ -13,7 +16,7 @@ export default function Skeleton({
   animation = true,
   className = '',
 }: SkeletonProps) {
-  const baseStyles = 'bg-gray-200';
+  const baseStyles = 'bg-white/10';
   
   const variantStyles = {
     text: 'rounded',
@@ -21,7 +24,7 @@ export default function Skeleton({
     rectangular: 'rounded-xl',
   };
 
-  const animationStyle = animation ? 'animate-pulse' : '';
+  const animationStyle = animation ? 'glass-shimmer' : '';
 
   const style: React.CSSProperties = {};
   if (width) {
@@ -32,7 +35,11 @@ export default function Skeleton({
   }
 
   return (
-    <div
+    <motion.div
+      initial="initial"
+      animate="animate"
+      variants={fadeIn}
+      transition={{ duration: 0.2 }}
       className={`${baseStyles} ${variantStyles[variant]} ${animationStyle} ${className}`}
       style={style}
       aria-hidden="true"

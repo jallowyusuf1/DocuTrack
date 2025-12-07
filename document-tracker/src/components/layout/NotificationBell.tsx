@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import {
@@ -154,31 +155,49 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+        className="relative w-10 h-10 rounded-full glass-card-subtle flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all"
         aria-label="Notifications"
       >
-        <Bell className="w-6 h-6 text-gray-700" />
+        <Bell className="w-5 h-5 text-white" />
         {unreadCount > 0 && (
-          <span
-            className={`absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold text-white ${
-              unreadCount > 9 ? 'bg-red-500' : 'bg-red-500'
-            }`}
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-purple-500"
+            style={{ boxShadow: '0 0 15px rgba(139, 92, 246, 0.6)' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
+          </motion.span>
         )}
       </button>
 
       {/* Dropdown */}
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[320px] max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[400px] flex flex-col">
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            />
+            {/* Dropdown */}
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute right-0 top-full mt-2 w-[320px] max-w-[90vw] glass-card-elevated rounded-2xl z-50 max-h-[400px] flex flex-col overflow-hidden"
+            >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+            <h3 className="text-lg font-bold text-white">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="text-sm text-blue-600 font-medium hover:text-blue-700"
+                className="text-sm text-purple-400 font-medium hover:text-purple-300 transition-colors"
               >
                 Mark all as read
               </button>
@@ -189,24 +208,24 @@ export default function NotificationBell() {
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                <div className="w-16 h-16 glass-card rounded-full flex items-center justify-center mb-3">
                   <span className="text-2xl">✓</span>
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-1">No notifications</p>
-                <p className="text-xs text-gray-500 text-center">You're all caught up!</p>
+                <p className="text-sm font-medium text-white mb-1">No notifications</p>
+                <p className="text-xs text-glass-secondary text-center">You're all caught up!</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-white/10">
                 {notifications.map((notification) => (
                   <button
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors ${
-                      !notification.is_read ? 'bg-blue-50' : 'bg-white'
+                    className={`w-full text-left px-4 py-3 hover:bg-white/5 active:bg-white/10 transition-colors ${
+                      !notification.is_read ? 'bg-purple-500/10' : ''
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -215,13 +234,13 @@ export default function NotificationBell() {
                       </span>
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`text-sm font-semibold text-gray-900 mb-0.5 ${
+                          className={`text-sm font-semibold text-white mb-0.5 ${
                             !notification.is_read ? 'font-bold' : ''
                           }`}
                         >
                           {getNotificationTitle(notification.notification_type)}
                         </p>
-                        <p className="text-xs text-gray-600 mb-1 line-clamp-2">
+                        <p className="text-xs text-glass-secondary mb-1 line-clamp-2">
                           {notification.documents
                             ? getNotificationMessage(
                                 notification.notification_type,
@@ -230,12 +249,12 @@ export default function NotificationBell() {
                               ).body
                             : 'Document notification'}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-glass-disabled">
                           {formatTimeAgo(notification.created_at)}
                         </p>
                       </div>
                       {!notification.is_read && (
-                        <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2" />
+                        <div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0 mt-2" style={{ boxShadow: '0 0 8px rgba(139, 92, 246, 0.6)' }} />
                       )}
                     </div>
                   </button>
@@ -243,8 +262,10 @@ export default function NotificationBell() {
               </div>
             )}
           </div>
-        </div>
-      )}
+        </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export default function Toast({
       aria-live="assertive"
       drag="y"
       dragConstraints={{ top: 0, bottom: 0 }}
-      onDragEnd={(e, info) => {
+      onDragEnd={(_e, info) => {
         if (Math.abs(info.offset.y) > 50) {
           onClose();
         }

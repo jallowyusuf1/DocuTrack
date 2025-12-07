@@ -4,10 +4,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import type { Document } from '../../types';
 import { getDaysUntil } from '../../utils/dateUtils';
-import { staggerContainer, staggerItem, fadeInUp, float, getTransition, transitions } from '../../utils/animations';
+import { staggerContainer, staggerItem, fadeInUp, float, getTransition, transitions, triggerHaptic } from '../../utils/animations';
 import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import UrgencySummaryCard from '../../components/documents/UrgencySummaryCard';
-import DocumentCard from '../../components/documents/DocumentCard';
+import DashboardDocumentCard from '../../components/documents/DashboardDocumentCard';
+import GreetingSection from '../../components/dashboard/GreetingSection';
+import ActivityChart from '../../components/dashboard/ActivityChart';
 import MarkRenewedModal from '../../components/documents/MarkRenewedModal';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
@@ -143,23 +145,33 @@ export default function Dashboard() {
       <div className="pb-[72px]">
         {/* Page Title */}
         <div className="px-5 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Expire Soon</h1>
-          <p className="text-sm text-gray-600">Items expiring in next 30 days</p>
+          <h1 className="text-2xl font-bold text-white mb-1">Expire Soon</h1>
+          <p className="text-sm text-glass-secondary">Items expiring in next 30 days</p>
+        </div>
+
+        {/* Greeting Skeleton */}
+        <div className="px-5 mb-5">
+          <Skeleton className="h-32 rounded-3xl bg-white/10" />
         </div>
 
         {/* Summary Cards Skeleton */}
-        <div className="px-5 mb-6">
+        <div className="px-5 mb-5">
           <div className="flex gap-3">
-            <Skeleton className="w-[31%] h-20" />
-            <Skeleton className="w-[31%] h-20" />
-            <Skeleton className="w-[31%] h-20" />
+            <Skeleton className="w-[31%] h-[100px] rounded-2xl bg-white/10" />
+            <Skeleton className="w-[31%] h-[100px] rounded-2xl bg-white/10" />
+            <Skeleton className="w-[31%] h-[100px] rounded-2xl bg-white/10" />
           </div>
         </div>
 
+        {/* Activity Chart Skeleton */}
+        <div className="px-5 mb-6">
+          <Skeleton className="h-64 rounded-2xl bg-white/10" />
+        </div>
+
         {/* Document Cards Skeleton */}
-        <div className="px-4 space-y-3">
+        <div className="px-5 space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
+            <Skeleton key={i} className="h-20 rounded-2xl bg-white/10" />
           ))}
         </div>
       </div>
@@ -170,10 +182,10 @@ export default function Dashboard() {
   if (error && documents.length === 0) {
     return (
       <div className="pb-[72px] min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Documents</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+        <div className="text-center glass-card-primary p-8 max-w-md">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">Error Loading Documents</h2>
+          <p className="text-text-secondary mb-6">{error}</p>
           <Button variant="primary" onClick={() => fetchDocuments()}>
             Retry
           </Button>
@@ -182,115 +194,147 @@ export default function Dashboard() {
     );
   }
 
+  const totalExpiring = urgentCount + soonCount + upcomingCount;
+
   return (
-    <div className="pb-[72px]">
-      {/* Page Title */}
-      <div className="px-5 py-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Expire Soon</h1>
-        <p className="text-sm text-gray-600">Items expiring in next 30 days</p>
+    <div className="pb-[72px] min-h-screen relative overflow-hidden">
+      {/* Background Gradient Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            transform: 'translate(50%, 50%)',
+          }}
+        />
       </div>
 
-      {/* Urgency Summary Cards */}
-      <div className="px-5 mb-6">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-          className="flex gap-3"
-        >
-          <motion.div variants={staggerItem} className="w-[31%]">
-            <UrgencySummaryCard
-              count={urgentCount}
-              label="URGENT"
-              icon={AlertCircle}
-              bgColor="bg-red-50"
-              textColor="text-red-600"
-              iconColor="text-red-500"
-            />
-          </motion.div>
-          <motion.div variants={staggerItem} className="w-[31%]">
-            <UrgencySummaryCard
-              count={soonCount}
-              label="SOON"
-              icon={AlertCircle}
-              bgColor="bg-orange-50"
-              textColor="text-orange-600"
-              iconColor="text-orange-500"
-            />
-          </motion.div>
-          <motion.div variants={staggerItem} className="w-[31%]">
-            <UrgencySummaryCard
-              count={upcomingCount}
-              label="UPCOMING"
-              icon={AlertCircle}
-              bgColor="bg-yellow-50"
-              textColor="text-yellow-600"
-              iconColor="text-yellow-500"
-            />
-          </motion.div>
-        </motion.div>
-      </div>
+      {/* Content */}
+      <div className="relative z-10 px-5 pt-4">
+        {/* Greeting Section */}
+        <GreetingSection expiringCount={totalExpiring} />
 
-      {/* Pull to Refresh Indicator */}
-      {isRefreshing && (
-        <div className="flex justify-center py-2">
-          <RefreshCw className="w-5 h-5 text-primary-600 animate-spin" />
-        </div>
-      )}
-
-      {/* Document List */}
-      <div
-        ref={scrollContainerRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="px-4 space-y-3"
-      >
-        {documents.length === 0 ? (
-          // Empty State
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={fadeInUp}
-            transition={getTransition(transitions.medium)}
-            className="flex flex-col items-center justify-center py-16 px-4"
-          >
-            <motion.div
-              animate="animate"
-              variants={float}
-              transition={getTransition({ duration: 2, repeat: Infinity, ease: 'easeInOut' })}
-              className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4"
-            >
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </motion.div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">All Good!</h2>
-            <p className="text-sm text-gray-600 text-center mb-2">
-              No items expiring in next 30 days
-            </p>
-            <p className="text-xs text-gray-500 text-center">
-              Tap the + button to add documents, warranties, license plates, and more
-            </p>
-          </motion.div>
-        ) : (
+        {/* Urgency Summary Cards */}
+        <div className="mb-5">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="show"
-            className="space-y-3"
+            className="grid grid-cols-3 gap-2.5"
           >
-            {documents.map((document) => (
-              <motion.div key={document.id} variants={staggerItem}>
-                <DocumentCard
-                  document={document}
-                  onMarkRenewed={(doc) => {
-                    setSelectedDocument(doc);
-                    setIsModalOpen(true);
-                  }}
-                />
-              </motion.div>
-            ))}
+            <motion.div variants={staggerItem}>
+              <UrgencySummaryCard
+                count={urgentCount}
+                label="URGENT"
+                icon={AlertCircle}
+                bgColor=""
+                textColor="text-red-500"
+                iconColor="text-red-400"
+              />
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <UrgencySummaryCard
+                count={soonCount}
+                label="SOON"
+                icon={AlertCircle}
+                bgColor=""
+                textColor="text-orange-500"
+                iconColor="text-orange-400"
+              />
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <UrgencySummaryCard
+                count={upcomingCount}
+                label="UPCOMING"
+                icon={AlertCircle}
+                bgColor=""
+                textColor="text-yellow-500"
+                iconColor="text-yellow-400"
+              />
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Activity Chart */}
+        <ActivityChart />
+
+        {/* Document List Section */}
+        <div className="mt-6 mb-4">
+          <h3 className="text-xl font-bold text-white mb-1">Expiring Soon</h3>
+          <p className="text-sm text-glass-secondary mb-4">Next 30 days</p>
+        </div>
+
+        {/* Pull to Refresh Indicator */}
+        {isRefreshing && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-center py-4"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="w-6 h-6 rounded-full border-2 border-purple-500 border-t-transparent"
+              style={{ boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
+            />
           </motion.div>
         )}
+
+        {/* Document List */}
+        <motion.div
+          ref={scrollContainerRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="space-y-0"
+        >
+          {documents.length === 0 ? (
+            // Empty State
+            <motion.div
+              initial="initial"
+              animate="animate"
+              variants={fadeInUp}
+              transition={getTransition(transitions.medium)}
+              className="glass-card-elevated rounded-3xl p-12 flex flex-col items-center justify-center my-8"
+              style={{ boxShadow: '0 0 40px rgba(139, 92, 246, 0.3)' }}
+            >
+              <motion.div
+                animate="animate"
+                variants={float}
+                transition={getTransition({ duration: 2, repeat: Infinity, ease: 'easeInOut' })}
+                className="w-24 h-24 rounded-full glass-card flex items-center justify-center mb-6"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+                }}
+              >
+                <CheckCircle className="w-12 h-12 text-green-400" />
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white mb-2">All Clear!</h2>
+              <p className="text-sm text-glass-secondary text-center">
+                No documents expiring soon
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
+              {documents.map((document) => (
+                <motion.div key={document.id} variants={staggerItem}>
+                  <DashboardDocumentCard document={document} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
       </div>
 
       {/* Mark Renewed Modal */}

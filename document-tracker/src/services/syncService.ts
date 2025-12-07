@@ -1,4 +1,5 @@
-import { db, PendingAction } from '../db/offlineDB';
+import { db } from '../db/offlineDB';
+import type { PendingAction } from '../db/offlineDB';
 import { documentService } from './documents';
 import { updateSyncStatus } from '../hooks/useSyncStatus';
 import type { Document, DocumentFormData } from '../types';

@@ -16,4 +16,6 @@ export { default as Spinner } from './Spinner';
 export { default as Textarea } from './Textarea';
 export { default as Toast, type ToastType } from './Toast';
 export { default as Toggle } from './Toggle';
+export { default as ProgressBar } from './ProgressBar';
+export { default as SuccessFeedback } from './SuccessFeedback';
 

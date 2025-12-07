@@ -98,7 +98,7 @@ class OfflineDatabase extends Dexie {
   }> {
     const pendingCount = await this.pendingActions.count();
     const metadata = await this.syncMetadata.get('documents');
-    const unsyncedDocs = await this.documents.filter((doc) => doc.synced === false).count();
+    const unsyncedDocs = await this.documents.where('synced').equals(false).count();
 
     return {
       pendingCount,

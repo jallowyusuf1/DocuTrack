@@ -122,8 +122,8 @@ export default function Dates() {
       <div className="pb-[72px] min-h-screen">
         {/* Header */}
         <div className="px-5 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Important Dates</h1>
-          <p className="text-sm text-gray-600">All your document expiration dates</p>
+          <h1 className="text-2xl font-bold text-white mb-1">Important Dates</h1>
+          <p className="text-sm text-glass-secondary">All your document expiration dates</p>
         </div>
 
         {/* View Toggle Skeleton */}
@@ -160,8 +160,8 @@ export default function Dates() {
     <div className="pb-[72px] min-h-screen">
       {/* Header */}
       <div className="px-5 py-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Important Dates</h1>
-        <p className="text-sm text-gray-600">All your document expiration dates</p>
+        <h1 className="text-2xl font-bold text-white mb-1">Important Dates</h1>
+        <p className="text-sm text-glass-secondary">All your document expiration dates</p>
       </div>
 
       {/* View Toggle */}

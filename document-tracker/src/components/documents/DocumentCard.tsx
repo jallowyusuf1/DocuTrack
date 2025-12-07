@@ -22,28 +22,28 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      whileHover={{ y: -2, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+      whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
-      className={`bg-white rounded-xl p-4 border-l-4 ${borderColor} shadow-sm`}
+      className={`glass-card p-4 border-l-4 ${borderColor} rounded-xl`}
     >
       {/* Document Type Badge */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-full">
-          <FileText className="w-3 h-3 text-gray-600" />
-          <span className="text-[11px] font-medium text-gray-700 capitalize">
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-white/10 backdrop-blur-sm rounded-full">
+          <FileText className="w-3 h-3 text-purple-400" />
+          <span className="text-[11px] font-medium text-glass-secondary capitalize">
             {document.document_type.replace('_', ' ')}
           </span>
         </div>
       </div>
 
       {/* Document Name */}
-      <h3 className="text-base font-bold text-gray-900 mb-2">
+      <h3 className="text-base font-bold text-white mb-2">
         {document.document_name}
       </h3>
 
       {/* Expiration Info */}
       <div className="mb-4">
-        <p className="text-sm text-gray-600 mb-1">
+        <p className="text-sm text-glass-secondary mb-1">
           Expires: {formatDate(document.expiration_date)}
         </p>
         <p className={`text-base font-semibold ${textColor}`}>

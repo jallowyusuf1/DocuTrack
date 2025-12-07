@@ -59,7 +59,7 @@ export default function Modal({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={getTransition(transitions.fast)}
-              className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
               onClick={() => {
                 triggerHaptic('light');
                 onClose();
@@ -73,18 +73,18 @@ export default function Modal({
               exit="exit"
               variants={bottomSheet}
               transition={getTransition(transitions.spring)}
-              className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              className="fixed inset-x-0 bottom-0 z-50 glass-card-elevated rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Handle bar */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            <div className="w-10 h-1 bg-white/30 rounded-full" />
           </div>
 
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+              <h2 className="text-xl font-bold text-white">{title}</h2>
               {showCloseButton && (
                 <motion.button
                   whileTap={{ scale: 0.9 }}
@@ -92,10 +92,10 @@ export default function Modal({
                     triggerHaptic('light');
                     onClose();
                   }}
-                  className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                  className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
                   aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 text-gray-600" />
+                  <X className="w-5 h-5 text-glass-primary" />
                 </motion.button>
               )}
             </div>
@@ -120,7 +120,7 @@ export default function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={getTransition(transitions.fast)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
             onClick={() => {
               triggerHaptic('light');
               onClose();
@@ -134,13 +134,13 @@ export default function Modal({
               exit="exit"
               variants={scaleInCenter}
               transition={getTransition(transitions.spring)}
-              className={`bg-white rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col shadow-2xl`}
+                className={`glass-card-elevated rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col shadow-2xl`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
               {title && (
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                  <h2 className="text-xl font-bold text-white">{title}</h2>
                   {showCloseButton && (
                     <motion.button
                       whileTap={{ scale: 0.9 }}
@@ -148,10 +148,10 @@ export default function Modal({
                         triggerHaptic('light');
                         onClose();
                       }}
-                      className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                      className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
                       aria-label="Close modal"
                     >
-                      <X className="w-5 h-5 text-gray-600" />
+                      <X className="w-5 h-5 text-glass-primary" />
                     </motion.button>
                   )}
                 </div>

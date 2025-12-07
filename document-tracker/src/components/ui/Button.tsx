@@ -29,10 +29,10 @@ export default function Button({
   const baseStyles = 'font-medium transition-all duration-200 select-none touch-manipulation';
   
   const variantStyles = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 border-0',
-    secondary: 'bg-white text-gray-900 border-2 border-gray-300 hover:bg-gray-50 active:bg-gray-100',
-    danger: 'bg-red-500 text-white hover:bg-red-600 active:bg-red-700 border-0',
-    ghost: 'bg-transparent text-blue-600 hover:bg-blue-50 active:bg-blue-100 border-0',
+    primary: 'glass-btn-primary text-white',
+    secondary: 'glass-btn-secondary text-glass-primary',
+    danger: 'bg-red-500 text-white hover:bg-red-600 active:bg-red-700 border-0 shadow-lg shadow-red-500/30',
+    ghost: 'bg-transparent text-purple-400 hover:bg-purple-500/10 active:bg-purple-500/20 border-0',
   };
 
   const sizeStyles = {
