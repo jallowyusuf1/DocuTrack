@@ -1,11 +1,11 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, FolderOpen, FolderClosed, Calendar, User, DoorOpen } from 'lucide-react';
+import { Clock, FolderOpen, FolderClosed, Calendar, User, DoorOpen, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useState, useEffect } from 'react';
 import { triggerHaptic, pulse } from '../../utils/animations';
-import AnimatedClock from '../ui/AnimatedClock';
+import AnimatedClockIcon from '../ui/AnimatedClockIcon';
 
 interface NavItem {
   path: string;
@@ -16,9 +16,11 @@ interface NavItem {
 
 export default function BottomNav() {
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [expiringCount, setExpiringCount] = useState(0);
   const [clockClicked, setClockClicked] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Check if we're on an auth page
   const isAuthPage = location.pathname.startsWith('/login') || 
@@ -47,11 +49,21 @@ export default function BottomNav() {
   // Track if dates page is active for continuous flip animation
   const isDatesActive = location.pathname === '/dates';
 
+  const handleLogout = async () => {
+    triggerHaptic('medium');
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   const navItems: NavItem[] = [
     {
       path: '/dashboard',
       icon: Clock,
-      label: 'Expire Soon',
+      label: 'Expiring',
       badge: expiringCount,
     },
     {
@@ -86,7 +98,7 @@ export default function BottomNav() {
       borderTop: '1px solid rgba(255, 255, 255, 0.1)',
       height: '80px',
     }}>
-      <div className="flex justify-around items-center h-[72px] px-2 pb-safe">
+      <div className="flex justify-around items-start h-[72px] px-2 pb-safe pt-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -103,29 +115,17 @@ export default function BottomNav() {
                 onClick={() => triggerHaptic('light')}
                 className={`
                   flex flex-col items-center justify-center
-                  h-full min-h-[48px]
+                  min-h-[48px]
                   select-none touch-manipulation
                   ${active ? 'text-purple-400' : 'text-glass-disabled'}
                 `}
               >
                 <div className="relative flex items-center justify-center">
                   {item.path === '/dashboard' ? (
-                    <motion.div
-                      onAnimationComplete={() => setClockClicked(false)}
-                    >
-                      <AnimatedClock
-                        isActive={clockClicked || active}
-                        onClick={() => {
-                          if (!active) {
-                            setClockClicked(true);
-                            triggerHaptic('medium');
-                          }
-                        }}
-                        className={`w-6 h-6 transition-colors duration-200 ${
-                          active ? 'text-purple-400' : 'text-glass-disabled'
-                        }`}
-                      />
-                    </motion.div>
+                    <AnimatedClockIcon
+                      isActive={active}
+                      className="w-6 h-6"
+                    />
                   ) : item.path === '/documents' ? (
                     <motion.div
                       key={isDocumentsActive ? 'open' : 'closed'}
@@ -260,6 +260,7 @@ export default function BottomNav() {
                     text-[11px] mt-1
                     transition-colors duration-200
                     ${active ? 'text-purple-400' : 'text-glass-disabled'}
+                    whitespace-nowrap
                   `}
                 >
                   {item.label}
@@ -268,6 +269,31 @@ export default function BottomNav() {
             </motion.div>
           );
         })}
+        
+        {/* Logout Button */}
+        <motion.div
+          whileTap={{ scale: 0.9 }}
+          className="flex-1 h-full"
+        >
+          <motion.button
+            onClick={() => {
+              triggerHaptic('medium');
+              if (window.confirm('Are you sure you want to logout?')) {
+                handleLogout();
+              }
+            }}
+            className="
+              flex flex-col items-center justify-center
+              min-h-[48px]
+              select-none touch-manipulation
+              text-red-400 hover:text-red-300
+              transition-colors duration-200
+            "
+          >
+            <LogOut className="w-6 h-6" />
+            <span className="text-[11px] mt-1 font-medium">Logout</span>
+          </motion.button>
+        </motion.div>
       </div>
     </nav>
   );

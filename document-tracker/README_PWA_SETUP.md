@@ -88,3 +88,4 @@ Before deploying:
 3. Verify manifest.json is accessible
 4. Test PWA installation on real devices
 5. Test offline functionality
+

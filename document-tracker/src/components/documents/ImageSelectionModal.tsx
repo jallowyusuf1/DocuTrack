@@ -87,10 +87,10 @@ export default function ImageSelectionModal({
             transition={getTransition(transitions.spring)}
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[80vh] overflow-hidden transition-transform duration-300"
             style={{
-              background: 'rgba(26, 22, 37, 0.95)',
-              backdropFilter: 'blur(30px)',
+              background: 'rgba(42, 38, 64, 0.85)',
+              backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
             }}
             onClick={(e) => e.stopPropagation()}
             onTouchStart={handleTouchStart}

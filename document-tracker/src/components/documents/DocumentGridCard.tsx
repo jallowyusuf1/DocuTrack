@@ -79,7 +79,7 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
         background: 'rgba(42, 38, 64, 0.7)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
       }}
     >
@@ -170,7 +170,7 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
             <Icon className="w-3.5 h-3.5 text-white" />
             <span className="text-[11px] font-medium text-white">{typeLabel}</span>
           </div>
-          
+
           {/* Date - more visible */}
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4" style={{ color: '#FFFFFF' }} />

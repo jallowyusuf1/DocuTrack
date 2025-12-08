@@ -508,13 +508,13 @@ export default function Profile() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   triggerHaptic('light');
-                  navigate('/profile/change-password');
+                  navigate('/settings');
                 }}
-                className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
+                className="w-full h-14 px-4 flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
                   <Lock className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Change Password</span>
+                  <span className="text-white">Settings</span>
                 </div>
                 <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
               </motion.button>

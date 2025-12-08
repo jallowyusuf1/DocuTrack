@@ -135,3 +135,4 @@
 - Service worker and analytics are optional but recommended
 - Legal pages depend on your jurisdiction and user base
 - Icon assets need to be created (use design tool or online generator)
+

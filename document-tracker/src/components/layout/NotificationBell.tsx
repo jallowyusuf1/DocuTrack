@@ -197,7 +197,7 @@ export default function NotificationBell() {
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
                 background: 'rgba(26, 22, 37, 0.98)',
-                backdropFilter: 'blur(30px)',
+                backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(30px)',
                 border: '1px solid rgba(255, 255, 255, 0.15)',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',

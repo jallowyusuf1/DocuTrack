@@ -5,15 +5,27 @@ import './i18n/config'
 import App from './App.tsx'
 
 // Initialize Sentry (automatically enabled when VITE_SENTRY_DSN is set)
-// Use setTimeout to ensure React is fully loaded before initializing Sentry
-if (import.meta.env.VITE_SENTRY_DSN) {
-  setTimeout(() => {
-    import('./utils/sentry').then(({ initSentry }) => {
-      initSentry().catch(() => {
-        // Silently fail if Sentry initialization fails
+// Wait for React and app to fully load before initializing Sentry
+// This prevents React hook conflicts
+// IMPORTANT: Sentry is completely optional and should never break the app
+if (import.meta.env.VITE_SENTRY_DSN && typeof window !== 'undefined') {
+  // Wait for DOM and React to be fully ready
+  // Use a longer delay to ensure React is completely initialized
+  window.addEventListener('load', () => {
+    // Additional delay to ensure React is fully initialized
+    setTimeout(() => {
+      import('./utils/sentry').then(({ initSentry }) => {
+        initSentry().catch((err) => {
+          // Silently fail if Sentry initialization fails - don't break the app
+          if (import.meta.env.MODE === 'development') {
+            console.warn('Sentry initialization failed (non-critical):', err);
+          }
+        });
+      }).catch(() => {
+        // Silently fail if Sentry module can't be loaded
       });
-    });
-  }, 0);
+    }, 2000); // 2 second delay to ensure React is ready
+  });
 }
 
 // Register Service Worker

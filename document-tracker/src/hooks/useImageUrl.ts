@@ -117,7 +117,7 @@ export function useImageUrl(imageUrl: string | null | undefined) {
         setSignedUrl(imageUrl);
       } finally {
         if (!abortControllerRef.current?.signal.aborted) {
-          setLoading(false);
+        setLoading(false);
         }
       }
     };

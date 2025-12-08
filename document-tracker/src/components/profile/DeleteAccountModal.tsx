@@ -73,11 +73,11 @@ export default function DeleteAccountModal({
             <div
               className="rounded-2xl p-6 w-full max-w-md"
               style={{
-                background: 'rgba(26, 22, 37, 0.95)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
+                background: 'rgba(42, 38, 64, 0.85)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
               }}
             >
               {/* Warning Icon */}

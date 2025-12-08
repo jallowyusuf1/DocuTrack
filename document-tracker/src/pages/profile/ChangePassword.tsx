@@ -63,7 +63,7 @@ export default function ChangePassword() {
 
       showToast('Password updated successfully!', 'success');
       setTimeout(() => {
-        navigate('/profile');
+        navigate('/settings');
       }, 1500);
     } catch (error: any) {
       console.error('Failed to update password:', error);
@@ -111,7 +111,7 @@ export default function ChangePassword() {
             whileTap={{ scale: 0.9 }}
             onClick={() => {
               triggerHaptic('light');
-              navigate('/profile');
+              navigate('/settings');
             }}
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{

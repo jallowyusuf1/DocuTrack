@@ -90,3 +90,4 @@ export function logError(error: unknown, context?: string) {
     // Silently fail if Sentry module not available
   });
 }
+

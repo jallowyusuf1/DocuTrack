@@ -65,3 +65,4 @@ export function createThumbnailUrl(fullUrl: string, size: number = 200): string 
   }
   return fullUrl;
 }
+

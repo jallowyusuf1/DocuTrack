@@ -74,9 +74,15 @@ export default function Header() {
         className="sticky top-0 z-20 border-b border-white/10 h-[70px] flex items-center"
       >
         <div className="flex items-center justify-between w-full">
-          <h1 className="text-lg font-bold text-white pl-4 pr-2" style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}>
+          <motion.h1
+            onClick={() => navigate('/')}
+            className="text-lg font-bold text-white pl-4 pr-2 cursor-pointer"
+            style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             DocuTrack
-          </h1>
+          </motion.h1>
           <div className="flex items-center gap-3 pr-5">
             {showAddButton && (
               <motion.button

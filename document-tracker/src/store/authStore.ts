@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { authService, type SignupData, type LoginData, type UserProfile } from '../services/authService';
+import { supabase } from '../config/supabase';
 
 interface AuthState {
   user: SupabaseUser | null;
@@ -104,30 +105,64 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: async () => {
     set({ isLoading: true, error: null });
     try {
-      // First, try to get the session from storage
+      // First, try to get the session from storage (persisted by Supabase)
       const session = await authService.getSession();
       
-      if (session?.user) {
-        // Verify the user is still valid
-        const user = await authService.getCurrentUser();
+      if (session?.user && session?.access_token) {
+        // Verify the session is still valid by checking token expiry
+        const expiresAt = session.expires_at;
+        const now = Math.floor(Date.now() / 1000);
         
-        // Get profile, but don't fail if it doesn't exist
-        let profile = null;
-        try {
-          profile = await authService.getUserProfile(user.id);
-        } catch (profileError) {
-          // Profile fetch failed, but user is still authenticated
-          console.warn('Profile fetch failed during auth check:', profileError);
+        // If token is expired or expiring soon, Supabase will auto-refresh
+        // But we should still verify the user is valid
+        if (expiresAt && expiresAt > now) {
+          // Session is valid - verify the user is still valid
+          const user = await authService.getCurrentUser();
+          
+          // Get profile, but don't fail if it doesn't exist
+          let profile = null;
+          try {
+            profile = await authService.getUserProfile(user.id);
+          } catch (profileError) {
+            // Profile fetch failed, but user is still authenticated
+            console.warn('Profile fetch failed during auth check:', profileError);
+          }
+          
+          set({
+            user,
+            profile,
+            session,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } else {
+          // Token expired - Supabase should auto-refresh, but if it doesn't, clear state
+          // Try to refresh the session
+          const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
+          if (refreshedSession) {
+            const user = await authService.getCurrentUser();
+            const profile = await authService.getUserProfile(user.id);
+            set({
+              user,
+              profile,
+              session: refreshedSession,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+          } else {
+            // No valid session
+            set({
+              user: null,
+              profile: null,
+              session: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null,
+            });
+          }
         }
-        
-        set({
-          user,
-          profile,
-          session,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
       } else {
         // No session - clear auth state
         set({

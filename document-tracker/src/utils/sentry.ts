@@ -26,6 +26,9 @@ async function loadSentry() {
 
 // Initialize Sentry (auto-initializes when DSN is available)
 export async function initSentry() {
+  // Ensure React is loaded before initializing Sentry
+  if (typeof window === 'undefined') return;
+  
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   
   if (!dsn) {
@@ -36,22 +39,29 @@ export async function initSentry() {
   }
 
   try {
+    // Wait longer to ensure React and app are fully initialized
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     const SentryModule = await loadSentry();
-    if (!SentryModule) return;
+    if (!SentryModule) {
+      if (import.meta.env.MODE === 'development') {
+        console.warn('Sentry module could not be loaded');
+      }
+      return;
+    }
 
+    // Initialize with minimal configuration to avoid React conflicts
+    // DO NOT use any React-specific integrations to prevent hook conflicts
     SentryModule.init({
       dsn,
       environment: import.meta.env.MODE,
+      // Only use browser tracing - NO React integrations
       integrations: [
         SentryModule.browserTracingIntegration(),
-        SentryModule.replayIntegration({
-          maskAllText: true,
-          blockAllMedia: true,
-        }),
       ],
       tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0,
-      replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1.0,
+      // Disable automatic React error tracking to prevent conflicts
+      defaultIntegrations: false,
       beforeSend(event, hint) {
         // Filter out sensitive data
         if (event.request) {
@@ -70,6 +80,7 @@ export async function initSentry() {
     }
   } catch (error) {
     console.error('Failed to initialize Sentry:', error);
+    // Don't throw - Sentry is optional and shouldn't break the app
   }
 }
 
@@ -129,3 +140,4 @@ export async function clearUserContext() {
     // Silently fail if Sentry not available
   }
 }
+

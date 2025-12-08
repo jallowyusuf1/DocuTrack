@@ -94,17 +94,17 @@ export default function FilterModal({
             transition={getTransition(transitions.spring)}
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[85vh] overflow-y-auto"
             style={{
-              background: 'rgba(26, 22, 37, 0.95)',
-              backdropFilter: 'blur(30px)',
+              background: 'rgba(42, 38, 64, 0.85)',
+              backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-2 sticky top-0" style={{
-              background: 'rgba(26, 22, 37, 0.95)',
-              backdropFilter: 'blur(30px)',
+              background: 'rgba(42, 38, 64, 0.85)',
+              backdropFilter: 'blur(25px)',
             }}>
               <div 
                 className="w-10 h-1 rounded-full"
@@ -225,8 +225,8 @@ export default function FilterModal({
             <div 
               className="sticky bottom-0 px-6 py-4 safe-area-bottom border-t border-white/10"
               style={{
-                background: 'rgba(26, 22, 37, 0.95)',
-                backdropFilter: 'blur(30px)',
+                background: 'rgba(42, 38, 64, 0.85)',
+                backdropFilter: 'blur(25px)',
               }}
             >
               <div className="flex gap-3">

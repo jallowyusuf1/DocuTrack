@@ -73,7 +73,15 @@ export default function Modal({
               exit="exit"
               variants={bottomSheet}
               transition={getTransition(transitions.spring)}
-              className="fixed inset-x-0 bottom-0 z-50 glass-card-elevated rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              style={{
+                background: 'rgba(42, 38, 64, 0.85)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderBottom: 'none',
+                boxShadow: '0 -16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+              }}
               onClick={(e) => e.stopPropagation()}
             >
           {/* Handle bar */}
@@ -92,10 +100,19 @@ export default function Modal({
                     triggerHaptic('light');
                     onClose();
                   }}
-                  className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                  className="p-2 rounded-lg transition-colors"
+                  style={{
+                    color: '#A78BFA',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
                   aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 text-glass-primary" />
+                  <X className="w-5 h-5" style={{ color: '#A78BFA' }} />
                 </motion.button>
               )}
             </div>
@@ -134,7 +151,14 @@ export default function Modal({
               exit="exit"
               variants={scaleInCenter}
               transition={getTransition(transitions.spring)}
-                className={`glass-card-elevated rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col shadow-2xl`}
+                className={`rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col`}
+              style={{
+                background: 'rgba(42, 38, 64, 0.85)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}

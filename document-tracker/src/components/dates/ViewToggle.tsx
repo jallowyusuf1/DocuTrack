@@ -15,7 +15,7 @@ export default function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         background: 'rgba(35, 29, 51, 0.4)',
         backdropFilter: 'blur(15px)',
         WebkitBackdropFilter: 'blur(15px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
       }}
     >
       <motion.button

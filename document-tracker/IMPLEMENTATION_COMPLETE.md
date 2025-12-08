@@ -160,3 +160,4 @@ VITE_SENTRY_DSN=your_sentry_dsn
 - ⏳ Icons (generate when ready)
 
 Everything is complete and ready! 🎉
+

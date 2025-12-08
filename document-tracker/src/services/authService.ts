@@ -94,6 +94,9 @@ export const authService = {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
+    }, {
+      // Persist session across browser sessions
+      persistSession: true,
     });
 
     if (error) {

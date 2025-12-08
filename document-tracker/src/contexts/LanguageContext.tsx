@@ -16,9 +16,22 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const { i18n } = useTranslation();
-  const [language, setLanguage] = useState(i18n.language);
-  const [isRTL, setIsRTL] = useState(['ar', 'ur'].includes(i18n.language));
+  // Always call hooks - React rules require this
+  let i18n;
+  try {
+    const translation = useTranslation();
+    i18n = translation.i18n;
+  } catch (error) {
+    console.error('useTranslation hook error:', error);
+    // Create a fallback i18n object
+    i18n = {
+      language: 'en',
+      changeLanguage: async () => {},
+    } as any;
+  }
+
+  const [language, setLanguage] = useState(i18n?.language || 'en');
+  const [isRTL, setIsRTL] = useState(['ar', 'ur'].includes(i18n?.language || 'en'));
   const [isChanging, setIsChanging] = useState(false);
 
   // Update user language in database
@@ -89,42 +102,48 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   }, []);
 
   const changeLanguage = async (lang: string, saveToDB: boolean = true) => {
-    if (isChanging) return; // Prevent rapid changes
+    if (isChanging || !i18n) return; // Prevent rapid changes
     
     setIsChanging(true);
     try {
       // Fade out animation
-      document.body.style.opacity = '0.7';
-      document.body.style.transition = 'opacity 0.2s ease';
+      if (typeof document !== 'undefined') {
+        document.body.style.opacity = '0.7';
+        document.body.style.transition = 'opacity 0.2s ease';
+      }
 
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      await i18n.changeLanguage(lang);
+      if (i18n?.changeLanguage) {
+        await i18n.changeLanguage(lang);
+      }
       setLanguage(lang);
       setIsRTL(['ar', 'ur'].includes(lang));
       localStorage.setItem('language', lang);
 
       // Update HTML dir and lang attributes
-      const isRTLNew = ['ar', 'ur'].includes(lang);
-      const oldDir = document.documentElement.dir;
-      document.documentElement.dir = isRTLNew ? 'rtl' : 'ltr';
-      document.documentElement.lang = lang;
+      if (typeof document !== 'undefined') {
+        const isRTLNew = ['ar', 'ur'].includes(lang);
+        const oldDir = document.documentElement.dir;
+        document.documentElement.dir = isRTLNew ? 'rtl' : 'ltr';
+        document.documentElement.lang = lang;
 
-      // Slide animation for RTL switch
-      if (oldDir !== (isRTLNew ? 'rtl' : 'ltr')) {
-        document.body.style.transform = isRTLNew 
-          ? 'translateX(-20px)' 
-          : 'translateX(20px)';
-        document.body.style.transition = 'transform 0.3s ease';
-        
+        // Slide animation for RTL switch
+        if (oldDir !== (isRTLNew ? 'rtl' : 'ltr')) {
+          document.body.style.transform = isRTLNew 
+            ? 'translateX(-20px)' 
+            : 'translateX(20px)';
+          document.body.style.transition = 'transform 0.3s ease';
+          
+          await new Promise(resolve => setTimeout(resolve, 100));
+          document.body.style.transform = 'translateX(0)';
+        }
+
+        // Fade in animation
         await new Promise(resolve => setTimeout(resolve, 100));
-        document.body.style.transform = 'translateX(0)';
+        document.body.style.opacity = '1';
+        document.body.style.transition = 'opacity 0.3s ease';
       }
-
-      // Fade in animation
-      await new Promise(resolve => setTimeout(resolve, 100));
-      document.body.style.opacity = '1';
-      document.body.style.transition = 'opacity 0.3s ease';
 
       // Save to user profile in database
       if (saveToDB) {
@@ -132,8 +151,10 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       }
     } catch (error) {
       console.error('Error changing language:', error);
-      document.body.style.opacity = '1';
-      document.body.style.transform = 'translateX(0)';
+      if (typeof document !== 'undefined') {
+        document.body.style.opacity = '1';
+        document.body.style.transform = 'translateX(0)';
+      }
     } finally {
       setIsChanging(false);
     }

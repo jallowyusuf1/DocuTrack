@@ -101,3 +101,4 @@ Sentry free tier includes:
 - 1,000 replay sessions/month
 
 This is usually sufficient for small to medium apps.
+

@@ -171,3 +171,4 @@ npm run lighthouse
 ✅ Terms of Service page  
 
 Everything is implemented, tested, and ready to use! 🚀
+

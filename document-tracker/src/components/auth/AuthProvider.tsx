@@ -20,9 +20,18 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     initialized.current = true;
 
     // Check for existing session on app load (from localStorage)
+    // This ensures users stay logged in when they return
     checkAuth().catch(() => {
       // Silently fail - no session exists
     });
+
+    // Also check on window focus (user returns to tab)
+    const handleFocus = () => {
+      checkAuth().catch(() => {
+        // Silently fail
+      });
+    };
+    window.addEventListener('focus', handleFocus);
 
     // Set up auth state change listener for session persistence
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -60,6 +69,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('focus', handleFocus);
     };
   }, []); // Empty deps - only run once
 

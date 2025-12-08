@@ -294,10 +294,11 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
             transition={getTransition(transitions.spring)}
             className="fixed inset-x-0 bottom-0 z-[91] rounded-t-[32px] w-full max-h-[90vh] overflow-y-auto"
             style={{
-              background: 'rgba(26, 22, 37, 0.95)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(42, 38, 64, 0.85)',
+              backdropFilter: 'blur(25px)',
+              WebkitBackdropFilter: 'blur(25px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 -16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >

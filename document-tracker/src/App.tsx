@@ -9,8 +9,10 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Skeleton from './components/ui/Skeleton';
 import { fadeIn } from './utils/animations';
 import { motion } from 'framer-motion';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy load routes for code splitting
+const Landing = lazy(() => import('./pages/landing/Landing'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
@@ -22,6 +24,7 @@ const EditDocument = lazy(() => import('./pages/documents/EditDocument'));
 const Dates = lazy(() => import('./pages/dates/Dates'));
 const Profile = lazy(() => import('./pages/profile/Profile'));
 const ChangePassword = lazy(() => import('./pages/profile/ChangePassword'));
+const Settings = lazy(() => import('./pages/profile/Settings'));
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
 
@@ -43,6 +46,22 @@ function AppRoutes() {
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
         {/* Public routes */}
+        <Route
+          path="/"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <Landing />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <Landing />
+            </Suspense>
+          }
+        />
         <Route
           path="/login"
           element={
@@ -142,6 +161,14 @@ function AppRoutes() {
                 </Suspense>
               } 
             />
+            <Route 
+              path="settings" 
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <Settings />
+                </Suspense>
+              } 
+            />
           </Route>
 
           {/* Document detail and edit routes (outside MainLayout) */}
@@ -167,7 +194,7 @@ function AppRoutes() {
           />
 
           {/* Catch all */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </AnimatePresence>
@@ -176,15 +203,17 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

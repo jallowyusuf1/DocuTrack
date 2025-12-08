@@ -164,10 +164,10 @@ export default function EditProfileModal({
             transition={getTransition(transitions.spring)}
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[90vh] overflow-y-auto"
             style={{
-              background: 'rgba(26, 22, 37, 0.95)',
-              backdropFilter: 'blur(30px)',
+              background: 'rgba(42, 38, 64, 0.85)',
+              backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -219,7 +219,7 @@ export default function EditProfileModal({
                     className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center"
                     style={{
                       background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      border: '3px solid rgba(26, 22, 37, 0.95)',
+                      border: '3px solid rgba(42, 38, 64, 0.85)',
                     }}
                   >
                     {isUploadingAvatar ? (
@@ -260,7 +260,7 @@ export default function EditProfileModal({
                   style={{
                     background: 'rgba(35, 29, 51, 0.5)',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 />
                 <p className="mt-1 text-xs" style={{ color: '#A78BFA' }}>

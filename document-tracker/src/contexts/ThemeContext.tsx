@@ -10,24 +10,49 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Check localStorage first
+// Get initial theme safely
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark';
+  try {
     const saved = localStorage.getItem('app_theme') as Theme;
     if (saved === 'light' || saved === 'dark') {
       return saved;
     }
-    // Check system preference
-    if (typeof window !== 'undefined' && window.matchMedia) {
+    if (window.matchMedia) {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    return 'dark'; // Default to dark for glass morphism
-  });
+  } catch (e) {
+    // If localStorage fails, just return default
+  }
+  return 'dark';
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  // Defensive check - ensure React hooks are available
+  if (typeof useState !== 'function' || typeof useEffect !== 'function') {
+    console.error('React hooks not available in ThemeProvider');
+    // Return a minimal provider without hooks as fallback
+    return (
+      <ThemeContext.Provider value={{ theme: 'dark', toggleTheme: () => {}, setTheme: () => {} }}>
+        {children}
+      </ThemeContext.Provider>
+    );
+  }
+
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    // Apply theme to document
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('app_theme', theme);
+    try {
+      // Apply theme to document
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('app_theme', theme);
+      }
+    } catch (e) {
+      console.error('Failed to apply theme:', e);
+    }
   }, [theme]);
 
   const toggleTheme = () => {

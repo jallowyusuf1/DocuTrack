@@ -58,3 +58,4 @@ export default function ErrorDisplay({ error, onRetry, className = '' }: ErrorDi
     </motion.div>
   );
 }
+

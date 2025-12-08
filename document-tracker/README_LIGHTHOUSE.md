@@ -131,3 +131,4 @@ Set up Lighthouse CI for automated audits:
 - Descriptive titles
 - Semantic HTML
 - Mobile-friendly
+

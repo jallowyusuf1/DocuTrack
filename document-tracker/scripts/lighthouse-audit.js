@@ -54,3 +54,4 @@ try {
   console.log('  3. Or use: npx lighthouse');
   process.exit(1);
 }
+
