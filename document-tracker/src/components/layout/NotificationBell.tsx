@@ -181,15 +181,27 @@ export default function NotificationBell() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
+              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
             />
-            {/* Dropdown */}
+            {/* Dropdown - Centered on all devices */}
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="absolute right-0 top-full mt-2 w-[320px] max-w-[90vw] glass-card-elevated rounded-2xl z-50 max-h-[400px] flex flex-col overflow-hidden"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="fixed z-[9999] w-[90vw] max-w-md rounded-2xl max-h-[80vh] flex flex-col overflow-hidden"
+              style={{
+                position: 'fixed',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                background: 'rgba(26, 22, 37, 0.98)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              }}
             >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">

@@ -159,16 +159,27 @@ export const transitions = {
   springBounce: { type: 'spring' as const, damping: 20, stiffness: 300 },
 };
 
-// Haptic feedback utility
+// Haptic feedback utility with enhanced patterns
 export const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'light') => {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     const patterns = {
-      light: 10,
-      medium: 20,
-      heavy: 30,
+      light: 10,        // Quick tap feedback
+      medium: [10, 50, 10],  // Success/confirmation
+      heavy: [20, 50, 20, 50, 20],  // Error/alert
     };
-    navigator.vibrate(patterns[type]);
+    try {
+      navigator.vibrate(patterns[type]);
+    } catch (e) {
+      // Silently fail if vibration not supported
+    }
   }
+};
+
+// Success celebration with haptic
+export const celebrateSuccess = (message?: string) => {
+  triggerHaptic('medium');
+  // Could add confetti or other visual effects here
+  return message;
 };
 
 // Number counter animation helper

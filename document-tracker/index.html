@@ -4,8 +4,33 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#3b82f6" />
+    <meta name="theme-color" content="#8B5CF6" />
+    <meta name="description" content="Never miss a document expiration deadline. Track passports, IDs, insurance, and more with smart reminders." />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>DocuTrack - Document Tracker</title>
+    <style>
+      /* Immediate loading screen styling - matches app theme */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%);
+        background-attachment: fixed;
+        color: #C7C3D9;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+      #root {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%);
+        background-attachment: fixed;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -19,5 +19,22 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Prevent variable shadowing
+      'no-shadow': ['error', { 
+        builtinGlobals: true,
+        hoist: 'all',
+        allow: ['resolve', 'reject', 'done', 'next', 'err', 'error']
+      }],
+      '@typescript-eslint/no-shadow': ['error', {
+        ignoreTypeValueShadow: true
+      }],
+      'no-redeclare': 'error',
+      // Warn about unused variables (helps catch conflicts early)
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
+    },
   },
 ])

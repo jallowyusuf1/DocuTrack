@@ -1,42 +1,49 @@
 import { motion } from 'framer-motion';
-import type { ReactNode } from 'react';
-import { fadeInUp, float, getTransition, transitions } from '../../utils/animations';
+import { float } from '../../utils/animations';
+import Button from './Button';
 
 interface EmptyStateProps {
-  icon: ReactNode;
+  icon: React.ReactNode;
   title: string;
   description: string;
-  action?: ReactNode;
-  className?: string;
+  action?: React.ReactNode;
 }
 
-export default function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className = '',
-}: EmptyStateProps) {
+export default function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      variants={fadeInUp}
-      transition={getTransition(transitions.medium)}
-      className={`flex flex-col items-center justify-center py-10 px-4 text-center ${className}`}
-    >
+    <div className="flex flex-col items-center justify-center py-16 px-4">
       <motion.div
         animate="animate"
         variants={float}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="w-12 h-12 text-gray-400 mb-4 flex items-center justify-center"
+        className="w-30 h-30 rounded-full flex items-center justify-center mb-6"
+        style={{
+          width: '120px',
+          height: '120px',
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)',
+        }}
       >
-        {icon}
+        <div className="text-white">
+          {icon}
+        </div>
       </motion.div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      <p className="text-sm text-gray-600 mb-6 max-w-sm">{description}</p>
-      {action && <div>{action}</div>}
-    </motion.div>
+      <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+      <p className="text-sm text-center mb-6" style={{ color: '#A78BFA' }}>
+        {description}
+      </p>
+      {action && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          {action}
+        </motion.div>
+      )}
+    </div>
   );
 }
-

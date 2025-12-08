@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import Button from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 
 interface GreetingSectionProps {
   expiringCount: number;
@@ -9,7 +8,6 @@ interface GreetingSectionProps {
 
 export default function GreetingSection({ expiringCount }: GreetingSectionProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   // Get user's first name from multiple possible sources
   const getDisplayName = () => {

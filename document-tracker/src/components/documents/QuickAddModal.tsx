@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { X, AlertCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, AlertCircle, Image as ImageIcon, Loader2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
@@ -12,6 +13,7 @@ import Textarea from '../ui/Textarea';
 import Button from '../ui/Button';
 import DatePickerModal from '../ui/DatePickerModal';
 import Toast from '../ui/Toast';
+import { getTransition, transitions, triggerHaptic } from '../../utils/animations';
 
 const QUICK_ADD_TYPES: { value: DocumentType; label: string }[] = [
   { value: 'license_plate', label: 'License Plate' },
@@ -55,7 +57,6 @@ const getSmartDefaults = (type: DocumentType) => {
       return {
         ...defaults,
         document_name: 'Food Item',
-        // Food typically expires soon, so set expiration to 7 days from now
         expiration_date: format(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
       };
     case 'warranty':
@@ -167,6 +168,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     setValue,
     watch,
@@ -274,280 +276,361 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[90] flex items-end bg-black bg-opacity-50">
-      <div
-        className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto relative z-[91]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Add Expiring Item</h2>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+            className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-md"
+          />
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={getTransition(transitions.spring)}
+            className="fixed inset-x-0 bottom-0 z-[91] rounded-t-[32px] w-full max-h-[90vh] overflow-y-auto"
+            style={{
+              background: 'rgba(26, 22, 37, 0.95)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-6 space-y-4">
-          {/* Document Type */}
-          <div className="relative z-10">
-            <Select
-              label={
-                <>
-                  Item Type <span className="text-red-500">*</span>
-                </>
-              }
-              options={QUICK_ADD_TYPES}
-              {...register('document_type', { required: 'Item type is required' })}
-              error={errors.document_type?.message}
-              className="h-[52px]"
-            />
-          </div>
-
-          {/* Image Preview */}
-          <div className="space-y-2 relative z-0 mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Image <span className="text-red-500">*</span>
-            </label>
-            {imagePreview ? (
-              <div className="relative">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-20 h-20 object-cover rounded-lg border-2 border-gray-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 text-sm text-blue-600 font-medium block w-full text-left min-h-[44px] flex items-center"
-                >
-                  Change Image
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6">
-                <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-sm text-blue-600 font-medium min-h-[44px] px-4 flex items-center justify-center"
-                >
-                  Select Image
-                </button>
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/jpg,application/pdf"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </div>
-
-          {/* Document Name */}
-          <Input
-            label={
-              <>
-                Name <span className="text-red-500">*</span>
-              </>
-            }
-            placeholder="e.g., ABC-1234 or Product Name"
-            maxLength={100}
-            {...register('document_name', {
-              required: 'Name is required',
-              maxLength: { value: 100, message: 'Name must be less than 100 characters' },
-            })}
-            error={errors.document_name?.message}
-            className="h-[52px]"
-          />
-
-          {/* Conditional Number Field */}
-          {fieldConfig.showNumberField && (
-            <Input
-              label={`${fieldConfig.numberFieldLabel} (Optional)`}
-              placeholder={fieldConfig.numberFieldPlaceholder}
-              maxLength={50}
-              {...register('document_number', {
-                maxLength: { value: 50, message: 'Must be less than 50 characters' },
-              })}
-              error={errors.document_number?.message}
-              className="h-[52px]"
-            />
-          )}
-
-          {/* Conditional Issue/Purchase Date */}
-          {fieldConfig.showIssueDate && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {fieldConfig.issueDateLabel} (Optional)
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  setDatePickerField('issue_date');
-                  setIsDatePickerOpen(true);
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div 
+                className="w-10 h-1 rounded-full"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.3)',
                 }}
-                className={`
-                  w-full h-[52px] px-4 rounded-lg border-2
-                  flex items-center gap-3
-                  text-left
-                  ${errors.issue_date ? 'border-red-500' : 'border-black'}
-                  focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                `}
-              >
-                <AlertCircle className="w-5 h-5 text-gray-400" />
-                <span className={watchedIssueDate ? 'text-gray-900' : 'text-gray-400'}>
-                  {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : `Select ${fieldConfig.issueDateLabel.toLowerCase()}`}
-                </span>
-              </button>
-              <input
-                type="hidden"
-                {...register('issue_date')}
               />
-              {errors.issue_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.issue_date.message}</p>
-              )}
             </div>
-          )}
 
-          {/* Expiration Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Expiration Date <span className="text-red-500">*</span>
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                setDatePickerField('expiration_date');
-                setIsDatePickerOpen(true);
-              }}
-              className={`
-                w-full h-[52px] px-4 rounded-lg border-2
-                flex items-center gap-3
-                text-left
-                ${errors.expiration_date ? 'border-red-500' : 'border-black'}
-                focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-              `}
-            >
-              <AlertCircle className="w-5 h-5 text-gray-400" />
-              <span className={watchedExpirationDate ? 'text-gray-900' : 'text-gray-400'}>
-                {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
-              </span>
-            </button>
-            <input
-              type="hidden"
-              {...register('expiration_date', {
-                required: 'Expiration date is required',
-                validate: (value) => {
-                  if (!value) return true;
-                  const expirationDate = new Date(value);
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  if (expirationDate <= today) {
-                    return 'Expiration date must be in the future';
-                  }
-                  return true;
-                },
-              })}
-            />
-            {errors.expiration_date && (
-              <p className="mt-1 text-sm text-red-600">{errors.expiration_date.message}</p>
-            )}
-          </div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+              <h2 className="text-xl font-bold text-white">Add Expiring Item</h2>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  triggerHaptic('light');
+                  onClose();
+                }}
+                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+              >
+                <X className="w-5 h-5 text-white" />
+              </motion.button>
+            </div>
 
-          {/* Notes (optional) */}
-          <Textarea
-            label="Notes (Optional)"
-            placeholder="Add any additional notes..."
-            maxLength={500}
-            {...register('notes', {
-              maxLength: { value: 500, message: 'Notes must be less than 500 characters' },
-            })}
-            error={errors.notes?.message}
-            className="min-h-[80px]"
-          />
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-6 pb-20 space-y-6">
+              {/* Document Type */}
+              <div className="relative z-10">
+                <Controller
+                  name="document_type"
+                  control={control}
+                  rules={{ required: 'Item type is required' }}
+                  render={({ field }) => (
+                    <Select
+                      label={
+                        <>
+                          Item Type <span className="text-red-400">*</span>
+                        </>
+                      }
+                      options={QUICK_ADD_TYPES}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      error={errors.document_type?.message}
+                      className="h-[52px]"
+                    />
+                  )}
+                />
+              </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              fullWidth
-              onClick={onClose}
-              disabled={isSaving}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              disabled={isSaving || !selectedImage}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Add Item'
+              {/* Image Preview */}
+              <div className="space-y-2 relative z-0 mt-32">
+                {imagePreview ? (
+                  <div className="relative">
+                    <div className="relative w-full flex justify-center mb-2">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full max-w-[120px] h-auto max-h-[120px] object-contain rounded-xl border-2"
+                        style={{ 
+                          borderColor: 'rgba(255, 255, 255, 0.4)',
+                          backgroundColor: 'rgba(35, 29, 51, 0.6)',
+                          padding: '6px',
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic('light');
+                        fileInputRef.current?.click();
+                      }}
+                      className="w-full text-sm font-semibold h-[44px] flex items-center justify-center hover:opacity-90 transition-opacity rounded-lg shadow-lg"
+                      style={{ 
+                        color: '#FFFFFF',
+                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
+                        border: '1px solid rgba(139, 92, 246, 0.6)',
+                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                      }}
+                    >
+                      Change Image
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-4 h-[100px]"
+                    style={{
+                      borderColor: 'rgba(255, 255, 255, 0.4)',
+                      background: 'rgba(35, 29, 51, 0.5)',
+                    }}
+                  >
+                    <ImageIcon className="w-8 h-8 mb-2" style={{ color: '#A78BFA', opacity: 0.9 }} />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic('light');
+                        fileInputRef.current?.click();
+                      }}
+                      className="text-xs font-semibold h-[36px] px-4 py-2 rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity shadow-lg"
+                      style={{ 
+                        color: '#FFFFFF',
+                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
+                        border: '1px solid rgba(139, 92, 246, 0.6)',
+                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                      }}
+                    >
+                      Select Image
+                    </button>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,application/pdf"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Document Name */}
+              <Input
+                label={
+                  <>
+                    Name <span className="text-red-400">*</span>
+                  </>
+                }
+                placeholder="e.g., ABC-1234 or Product Name"
+                maxLength={100}
+                {...register('document_name', {
+                  required: 'Name is required',
+                  maxLength: { value: 100, message: 'Name must be less than 100 characters' },
+                })}
+                error={errors.document_name?.message}
+                className="h-[52px]"
+              />
+
+              {/* Conditional Number Field */}
+              {fieldConfig.showNumberField && (
+                <Input
+                  label={`${fieldConfig.numberFieldLabel} (Optional)`}
+                  placeholder={fieldConfig.numberFieldPlaceholder}
+                  maxLength={50}
+                  {...register('document_number', {
+                    maxLength: { value: 50, message: 'Must be less than 50 characters' },
+                  })}
+                  error={errors.document_number?.message}
+                  className="h-[52px]"
+                />
               )}
-            </Button>
-          </div>
-        </form>
 
-        {/* Date Picker Modal */}
-        <DatePickerModal
-          isOpen={isDatePickerOpen}
-          onClose={() => {
-            setIsDatePickerOpen(false);
-            setDatePickerField(null);
-          }}
-          onSelect={handleDateSelect}
-          selectedDate={
-            datePickerField === 'issue_date'
-              ? watchedIssueDate
-              : datePickerField === 'expiration_date'
-              ? watchedExpirationDate
-              : undefined
-          }
-          minDate={
-            datePickerField === 'issue_date'
-              ? '2010-01-01'
-              : datePickerField === 'expiration_date'
-              ? new Date().toISOString().split('T')[0]
-              : undefined
-          }
-          maxDate={
-            datePickerField === 'expiration_date'
-              ? '2040-12-31'
-              : undefined
-          }
-        />
+              {/* Conditional Issue/Purchase Date */}
+              {fieldConfig.showIssueDate && (
+                <div>
+                  <label className="block text-sm font-medium text-white mb-1">
+                    {fieldConfig.issueDateLabel} (Optional)
+                  </label>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setDatePickerField('issue_date');
+                      setIsDatePickerOpen(true);
+                    }}
+                    className={`
+                      w-full h-[52px] px-4 rounded-xl
+                      flex items-center gap-3
+                      text-left transition-all
+                      ${errors.issue_date ? 'border-2 border-red-500' : 'border border-white/10'}
+                    `}
+                    style={{
+                      background: errors.issue_date
+                        ? 'rgba(239, 68, 68, 0.1)'
+                        : 'rgba(35, 29, 51, 0.6)',
+                      backdropFilter: 'blur(15px)',
+                      color: watchedIssueDate ? '#FFFFFF' : '#A78BFA',
+                    }}
+                  >
+                    <Calendar className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                    <span>
+                      {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : `Select ${fieldConfig.issueDateLabel.toLowerCase()}`}
+                    </span>
+                  </motion.button>
+                  <input
+                    type="hidden"
+                    {...register('issue_date')}
+                  />
+                  {errors.issue_date && (
+                    <p className="mt-1 text-sm text-red-400">{errors.issue_date.message}</p>
+                  )}
+                </div>
+              )}
 
-        {/* Toast Notifications */}
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
-          />
-        ))}
-      </div>
-    </div>
+              {/* Expiration Date */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Expiration Date <span className="text-red-400">*</span>
+                </label>
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setDatePickerField('expiration_date');
+                    setIsDatePickerOpen(true);
+                  }}
+                  className={`
+                    w-full h-[52px] px-4 rounded-xl
+                    flex items-center gap-3
+                    text-left transition-all
+                    ${errors.expiration_date ? 'border-2 border-red-500' : 'border border-white/10'}
+                  `}
+                  style={{
+                    background: errors.expiration_date
+                      ? 'rgba(239, 68, 68, 0.1)'
+                      : 'rgba(35, 29, 51, 0.6)',
+                    backdropFilter: 'blur(15px)',
+                    color: watchedExpirationDate ? '#FFFFFF' : '#A78BFA',
+                  }}
+                >
+                  <AlertCircle className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <span>
+                    {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
+                  </span>
+                </motion.button>
+                <input
+                  type="hidden"
+                  {...register('expiration_date', {
+                    required: 'Expiration date is required',
+                    validate: (value) => {
+                      if (!value) return true;
+                      const expirationDate = new Date(value);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      if (expirationDate <= today) {
+                        return 'Expiration date must be in the future';
+                      }
+                      return true;
+                    },
+                  })}
+                />
+                {errors.expiration_date && (
+                  <p className="mt-1 text-sm text-red-400">{errors.expiration_date.message}</p>
+                )}
+              </div>
+
+              {/* Notes (optional) */}
+              <Textarea
+                label={<span className="text-white">Notes (Optional)</span>}
+                placeholder="Add any additional notes..."
+                maxLength={500}
+                {...register('notes', {
+                  maxLength: { value: 500, message: 'Notes must be less than 500 characters' },
+                })}
+                error={errors.notes?.message}
+                className="min-h-[80px]"
+              />
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  fullWidth
+                  onClick={onClose}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  disabled={isSaving || !selectedImage}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Add Item'
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            {/* Date Picker Modal */}
+            <DatePickerModal
+              isOpen={isDatePickerOpen}
+              onClose={() => {
+                setIsDatePickerOpen(false);
+                setDatePickerField(null);
+              }}
+              onSelect={handleDateSelect}
+              selectedDate={
+                datePickerField === 'issue_date'
+                  ? watchedIssueDate
+                  : datePickerField === 'expiration_date'
+                  ? watchedExpirationDate
+                  : undefined
+              }
+              minDate={
+                datePickerField === 'issue_date'
+                  ? '2010-01-01'
+                  : datePickerField === 'expiration_date'
+                  ? new Date().toISOString().split('T')[0]
+                  : undefined
+              }
+              maxDate={
+                datePickerField === 'expiration_date'
+                  ? '2040-12-31'
+                  : undefined
+              }
+            />
+
+            {/* Toast Notifications */}
+            {toasts.map((toast) => (
+              <Toast
+                key={toast.id}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => removeToast(toast.id)}
+              />
+            ))}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
-

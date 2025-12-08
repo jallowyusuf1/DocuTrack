@@ -61,7 +61,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               scale: isFocused || hasValue ? 0.9 : 1,
             }}
             transition={{ duration: 0.2 }}
-            className="block text-sm font-semibold text-gray-700 mb-2"
+            className="block text-sm font-semibold text-white mb-3 mt-1"
           >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
@@ -128,7 +128,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               exit="exit"
               variants={fadeInDown}
               transition={{ duration: 0.2 }}
-              className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-600"
+              className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-400"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>

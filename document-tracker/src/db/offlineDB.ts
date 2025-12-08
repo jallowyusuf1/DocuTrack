@@ -96,15 +96,35 @@ class OfflineDatabase extends Dexie {
     lastSynced: number | null;
     hasPendingChanges: boolean;
   }> {
-    const pendingCount = await this.pendingActions.count();
-    const metadata = await this.syncMetadata.get('documents');
-    const unsyncedDocs = await this.documents.where('synced').equals(false).count();
+    try {
+      const pendingCount = await this.pendingActions.count();
+      const metadata = await this.syncMetadata.get('documents');
+      
+      // Safely count unsynced documents - filter instead of using where().equals() to avoid IndexedDB key errors
+      let unsyncedDocs = 0;
+      try {
+        const allDocs = await this.documents.toArray();
+        unsyncedDocs = allDocs.filter(doc => doc.synced === false).length;
+      } catch (error) {
+        console.warn('Failed to count unsynced documents:', error);
+        // If there's an error, assume no unsynced docs rather than crashing
+        unsyncedDocs = 0;
+      }
 
-    return {
-      pendingCount,
-      lastSynced: metadata?.lastSyncedAt || null,
-      hasPendingChanges: pendingCount > 0 || unsyncedDocs > 0,
-    };
+      return {
+        pendingCount,
+        lastSynced: metadata?.lastSyncedAt || null,
+        hasPendingChanges: pendingCount > 0 || unsyncedDocs > 0,
+      };
+    } catch (error) {
+      console.error('Error getting sync status:', error);
+      // Return safe defaults on error
+      return {
+        pendingCount: 0,
+        lastSynced: null,
+        hasPendingChanges: false,
+      };
+    }
   }
 
   /**

@@ -1,5 +1,7 @@
+import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, X } from 'lucide-react';
 import Button from '../ui/Button';
+import { getTransition, transitions, triggerHaptic } from '../../utils/animations';
 
 interface LogoutConfirmationModalProps {
   isOpen: boolean;
@@ -12,51 +14,81 @@ export default function LogoutConfirmationModal({
   onClose,
   onConfirm,
 }: LogoutConfirmationModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div
-        className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Logout?</h2>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={getTransition(transitions.spring)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
+            <div
+              className="rounded-2xl p-6 w-full max-w-md"
+              style={{
+                background: 'rgba(26, 22, 37, 0.95)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
+              }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">Logout?</h2>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    triggerHaptic('light');
+                    onClose();
+                  }}
+                  className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </motion.button>
+              </div>
 
-        {/* Message */}
-        <p className="text-gray-600 mb-6">
-          Are you sure you want to logout?
-        </p>
+              {/* Message */}
+              <p className="text-white/80 mb-6">
+                Are you sure you want to logout?
+              </p>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            <LogOut className="w-5 h-5 mr-2 inline" />
-            Logout
-          </Button>
-        </div>
-      </div>
-    </div>
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={onClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  fullWidth
+                  onClick={() => {
+                    triggerHaptic('medium');
+                    onConfirm();
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <LogOut className="w-5 h-5 mr-2 inline" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
-

@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Loader2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import Button from '../ui/Button';
+import { getTransition, transitions, triggerHaptic } from '../../utils/animations';
 
 interface ExportDataModalProps {
   isOpen: boolean;
@@ -21,10 +23,8 @@ export default function ExportDataModal({
 
     setIsExporting(true);
     try {
-      // Fetch all documents
       const documents = await documentService.getDocuments(user.id);
 
-      // Create export data
       const exportData = {
         user: {
           email: user.email,
@@ -45,12 +45,10 @@ export default function ExportDataModal({
         exported_at: new Date().toISOString(),
       };
 
-      // Convert to JSON
       const jsonData = JSON.stringify(exportData, null, 2);
       const blob = new Blob([jsonData], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
 
-      // Trigger download
       const a = document.createElement('a');
       a.href = url;
       a.download = `docutrack-export-${new Date().toISOString().split('T')[0]}.json`;
@@ -59,6 +57,7 @@ export default function ExportDataModal({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      triggerHaptic('success');
       onClose();
       alert('Data exported successfully!');
     } catch (error: any) {
@@ -69,62 +68,89 @@ export default function ExportDataModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div
-        className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Export All Documents?</h2>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={getTransition(transitions.spring)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
+            <div
+              className="rounded-2xl p-6 w-full max-w-md"
+              style={{
+                background: 'rgba(26, 22, 37, 0.95)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
+              }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">Export All Documents?</h2>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    triggerHaptic('light');
+                    onClose();
+                  }}
+                  className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </motion.button>
+              </div>
 
-        {/* Message */}
-        <p className="text-gray-600 mb-6">
-          Creates a JSON file with all your documents and data. This file can be
-          used to backup or restore your data.
-        </p>
+              {/* Message */}
+              <p className="text-white/80 mb-6">
+                Creates a JSON file with all your documents and data. This file can be
+                used to backup or restore your data.
+              </p>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={onClose}
-            disabled={isExporting}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={handleExport}
-            disabled={isExporting}
-          >
-            {isExporting ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
-                Exporting...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5 mr-2 inline" />
-                Export
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-    </div>
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={onClose}
+                  disabled={isExporting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  fullWidth
+                  onClick={handleExport}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5 mr-2 inline" />
+                      Export
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
-

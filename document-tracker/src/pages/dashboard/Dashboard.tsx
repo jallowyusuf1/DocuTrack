@@ -263,7 +263,7 @@ export default function Dashboard() {
         </div>
 
         {/* Activity Chart */}
-        <ActivityChart />
+        <ActivityChart documents={documents} />
 
         {/* Document List Section */}
         <div className="mt-6 mb-4">

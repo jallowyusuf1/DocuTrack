@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, AlertCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '../../hooks/useAuth';
@@ -13,6 +14,8 @@ import Textarea from '../../components/ui/Textarea';
 import Button from '../../components/ui/Button';
 import DatePickerModal from '../../components/ui/DatePickerModal';
 import Toast from '../../components/ui/Toast';
+import { triggerHaptic } from '../../utils/animations';
+import { getDaysUntil } from '../../utils/dateUtils';
 
 const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
   { value: 'passport', label: 'Passport' },
@@ -52,6 +55,7 @@ export default function AddDocument() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     setValue,
     watch,
@@ -67,12 +71,12 @@ export default function AddDocument() {
   const watchedIssueDate = watch('issue_date');
   const watchedExpirationDate = watch('expiration_date');
 
-  // Auto-fill category when document type changes
+  // Auto-fill category when document type changes (only if category is empty)
   useEffect(() => {
-    if (watchedDocumentType) {
+    if (watchedDocumentType && !watch('category')) {
       setValue('category', watchedDocumentType);
     }
-  }, [watchedDocumentType, setValue]);
+  }, [watchedDocumentType, setValue, watch]);
 
   // Track form changes
   useEffect(() => {
@@ -109,25 +113,21 @@ export default function AddDocument() {
     }
   };
 
-  // Handle date picker
+  const openDatePicker = (field: 'issue_date' | 'expiration_date') => {
+    triggerHaptic('light');
+    setDatePickerField(field);
+    setIsDatePickerOpen(true);
+  };
+
   const handleDateSelect = (date: string) => {
     if (datePickerField) {
       setValue(datePickerField, date);
       trigger(datePickerField);
-      setHasChanges(true);
     }
     setIsDatePickerOpen(false);
     setDatePickerField(null);
   };
 
-  const openDatePicker = (field: 'issue_date' | 'expiration_date') => {
-    // Prevent rapid clicking
-    if (isDatePickerOpen) return;
-    setDatePickerField(field);
-    setIsDatePickerOpen(true);
-  };
-
-  // Format date for display
   const formatDateDisplay = (dateString?: string) => {
     if (!dateString) return '';
     try {
@@ -137,20 +137,16 @@ export default function AddDocument() {
     }
   };
 
-  // Get urgency color for expiration date
   const getExpirationDateColor = () => {
-    if (!watchedExpirationDate) return '';
-    const expirationDate = new Date(watchedExpirationDate);
-    const today = new Date();
-    const daysUntil = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysUntil <= 7) return 'text-red-600 border-red-500';
-    if (daysUntil <= 14) return 'text-orange-600 border-orange-500';
-    if (daysUntil <= 30) return 'text-yellow-600 border-yellow-500';
-    return '';
+    if (!watchedExpirationDate) return 'border-black';
+    const daysLeft = getDaysUntil(watchedExpirationDate);
+    if (daysLeft < 0) return 'border-red-500';
+    if (daysLeft <= 7) return 'border-red-500';
+    if (daysLeft <= 14) return 'border-orange-500';
+    if (daysLeft <= 30) return 'border-yellow-500';
+    return 'border-green-500';
   };
 
-  // Handle form submission
   const onSubmit = async (data: DocumentFormData) => {
     if (!user?.id) {
       showToast('Please log in to add documents', 'error');
@@ -164,40 +160,17 @@ export default function AddDocument() {
 
     setIsSaving(true);
     try {
-      console.log('Starting document creation...', { userId: user.id, hasImage: !!selectedImage });
-      
-      // Validate image first
-      const { validateImage } = await import('../../utils/imageHandler');
-      const validation = await validateImage(selectedImage);
-      if (!validation.valid) {
-        showToast(validation.error || 'Invalid image file', 'error');
-        setIsSaving(false);
-        return;
-      }
-
-      // Compression will happen automatically in uploadDocumentImage
       const formData: DocumentFormData = {
         ...data,
         image: selectedImage,
         category: data.category || data.document_type,
       };
 
-      showToast('Uploading image...', 'info');
-      const createdDocument = await documentService.createDocument(formData, user.id);
-      
-      console.log('Document created:', createdDocument);
-      
-      if (createdDocument && createdDocument.image_url) {
-        showToast('Document added successfully!', 'success');
-        
-        // Navigate back after a short delay to show toast
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-        }, 1000);
-      } else {
-        console.error('Document created but missing image_url:', createdDocument);
-        throw new Error('Document created but image URL is missing');
-      }
+      await documentService.createDocument(formData, user.id);
+      showToast('Document added successfully!', 'success');
+      setTimeout(() => {
+        navigate('/documents');
+      }, 1500);
     } catch (error: any) {
       console.error('Failed to create document:', error);
       const errorMessage = error.message || 'Failed to add document. Please try again.';
@@ -218,225 +191,325 @@ export default function AddDocument() {
   const handleFormSubmit = handleSubmit(onSubmit, scrollToFirstError);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-[140px]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center gap-4 px-4 py-3 h-16">
-          <button
-            onClick={handleBack}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
-          >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
-          <h1 className="text-xl font-bold text-gray-900 flex-1">Add Document</h1>
-        </div>
-      </header>
-
-      {/* Form */}
-      <form onSubmit={handleFormSubmit} className="px-4 py-6 space-y-6">
-        {/* Image Preview */}
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
-            Document Image <span className="text-red-500">*</span>
-          </label>
-          {imagePreview ? (
-            <div className="relative">
-              <img
-                src={imagePreview}
-                alt="Document preview"
-                className="w-20 h-20 object-cover rounded-lg border-2 border-gray-300"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="mt-2 text-sm text-blue-600 font-medium"
-              >
-                Change Image
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8">
-              <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-sm text-blue-600 font-medium"
-              >
-                Select Image
-              </button>
-            </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/jpg,application/pdf"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-          {!selectedImage && (
-            <p className="text-sm text-red-600">Image is required</p>
-          )}
-        </div>
-
-        {/* Document Type */}
-        <Select
-          label={
-            <>
-              Document Type <span className="text-red-500">*</span>
-            </>
-          }
-          options={DOCUMENT_TYPES}
-          {...register('document_type', { required: 'Document type is required' })}
-          error={errors.document_type?.message}
-          className="h-[52px]"
+    <div className="min-h-screen pb-[140px] relative overflow-hidden">
+      {/* Background Gradient Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            transform: 'translate(-50%, -50%)',
+          }}
         />
-
-        {/* Document Name */}
-        <Input
-          label={
-            <>
-              Document Name <span className="text-red-500">*</span>
-            </>
-          }
-          placeholder="e.g., US Passport"
-          maxLength={100}
-          {...register('document_name', {
-            required: 'Document name is required',
-            maxLength: { value: 100, message: 'Document name must be less than 100 characters' },
-          })}
-          error={errors.document_name?.message}
-          className="h-[52px]"
+        <div
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            transform: 'translate(50%, 50%)',
+          }}
         />
+      </div>
 
-        {/* Document Number */}
-        <Input
-          label="Document Number"
-          placeholder="e.g., 123456789"
-          maxLength={50}
-          {...register('document_number', {
-            maxLength: { value: 50, message: 'Document number must be less than 50 characters' },
-          })}
-          error={errors.document_number?.message}
-          className="h-[52px]"
-        />
-
-        {/* Issue Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Issue Date
-          </label>
-          <button
-            type="button"
-            onClick={() => openDatePicker('issue_date')}
-            className={`
-              w-full h-[52px] px-4 rounded-lg border-2
-              flex items-center gap-3
-              text-left
-              ${errors.issue_date ? 'border-red-500' : 'border-black'}
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-            `}
-          >
-            <Calendar className="w-5 h-5 text-gray-400" />
-            <span className={watchedIssueDate ? 'text-gray-900' : 'text-gray-400'}>
-              {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : 'Select issue date'}
-            </span>
-          </button>
-          <input
-            type="hidden"
-            {...register('issue_date')}
-          />
-          {errors.issue_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.issue_date.message}</p>
-          )}
-        </div>
-
-        {/* Expiration Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Expiration Date <span className="text-red-500">*</span>
-          </label>
-          <button
-            type="button"
-            onClick={() => openDatePicker('expiration_date')}
-            className={`
-              w-full h-[52px] px-4 rounded-lg border-2
-              flex items-center gap-3
-              text-left
-              ${errors.expiration_date ? 'border-red-500' : watchedExpirationDate ? getExpirationDateColor() : 'border-black'}
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-            `}
-          >
-            <AlertCircle className={`w-5 h-5 ${watchedExpirationDate ? getExpirationDateColor().split(' ')[0] : 'text-gray-400'}`} />
-            <span className={watchedExpirationDate ? 'text-gray-900' : 'text-gray-400'}>
-              {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
-            </span>
-          </button>
-          <input
-            type="hidden"
-            {...register('expiration_date', {
-              required: 'Expiration date is required',
-              validate: (value) => {
-                if (!value) return true;
-                const expirationDate = new Date(value);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                if (expirationDate <= today) {
-                  return 'Expiration date must be in the future';
-                }
-                return true;
-              },
-            })}
-          />
-          {errors.expiration_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.expiration_date.message}</p>
-          )}
-        </div>
-
-        {/* Category (Auto-filled, disabled) */}
-        <Input
-          label="Category"
-          value={watchedDocumentType || ''}
-          disabled
-          className="h-[52px] bg-gray-50"
-        />
-
-        {/* Notes */}
-        <div>
-          <Textarea
-            label="Notes"
-            placeholder="Add any additional notes..."
-            maxLength={500}
-            {...register('notes', {
-              maxLength: { value: 500, message: 'Notes must be less than 500 characters' },
-            })}
-            error={errors.notes?.message}
-            className="min-h-[80px]"
-          />
-          <p className="mt-1 text-xs text-gray-500 text-right">
-            {watch('notes')?.length || 0}/500
-          </p>
-        </div>
-      </form>
-
-      {/* Fixed Save Button */}
-      <div className="fixed bottom-[88px] left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 safe-area-bottom">
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth
-          onClick={handleFormSubmit}
-          disabled={isSaving || !selectedImage}
-          className="h-[52px] text-base font-semibold"
+      <div className="relative z-10">
+        {/* Header */}
+        <header 
+          className="sticky top-0 z-10"
+          style={{
+            background: 'rgba(35, 29, 51, 0.8)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
         >
-          {isSaving ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Document'
-          )}
-        </Button>
+          <div className="flex items-center gap-4 px-4 py-3 h-16">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                triggerHaptic('light');
+                handleBack();
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{
+                background: 'rgba(35, 29, 51, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <ArrowLeft className="w-6 h-6 text-white" />
+            </motion.button>
+            <h1 className="text-xl font-bold text-white flex-1">Add Document</h1>
+          </div>
+        </header>
+
+        {/* Form */}
+        <form onSubmit={handleFormSubmit} className="px-4 py-6 space-y-5">
+          {/* Image Preview */}
+          <div className="space-y-3">
+            {imagePreview ? (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Document preview"
+                  className="w-20 h-20 object-cover rounded-xl border-2"
+                  style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    fileInputRef.current?.click();
+                  }}
+                  className="mt-2 text-sm font-medium"
+                  style={{ color: '#A78BFA' }}
+                >
+                  Change Image
+                </button>
+              </div>
+            ) : (
+              <div 
+                className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8"
+                style={{
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(35, 29, 51, 0.3)',
+                }}
+              >
+                <ImageIcon className="w-12 h-12 mb-2" style={{ color: '#A78BFA' }} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    fileInputRef.current?.click();
+                  }}
+                  className="text-sm font-medium"
+                  style={{ color: '#A78BFA' }}
+                >
+                  Select Image
+                </button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/jpg,application/pdf"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            {!selectedImage && (
+              <p className="text-sm text-red-400">Image is required</p>
+            )}
+          </div>
+
+          {/* Document Type */}
+          <Controller
+            name="document_type"
+            control={control}
+            rules={{ required: 'Document type is required' }}
+            render={({ field }) => (
+              <Select
+                label={
+                  <>
+                    Document Type <span className="text-red-400">*</span>
+                  </>
+                }
+                options={DOCUMENT_TYPES}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                name={field.name}
+                error={errors.document_type?.message}
+                className="h-[52px]"
+              />
+            )}
+          />
+
+          {/* Document Name */}
+          <Input
+            label={
+              <>
+                Document Name <span className="text-red-400">*</span>
+              </>
+            }
+            placeholder="e.g., US Passport"
+            maxLength={100}
+            {...register('document_name', {
+              required: 'Document name is required',
+              maxLength: { value: 100, message: 'Document name must be less than 100 characters' },
+            })}
+            error={errors.document_name?.message}
+            className="h-[52px]"
+          />
+
+          {/* Document Number */}
+          <Input
+            label="Document Number"
+            placeholder="e.g., 123456789"
+            maxLength={50}
+            {...register('document_number', {
+              maxLength: { value: 50, message: 'Document number must be less than 50 characters' },
+            })}
+            error={errors.document_number?.message}
+            className="h-[52px]"
+          />
+
+          {/* Issue Date */}
+          <div className="mt-1">
+            <label className="block text-sm font-semibold text-white mb-3 mt-1">
+              Issue Date
+            </label>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => openDatePicker('issue_date')}
+              className={`
+                w-full h-[52px] px-4 rounded-xl
+                flex items-center gap-3
+                text-left transition-all
+                ${errors.issue_date ? 'border-2 border-red-500' : 'border border-white/10'}
+              `}
+              style={{
+                background: errors.issue_date
+                  ? 'rgba(239, 68, 68, 0.1)'
+                  : 'rgba(35, 29, 51, 0.6)',
+                backdropFilter: 'blur(15px)',
+                color: watchedIssueDate ? '#FFFFFF' : '#A78BFA',
+              }}
+            >
+              <Calendar className="w-5 h-5" style={{ color: '#A78BFA' }} />
+              <span>
+                {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : 'Select issue date'}
+              </span>
+            </motion.button>
+            <input
+              type="hidden"
+              {...register('issue_date')}
+            />
+            {errors.issue_date && (
+              <p className="mt-1 text-sm text-red-400">{errors.issue_date.message}</p>
+            )}
+          </div>
+
+          {/* Expiration Date */}
+          <div className="mt-1">
+            <label className="block text-sm font-semibold text-white mb-3 mt-1">
+              Expiration Date <span className="text-red-400">*</span>
+            </label>
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => openDatePicker('expiration_date')}
+              className={`
+                w-full h-[52px] px-4 rounded-xl
+                flex items-center gap-3
+                text-left transition-all
+                ${errors.expiration_date 
+                  ? 'border-2 border-red-500' 
+                  : watchedExpirationDate 
+                  ? getExpirationDateColor() 
+                  : 'border border-white/10'
+                }
+              `}
+              style={{
+                background: errors.expiration_date
+                  ? 'rgba(239, 68, 68, 0.1)'
+                  : 'rgba(35, 29, 51, 0.6)',
+                backdropFilter: 'blur(15px)',
+                color: watchedExpirationDate ? '#FFFFFF' : '#A78BFA',
+              }}
+            >
+              <AlertCircle className="w-5 h-5" style={{ color: '#A78BFA' }} />
+              <span>
+                {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
+              </span>
+            </motion.button>
+            <input
+              type="hidden"
+              {...register('expiration_date', {
+                required: 'Expiration date is required',
+                validate: (value) => {
+                  if (!value) return true;
+                  const expirationDate = new Date(value);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  if (expirationDate <= today) {
+                    return 'Expiration date must be in the future';
+                  }
+                  return true;
+                },
+              })}
+            />
+            {errors.expiration_date && (
+              <p className="mt-1 text-sm text-red-400">{errors.expiration_date.message}</p>
+            )}
+          </div>
+
+          {/* Category */}
+          <Controller
+            name="category"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Category"
+                options={DOCUMENT_TYPES.map(type => ({
+                  value: type.value,
+                  label: type.label,
+                }))}
+                value={field.value || watchedDocumentType || 'passport'}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                name={field.name}
+                error={errors.category?.message}
+                className="h-[52px]"
+              />
+            )}
+          />
+
+          {/* Notes */}
+          <div>
+            <Textarea
+              label="Notes"
+              placeholder="Add any additional notes..."
+              maxLength={500}
+              {...register('notes', {
+                maxLength: { value: 500, message: 'Notes must be less than 500 characters' },
+              })}
+              error={errors.notes?.message}
+              className="min-h-[80px]"
+            />
+            <p className="mt-1 text-xs text-right" style={{ color: '#A78BFA' }}>
+              {watch('notes')?.length || 0}/500
+            </p>
+          </div>
+        </form>
+
+        {/* Fixed Save Button */}
+        <div 
+          className="fixed bottom-[88px] left-0 right-0 px-4 py-4 safe-area-bottom z-20"
+          style={{
+            background: 'rgba(26, 22, 37, 0.95)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
+          }}
+        >
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            onClick={handleFormSubmit}
+            disabled={isSaving || !selectedImage}
+            className="h-[52px] text-base font-semibold"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Document'
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Date Picker Modal */}
@@ -480,4 +553,3 @@ export default function AddDocument() {
     </div>
   );
 }
-

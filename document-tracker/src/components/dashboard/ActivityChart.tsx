@@ -1,24 +1,53 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { format, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
+import type { Document } from '../../types';
 
 interface ActivityChartProps {
+  documents?: Document[];
   data?: { month: string; value: number }[];
 }
 
-export default function ActivityChart({ data }: ActivityChartProps) {
+export default function ActivityChart({ documents = [], data }: ActivityChartProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('6 months');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Sample data if none provided
-  const chartData = data || [
-    { month: 'Sep', value: 45 },
-    { month: 'Oct', value: 62 },
-    { month: 'Nov', value: 38 },
-    { month: 'Dec', value: 55 },
-    { month: 'Jan', value: 72 },
-    { month: 'Feb', value: 68 },
-  ];
+  const periods = ['3 months', '6 months', '12 months'];
 
-  const maxValue = Math.max(...chartData.map(d => d.value), 100);
+  // Calculate real activity data from documents
+  const chartData = useMemo(() => {
+    if (data) return data;
+
+    const monthsToShow = selectedPeriod === '3 months' ? 3 : selectedPeriod === '12 months' ? 12 : 6;
+    const endDate = new Date();
+    const startDate = subMonths(endDate, monthsToShow - 1);
+    
+    // Get all months in the range
+    const months = eachMonthOfInterval({ start: startDate, end: endDate });
+    
+    // Count documents created in each month
+    const activityData = months.map((month) => {
+      const monthStart = startOfMonth(month);
+      const monthEnd = endOfMonth(month);
+      
+      const count = documents.filter((doc) => {
+        const docDate = new Date(doc.created_at);
+        return docDate >= monthStart && docDate <= monthEnd;
+      }).length;
+      
+      // Normalize to 0-100 scale (assuming max 100 documents per month for scaling)
+      const normalizedValue = Math.min((count / 100) * 100, 100);
+      
+      return {
+        month: format(month, 'MMM'),
+        value: normalizedValue,
+        actualCount: count,
+      };
+    });
+
+    return activityData;
+  }, [documents, selectedPeriod, data]);
+  const maxValue = Math.max(...chartData.map(d => d.value), 100) || 100;
   const chartHeight = 200;
 
   // Generate path for area chart
@@ -45,10 +74,41 @@ export default function ActivityChart({ data }: ActivityChartProps) {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-white">Activity</h3>
         <div className="relative">
-          <button className="glass-card-subtle px-3 py-1.5 rounded-lg text-sm text-glass-primary flex items-center gap-2 hover:bg-white/10 transition-colors">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="glass-card-subtle px-3 py-1.5 rounded-lg text-sm text-white flex items-center gap-2 hover:bg-white/10 transition-colors"
+          >
             {selectedPeriod}
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
+
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsDropdownOpen(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 glass-card-primary border border-glass-border rounded-lg overflow-hidden shadow-glass z-20 min-w-[140px]">
+                {periods.map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => {
+                      setSelectedPeriod(period);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                      selectedPeriod === period
+                        ? 'bg-primary-purple/20 text-primary-purple font-medium'
+                        : 'text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {period}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

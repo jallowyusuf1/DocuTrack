@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, XCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import type { Document } from '../../types';
@@ -176,38 +177,53 @@ export default function Dates() {
         </div>
       )}
 
-      {/* Content Area */}
+      {/* Content Area with Page Flip Animation */}
       <div
         ref={scrollContainerRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="px-4"
+        className="px-4 relative"
+        style={{ perspective: '1000px', minHeight: '400px' }}
       >
-        <div className={`
-          transition-opacity duration-300
-          ${view === 'calendar' ? 'opacity-100' : 'opacity-0 absolute w-0 h-0 overflow-hidden'}
-        `}>
-          {view === 'calendar' && (
-            <CalendarView
-              documents={documents}
-              onDocumentClick={handleDocumentClick}
-              onMarkRenewed={handleMarkRenewed}
-            />
+        <AnimatePresence mode="wait">
+          {view === 'calendar' ? (
+            <motion.div
+              key="calendar"
+              initial={{ rotateY: -90, opacity: 0 }}
+              animate={{ rotateY: 0, opacity: 1 }}
+              exit={{ rotateY: 90, opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              style={{
+                transformStyle: 'preserve-3d',
+                backfaceVisibility: 'hidden',
+              }}
+            >
+              <CalendarView
+                documents={documents}
+                onDocumentClick={handleDocumentClick}
+                onMarkRenewed={handleMarkRenewed}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="list"
+              initial={{ rotateY: 90, opacity: 0 }}
+              animate={{ rotateY: 0, opacity: 1 }}
+              exit={{ rotateY: -90, opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              style={{
+                transformStyle: 'preserve-3d',
+                backfaceVisibility: 'hidden',
+              }}
+            >
+              <ListView
+                documents={documents}
+                onDocumentClick={handleDocumentClick}
+              />
+            </motion.div>
           )}
-        </div>
-
-        <div className={`
-          transition-opacity duration-300
-          ${view === 'list' ? 'opacity-100' : 'opacity-0 absolute w-0 h-0 overflow-hidden'}
-        `}>
-          {view === 'list' && (
-            <ListView
-              documents={documents}
-              onDocumentClick={handleDocumentClick}
-            />
-          )}
-        </div>
+        </AnimatePresence>
       </div>
 
       {/* Mark Renewed Modal */}

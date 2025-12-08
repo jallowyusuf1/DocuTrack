@@ -1,98 +1,120 @@
-import { useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
+import { 
+  FileText, 
+  Plane, 
+  CreditCard, 
+  Shield, 
+  Receipt, 
+  FileCheck, 
+  Scroll,
+  Folder
+} from 'lucide-react';
 import type { DocumentType } from '../../types';
-
-interface Category {
-  id: string;
-  label: string;
-  value: DocumentType | 'all';
-  icon?: string;
-}
-
-const CATEGORIES: Category[] = [
-  { id: 'all', label: 'All', value: 'all' },
-  { id: 'passport', label: 'Passports & Travel', value: 'passport' },
-  { id: 'visa', label: 'Visas & Permits', value: 'visa' },
-  { id: 'id_card', label: 'ID Cards', value: 'id_card' },
-  { id: 'insurance', label: 'Insurance', value: 'insurance' },
-  { id: 'subscription', label: 'Subscriptions', value: 'subscription' },
-  { id: 'receipt', label: 'Receipts', value: 'receipt' },
-  { id: 'bill', label: 'Bills', value: 'bill' },
-  { id: 'contract', label: 'Contracts', value: 'contract' },
-  { id: 'warranty', label: 'Warranties', value: 'warranty' },
-  { id: 'license_plate', label: 'License Plates', value: 'license_plate' },
-  { id: 'registration', label: 'Registrations', value: 'registration' },
-  { id: 'membership', label: 'Memberships', value: 'membership' },
-  { id: 'certification', label: 'Certifications', value: 'certification' },
-  { id: 'food', label: 'Food Items', value: 'food' },
-  { id: 'other', label: 'Other', value: 'other' },
-];
+import { triggerHaptic } from '../../utils/animations';
 
 interface CategoryTabsProps {
   selectedCategory: DocumentType | 'all';
   onCategoryChange: (category: DocumentType | 'all') => void;
 }
 
+const CATEGORIES: Array<{
+  value: DocumentType | 'all';
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}> = [
+  { value: 'all', label: 'All', icon: Folder },
+  { value: 'passport', label: 'Passports & Travel', icon: Plane },
+  { value: 'visa', label: 'Visas & Permits', icon: FileText },
+  { value: 'id_card', label: 'ID Cards', icon: CreditCard },
+  { value: 'insurance', label: 'Insurance', icon: Shield },
+  { value: 'subscription', label: 'Subscriptions', icon: Receipt },
+  { value: 'receipt', label: 'Receipts', icon: Receipt },
+  { value: 'bill', label: 'Bills', icon: FileCheck },
+  { value: 'contract', label: 'Contracts', icon: Scroll },
+  { value: 'other', label: 'Other', icon: FileText },
+];
+
 export default function CategoryTabs({ selectedCategory, onCategoryChange }: CategoryTabsProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const selectedTabRef = useRef<HTMLButtonElement>(null);
+  const [showFadeRight, setShowFadeRight] = useState(true);
 
-  // Scroll to selected tab on mount or category change
   useEffect(() => {
-    if (selectedTabRef.current && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const tab = selectedTabRef.current;
-      const containerRect = container.getBoundingClientRect();
-      const tabRect = tab.getBoundingClientRect();
-      
-      const scrollLeft = tab.offsetLeft - (containerRect.width / 2) + (tabRect.width / 2);
-      container.scrollTo({
-        left: scrollLeft,
-        behavior: 'smooth',
-      });
-    }
-  }, [selectedCategory]);
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const checkScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      setShowFadeRight(scrollLeft < scrollWidth - clientWidth - 10);
+    };
+
+    checkScroll();
+    container.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+
+    return () => {
+      container.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, []);
 
   return (
-    <div className="relative">
-      {/* Fade effect at right edge */}
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white pointer-events-none z-10" />
-      
+    <div className="relative px-4">
       <div
         ref={scrollContainerRef}
-        className="flex gap-2 overflow-x-auto px-4 scrollbar-hide"
+        className="flex gap-2 overflow-x-auto scrollbar-hide"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch',
+          WebkitScrollbar: { display: 'none' },
         }}
       >
         {CATEGORIES.map((category) => {
-          const isSelected = selectedCategory === category.value;
+          const Icon = category.icon;
+          const isActive = selectedCategory === category.value;
+
           return (
-            <button
-              key={category.id}
-              ref={isSelected ? selectedTabRef : null}
-              onClick={() => onCategoryChange(category.value)}
-              className={`
-                h-10 px-5 rounded-full
-                flex items-center justify-center
-                whitespace-nowrap
-                text-sm font-medium
-                transition-all duration-200
-                active:scale-95
-                touch-manipulation
-                ${isSelected
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }
-              `}
+            <motion.button
+              key={category.value}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                triggerHaptic('light');
+                onCategoryChange(category.value);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 flex-shrink-0"
+              style={isActive ? {
+                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                color: '#FFFFFF',
+                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
+                transform: 'translateY(-2px)',
+              } : {
+                background: 'rgba(35, 29, 51, 0.5)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#9CA3AF',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+              }}
             >
-              {category.label}
-            </button>
+              <Icon className="w-4 h-4" />
+              <span>{category.label}</span>
+            </motion.button>
           );
         })}
       </div>
+      {/* Fade effect at right edge */}
+      {showFadeRight && (
+        <div
+          className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to left, rgba(35, 29, 51, 0.8), transparent)',
+          }}
+        />
+      )}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
-

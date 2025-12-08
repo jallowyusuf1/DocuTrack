@@ -1,6 +1,8 @@
 import { Upload, FileText } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getTransition, transitions, triggerHaptic } from '../../utils/animations';
 
 interface ImageSelectionModalProps {
   isOpen: boolean;
@@ -56,85 +58,129 @@ export default function ImageSelectionModal({
   };
 
   const handleAddWithoutImage = () => {
+    triggerHaptic('light');
     onClose();
     navigate('/add-document');
   };
 
-  if (!isOpen) return null;
+  const handleUploadImage = () => {
+    triggerHaptic('light');
+    onUploadImage();
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black bg-opacity-50"
-      onClick={onClose}
-    >
-      <div
-        ref={modalRef}
-        className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-hidden transition-transform duration-300"
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        {/* Content */}
-        <div className="px-6 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Add Document</h2>
-
-          <div className="space-y-4">
-            {/* Upload Image Button */}
-            <button
-              onClick={onUploadImage}
-              className="
-                w-full h-14 rounded-xl
-                bg-blue-50 border-2 border-blue-500
-                flex items-center gap-4 px-4
-                text-blue-700 font-medium
-                transition-all duration-200
-                active:scale-98
-                touch-manipulation
-              "
-            >
-              <Upload className="w-6 h-6" />
-              <span className="flex-1 text-left">Choose from Gallery</span>
-            </button>
-
-            {/* Add Without Image Button */}
-            <button
-              onClick={handleAddWithoutImage}
-              className="
-                w-full h-14 rounded-xl
-                bg-gray-50 border-2 border-gray-300
-                flex items-center gap-4 px-4
-                text-gray-700 font-medium
-                transition-all duration-200
-                active:scale-98
-                touch-manipulation
-              "
-            >
-              <FileText className="w-6 h-6" />
-              <span className="flex-1 text-left">Add Document Details</span>
-            </button>
-          </div>
-
-          {/* Cancel Button */}
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="
-              w-full mt-6 py-3
-              text-gray-600 font-medium
-              transition-colors duration-200
-              active:bg-gray-100 rounded-lg
-              touch-manipulation
-            "
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+          />
+          <motion.div
+            ref={modalRef}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={getTransition(transitions.spring)}
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[80vh] overflow-hidden transition-transform duration-300"
+            style={{
+              background: 'rgba(26, 22, 37, 0.95)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div 
+                className="w-10 h-1 rounded-full"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.3)',
+                }}
+              />
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-6">
+              <h2 className="text-xl font-bold text-white mb-6">Add Document</h2>
+
+              <div className="space-y-4">
+                {/* Upload Image Button */}
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleUploadImage}
+                  className="
+                    w-full h-14 rounded-xl
+                    flex items-center gap-4 px-4
+                    font-medium
+                    transition-all duration-200
+                    touch-manipulation
+                  "
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))',
+                    border: '2px solid rgba(59, 130, 246, 0.5)',
+                    color: '#93C5FD',
+                  }}
+                >
+                  <Upload className="w-6 h-6" />
+                  <span className="flex-1 text-left">Choose from Gallery</span>
+                </motion.button>
+
+                {/* Add Without Image Button */}
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleAddWithoutImage}
+                  className="
+                    w-full h-14 rounded-xl
+                    flex items-center gap-4 px-4
+                    font-medium
+                    transition-all duration-200
+                    touch-manipulation
+                  "
+                  style={{
+                    background: 'rgba(35, 29, 51, 0.6)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.1)',
+                    color: '#A78BFA',
+                  }}
+                >
+                  <FileText className="w-6 h-6" />
+                  <span className="flex-1 text-left">Add Document Details</span>
+                </motion.button>
+              </div>
+
+              {/* Cancel Button */}
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  triggerHaptic('light');
+                  onClose();
+                }}
+                className="
+                  w-full mt-6 py-3
+                  font-medium
+                  transition-colors duration-200
+                  rounded-xl
+                  touch-manipulation
+                "
+                style={{
+                  color: '#A78BFA',
+                  background: 'rgba(35, 29, 51, 0.3)',
+                }}
+              >
+                Cancel
+              </motion.button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

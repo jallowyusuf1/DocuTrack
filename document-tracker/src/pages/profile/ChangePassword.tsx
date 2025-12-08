@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../../hooks/useToast';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Toast from '../../components/ui/Toast';
+import { triggerHaptic } from '../../utils/animations';
 
 export default function ChangePassword() {
   const navigate = useNavigate();
   const { toasts, showToast, removeToast } = useToast();
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const {
@@ -48,7 +47,6 @@ export default function ChangePassword() {
 
     setIsUpdating(true);
     try {
-      // Get current user
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -57,7 +55,6 @@ export default function ChangePassword() {
         throw new Error('User not found');
       }
 
-      // Update password
       const { error } = await supabase.auth.updateUser({
         password: data.newPassword,
       });
@@ -80,85 +77,94 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="pb-[72px] min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="px-5 py-4 bg-white border-b border-gray-200 flex items-center gap-4">
-        <button
-          onClick={() => navigate('/profile')}
-          className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
-        </button>
-        <h1 className="text-2xl font-bold text-gray-900">Change Password</h1>
+    <div className="pb-[72px] min-h-screen relative overflow-hidden">
+      {/* Background Gradient Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            transform: 'translate(50%, 50%)',
+          }}
+        />
       </div>
 
-      {/* Form */}
-      <div className="px-4 pt-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Current Password */}
-          <div>
+      <div className="relative z-10">
+        {/* Header */}
+        <header 
+          className="px-5 py-4 flex items-center gap-4"
+          style={{
+            background: 'rgba(35, 29, 51, 0.8)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              triggerHaptic('light');
+              navigate('/profile');
+            }}
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: 'rgba(35, 29, 51, 0.6)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </motion.button>
+          <h1 className="text-2xl font-bold text-white">Change Password</h1>
+        </header>
+
+        {/* Form */}
+        <div className="px-4 pt-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Current Password */}
             <Input
               label="Current Password"
-              type={showCurrentPassword ? 'text' : 'password'}
+              type="password"
               placeholder="Enter current password"
               {...register('currentPassword', {
                 required: 'Current password is required',
               })}
               error={errors.currentPassword?.message}
-              className="h-[52px] pr-12"
+              className="h-[52px]"
             />
-            <button
-              type="button"
-              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute right-4 top-9 text-gray-500"
-              style={{ marginTop: '-40px' }}
-            >
-              {showCurrentPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-          </div>
 
-          {/* New Password */}
-          <div>
-            <Input
-              label="New Password"
-              type={showNewPassword ? 'text' : 'password'}
-              placeholder="Enter new password"
-              {...register('newPassword', {
-                required: 'New password is required',
-                minLength: {
-                  value: 8,
-                  message: 'Password must be at least 8 characters',
-                },
-              })}
-              error={errors.newPassword?.message}
-              className="h-[52px] pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute right-4 top-9 text-gray-500"
-              style={{ marginTop: '-40px' }}
-            >
-              {showNewPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-            <p className="mt-1 text-xs text-gray-500">
-              Must be at least 8 characters long
-            </p>
-          </div>
+            {/* New Password */}
+            <div>
+              <Input
+                label="New Password"
+                type="password"
+                placeholder="Enter new password"
+                {...register('newPassword', {
+                  required: 'New password is required',
+                  minLength: {
+                    value: 8,
+                    message: 'Password must be at least 8 characters',
+                  },
+                })}
+                error={errors.newPassword?.message}
+                className="h-[52px]"
+              />
+              <p className="mt-1 text-xs" style={{ color: '#A78BFA' }}>
+                Must be at least 8 characters long
+              </p>
+            </div>
 
-          {/* Confirm Password */}
-          <div>
+            {/* Confirm Password */}
             <Input
               label="Confirm New Password"
-              type={showConfirmPassword ? 'text' : 'password'}
+              type="password"
               placeholder="Confirm new password"
               {...register('confirmPassword', {
                 required: 'Please confirm your new password',
@@ -166,54 +172,48 @@ export default function ChangePassword() {
                   value === newPassword || 'Passwords do not match',
               })}
               error={errors.confirmPassword?.message}
-              className="h-[52px] pr-12"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-9 text-gray-500"
-              style={{ marginTop: '-40px' }}
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-
-          {/* Password Requirements */}
-          <div className="bg-blue-50 rounded-lg p-4 mt-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">
-              Password Requirements:
-            </h3>
-            <ul className="text-xs text-gray-600 space-y-1">
-              <li>• At least 8 characters long</li>
-              <li>• Mix of letters and numbers recommended</li>
-              <li>• Avoid common words or personal information</li>
-            </ul>
-          </div>
-
-          {/* Submit Button */}
-          <div className="pt-6">
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              disabled={isUpdating}
               className="h-[52px]"
+            />
+
+            {/* Password Requirements */}
+            <div 
+              className="rounded-xl p-4 mt-6"
+              style={{
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+              }}
             >
-              {isUpdating ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                'Update Password'
-              )}
-            </Button>
-          </div>
-        </form>
+              <h3 className="text-sm font-semibold text-white mb-2">
+                Password Requirements:
+              </h3>
+              <ul className="text-xs space-y-1" style={{ color: '#A78BFA' }}>
+                <li>• At least 8 characters long</li>
+                <li>• Mix of letters and numbers recommended</li>
+                <li>• Avoid common words or personal information</li>
+              </ul>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6 pb-24">
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                disabled={isUpdating}
+                className="h-[52px]"
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 inline animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  'Update Password'
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Toast Notifications */}
@@ -228,4 +228,3 @@ export default function ChangePassword() {
     </div>
   );
 }
-

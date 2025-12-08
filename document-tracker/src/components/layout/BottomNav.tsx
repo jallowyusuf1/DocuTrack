@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Clock, FolderOpen, Calendar, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, FolderOpen, FolderClosed, Calendar, User, DoorOpen } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useState, useEffect } from 'react';
 import { triggerHaptic, pulse } from '../../utils/animations';
+import AnimatedClock from '../ui/AnimatedClock';
 
 interface NavItem {
   path: string;
@@ -17,6 +18,7 @@ export default function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const [expiringCount, setExpiringCount] = useState(0);
+  const [clockClicked, setClockClicked] = useState(false);
 
   // Check if we're on an auth page
   const isAuthPage = location.pathname.startsWith('/login') || 
@@ -37,6 +39,14 @@ export default function BottomNav() {
     return null;
   }
 
+  // Track if documents page is active to animate folder icon
+  const isDocumentsActive = location.pathname.startsWith('/documents') && 
+                            location.pathname !== '/documents/:id/edit' &&
+                            location.pathname !== '/add-document';
+  
+  // Track if dates page is active for continuous flip animation
+  const isDatesActive = location.pathname === '/dates';
+
   const navItems: NavItem[] = [
     {
       path: '/dashboard',
@@ -46,7 +56,7 @@ export default function BottomNav() {
     },
     {
       path: '/documents',
-      icon: FolderOpen,
+      icon: FolderClosed, // Will be animated separately
       label: 'Documents',
     },
     {
@@ -99,11 +109,117 @@ export default function BottomNav() {
                 `}
               >
                 <div className="relative flex items-center justify-center">
-                  <Icon
-                    className={`w-6 h-6 transition-colors duration-200 ${
-                      active ? 'text-purple-400' : 'text-glass-disabled'
-                    }`}
-                  />
+                  {item.path === '/dashboard' ? (
+                    <motion.div
+                      onAnimationComplete={() => setClockClicked(false)}
+                    >
+                      <AnimatedClock
+                        isActive={clockClicked || active}
+                        onClick={() => {
+                          if (!active) {
+                            setClockClicked(true);
+                            triggerHaptic('medium');
+                          }
+                        }}
+                        className={`w-6 h-6 transition-colors duration-200 ${
+                          active ? 'text-purple-400' : 'text-glass-disabled'
+                        }`}
+                      />
+                    </motion.div>
+                  ) : item.path === '/documents' ? (
+                    <motion.div
+                      key={isDocumentsActive ? 'open' : 'closed'}
+                      initial={{ scale: 0.8, rotate: -10 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    >
+                      {isDocumentsActive ? (
+                        <FolderOpen
+                          className={`w-6 h-6 transition-colors duration-200 ${
+                            active ? 'text-purple-400' : 'text-glass-disabled'
+                          }`}
+                        />
+                      ) : (
+                        <FolderClosed
+                          className={`w-6 h-6 transition-colors duration-200 ${
+                            active ? 'text-purple-400' : 'text-glass-disabled'
+                          }`}
+                        />
+                      )}
+                    </motion.div>
+                  ) : item.path === '/dates' ? (
+                    <motion.div
+                      animate={isDatesActive ? {
+                        rotateY: [0, 360],
+                      } : {}}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
+                    >
+                      <Icon
+                        className={`w-6 h-6 transition-colors duration-200 ${
+                          active ? 'text-purple-400' : 'text-glass-disabled'
+                        }`}
+                      />
+                    </motion.div>
+                  ) : item.path === '/profile' ? (
+                    <div className="relative w-6 h-6 flex items-center justify-center">
+                      <AnimatePresence>
+                        {active ? (
+                          // Door opens first
+                          <motion.div
+                            key="door"
+                            initial={{ rotateY: 0 }}
+                            animate={{ rotateY: 90 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4, ease: 'easeInOut' }}
+                            style={{ transformStyle: 'preserve-3d' }}
+                          >
+                            <DoorOpen
+                              className={`w-6 h-6 transition-colors duration-200 ${
+                                active ? 'text-purple-400' : 'text-glass-disabled'
+                              }`}
+                            />
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                      {/* Profile icon pops up after door */}
+                      <AnimatePresence>
+                        {active && (
+                          <motion.div
+                            key="profile"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{
+                              duration: 0.3,
+                              ease: 'easeOut',
+                              delay: 0.4, // After door opens
+                            }}
+                            className="absolute"
+                          >
+                            <Icon
+                              className={`w-6 h-6 transition-colors duration-200 text-purple-400`}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      {/* Default icon when not active */}
+                      {!active && (
+                        <Icon
+                          className={`w-6 h-6 transition-colors duration-200 text-glass-disabled`}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <Icon
+                      className={`w-6 h-6 transition-colors duration-200 ${
+                        active ? 'text-purple-400' : 'text-glass-disabled'
+                      }`}
+                    />
+                  )}
                   {showBadge && (
                     <motion.span
                       animate="animate"

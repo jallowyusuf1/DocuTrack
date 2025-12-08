@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MoreVertical, Edit, Share2, FileText, AlertCircle, Loader2, XCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, MoreVertical, Edit, Share2, FileText, AlertCircle, Loader2, XCircle, Calendar, Clock, Download, RefreshCw, Trash2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useToast } from '../../hooks/useToast';
@@ -8,13 +9,13 @@ import { formatDate, getDaysUntil, getUrgencyLevel } from '../../utils/dateUtils
 import { useImageUrl } from '../../hooks/useImageUrl';
 import type { Document } from '../../types';
 import Button from '../../components/ui/Button';
-import MenuDropdown from '../../components/documents/MenuDropdown';
 import RenewalModal from '../../components/documents/RenewalModal';
 import DeleteConfirmationModal from '../../components/documents/DeleteConfirmationModal';
-import NotesModal from '../../components/documents/NotesModal';
 import ImageFullscreenModal from '../../components/documents/ImageFullscreenModal';
+import NotesModal from '../../components/documents/NotesModal';
 import Skeleton from '../../components/ui/Skeleton';
 import Toast from '../../components/ui/Toast';
+import { triggerHaptic } from '../../utils/animations';
 
 const formatDocumentType = (type: string): string => {
   return type
@@ -35,8 +36,8 @@ export default function DocumentDetail() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [isImageFullscreenOpen, setIsImageFullscreenOpen] = useState(false);
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageError, setImageError] = useState(false);
   
@@ -76,18 +77,22 @@ export default function DocumentDetail() {
   const isExpired = daysLeft < 0;
   const showUrgencyBanner = document && daysLeft <= 30;
 
-  const getUrgencyBannerColor = () => {
-    if (isExpired || urgency === 'urgent') return 'bg-red-500';
-    if (urgency === 'soon') return 'bg-orange-500';
-    if (urgency === 'upcoming') return 'bg-yellow-500';
-    return 'bg-green-500';
+  const getUrgencyColor = () => {
+    if (isExpired || urgency === 'urgent') return '#EF4444';
+    if (urgency === 'soon') return '#F97316';
+    if (urgency === 'upcoming') return '#EAB308';
+    return '#10B981';
   };
 
-  const getUrgencyTextColor = () => {
-    if (isExpired || urgency === 'urgent') return 'text-red-600';
-    if (urgency === 'soon') return 'text-orange-600';
-    if (urgency === 'upcoming') return 'text-yellow-600';
-    return 'text-gray-600';
+  const getUrgencyBannerStyle = () => {
+    const color = getUrgencyColor();
+    return {
+      background: `${color}33`,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: `1px solid ${color}4D`,
+      color: '#FFFFFF',
+    };
   };
 
   // Handle renewal
@@ -145,6 +150,7 @@ export default function DocumentDetail() {
       window.URL.revokeObjectURL(url);
       window.document.body.removeChild(a);
       showToast('Image downloaded', 'success');
+      setIsMenuOpen(false);
     } catch (err) {
       console.error('Failed to download image:', err);
       showToast('Failed to download image. Please try again.', 'error');
@@ -156,12 +162,10 @@ export default function DocumentDetail() {
     if (!document || !imageUrl) return;
     
     try {
-      // Fetch image as blob
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const file = new File([blob], `${document.document_name}.jpg`, { type: blob.type });
       
-      // Share using Web Share API
       if (navigator.share) {
         await navigator.share({
           title: document.document_name,
@@ -169,7 +173,6 @@ export default function DocumentDetail() {
           files: [file],
         });
       } else {
-        // Fallback: copy to clipboard or download
         handleDownload();
       }
     } catch (err: any) {
@@ -185,19 +188,54 @@ export default function DocumentDetail() {
     navigate(`/documents/${id}/edit`);
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMenuOpen && !(event.target as Element).closest('.menu-dropdown-container')) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-[140px]">
-        <header className="sticky top-0 z-10 bg-white border-b border-gray-200 h-14 flex items-center px-4">
-          <Skeleton className="w-8 h-8 rounded" />
-          <Skeleton className="flex-1 h-6 mx-4 rounded" />
-          <Skeleton className="w-8 h-8 rounded" />
-        </header>
-        <Skeleton className="w-full aspect-[4/3] bg-gray-200" />
-        <div className="bg-white p-5 space-y-4">
-          <Skeleton className="h-8 w-3/4 rounded" />
-          <Skeleton className="h-12 w-full rounded" />
-          <Skeleton className="h-12 w-full rounded" />
+      <div className="min-h-screen pb-[140px] relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div
+            className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+            style={{
+              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+        </div>
+
+        <div className="relative z-10">
+          {/* Header Skeleton */}
+          <header 
+            className="sticky top-0 z-10 h-14 flex items-center px-4"
+            style={{
+              background: 'rgba(35, 29, 51, 0.8)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+          >
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <Skeleton className="flex-1 h-6 mx-4 rounded" />
+            <Skeleton className="w-10 h-10 rounded-full" />
+          </header>
+
+          {/* Image Skeleton */}
+          <Skeleton className="w-full aspect-[4/3] rounded-b-[32px]" />
+
+          {/* Details Skeleton */}
+          <div className="px-5 py-5 space-y-4">
+            <Skeleton className="h-8 w-3/4 rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-3xl" />
+          </div>
         </div>
       </div>
     );
@@ -205,217 +243,397 @@ export default function DocumentDetail() {
 
   if (error || !document) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-[140px] flex flex-col items-center justify-center px-4">
-        <XCircle className="w-16 h-16 text-red-500 mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Document Not Found</h2>
-        <p className="text-gray-600 mb-4 text-center">{error || 'The document you are looking for does not exist.'}</p>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => navigate(-1)}>
-            Go Back
-          </Button>
-          <Button variant="primary" onClick={() => navigate('/documents')}>
-            View All Documents
-          </Button>
+      <div className="min-h-screen pb-[140px] flex flex-col items-center justify-center px-4">
+        <div 
+          className="p-8 rounded-3xl text-center"
+          style={{
+            background: 'rgba(42, 38, 64, 0.7)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">Document Not Found</h2>
+          <p className="text-sm text-glass-secondary mb-4">{error || 'The document you are looking for does not exist.'}</p>
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Go Back
+            </Button>
+            <Button variant="primary" onClick={() => navigate('/documents')}>
+              View All Documents
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-[140px]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 h-14 flex items-center px-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+    <div className="min-h-screen pb-[140px] relative overflow-hidden">
+      {/* Background Gradient Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            transform: 'translate(50%, 50%)',
+          }}
+        />
+      </div>
+
+      <div className="relative z-10">
+        {/* Header */}
+        <header 
+          className="sticky top-0 z-20 h-14 flex items-center px-4"
+          style={{
+            background: 'rgba(35, 29, 51, 0.8)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
         >
-          <ArrowLeft className="w-6 h-6 text-gray-700" />
-        </button>
-        <h1 className="flex-1 text-lg font-semibold text-gray-900 text-center mx-4">
-          {formatDocumentType(document.document_type)}
-        </h1>
-        <div className="relative">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              triggerHaptic('light');
+              navigate(-1);
+            }}
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: 'rgba(35, 29, 51, 0.6)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
-            <MoreVertical className="w-6 h-6 text-gray-700" />
-          </button>
-          <MenuDropdown
-            isOpen={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-            onDownload={handleDownload}
-            onRenew={() => setIsRenewalModalOpen(true)}
-            onDelete={() => setIsDeleteModalOpen(true)}
-          />
-        </div>
-      </header>
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </motion.button>
+          
+          <h1 className="flex-1 text-lg font-semibold text-white text-center mx-4">
+            {formatDocumentType(document.document_type)}
+          </h1>
+          
+          <div className="relative menu-dropdown-container">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                triggerHaptic('light');
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{
+                background: 'rgba(35, 29, 51, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <MoreVertical className="w-5 h-5 text-white" />
+            </motion.button>
 
-      {/* Scrollable Content */}
-      <div className="overflow-y-auto">
-        {/* Document Image */}
-        <div className="relative w-full bg-gray-100 aspect-[4/3] flex items-center justify-center">
-          {imageUrlLoading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-            </div>
-          )}
-          {!imageError && imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={document.document_name}
-              className={`w-full h-full object-contain cursor-pointer ${imageUrlLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-              onLoad={() => {
-                setImageError(false);
-              }}
-              onError={(e) => {
-                console.error('Image load error:', e);
-                console.error('Failed image URL:', imageUrl);
-                console.error('Stored image_url:', document.image_url);
-                setImageError(true);
-              }}
-              onClick={() => setIsImageFullscreenOpen(true)}
-              crossOrigin="anonymous"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center text-gray-400">
-              <FileText className="w-16 h-16 mb-2" />
-              <p className="text-sm">Failed to load image</p>
-              <Button
-                variant="secondary"
-                size="small"
-                className="mt-2"
-                onClick={() => {
-                  // Retry by reloading the image
-                  setImageError(false);
-                  if (imageUrl && document) {
-                    // Force reload by adding timestamp
-                    const img = window.document.querySelector(`img[alt="${document.document_name}"]`) as HTMLImageElement;
-                    if (img) {
-                      img.src = imageUrl + '?t=' + Date.now();
+            {/* Menu Dropdown */}
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-12 right-0 w-[200px] rounded-2xl overflow-hidden"
+                  style={{
+                    background: 'rgba(26, 22, 37, 0.95)',
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+                  }}
+                >
+                  <button
+                    onClick={handleDownload}
+                    className="w-full h-12 px-4 flex items-center gap-3 hover:bg-purple-500/20 transition-colors border-b border-white/10"
+                  >
+                    <Download className="w-4 h-4 text-white" />
+                    <span className="text-sm text-white">Download Image</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsRenewalModalOpen(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full h-12 px-4 flex items-center gap-3 hover:bg-purple-500/20 transition-colors border-b border-white/10"
+                  >
+                    <RefreshCw className="w-4 h-4 text-white" />
+                    <span className="text-sm text-white">Mark as Renewed</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsDeleteModalOpen(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full h-12 px-4 flex items-center gap-3 hover:bg-red-500/20 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                    <span className="text-sm text-red-400">Delete Document</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto">
+          {/* Document Image Hero */}
+          <div className="relative w-full bg-gray-900">
+            {imageUrlLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+              </div>
+            )}
+            {!imageError && imageUrl ? (
+              <div className="relative aspect-[4/3] overflow-hidden rounded-b-[32px]">
+                <img
+                  src={imageUrl}
+                  alt={document.document_name}
+                  className={`w-full h-full object-cover cursor-pointer ${imageUrlLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+                  onLoad={() => setImageError(false)}
+                  onError={() => setImageError(true)}
+                  onClick={() => setIsImageFullscreenOpen(true)}
+                  crossOrigin="anonymous"
+                />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,22,37,0.9)] via-transparent to-transparent" />
+                
+                {/* Document Name and Type Badge Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h2 className="text-2xl font-bold text-white mb-3">{document.document_name}</h2>
+                  <div 
+                    className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
+                    style={{
+                      background: 'rgba(35, 29, 51, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                    }}
+                  >
+                    <FileText className="w-4 h-4 text-white" />
+                    <span className="text-xs font-medium text-white">
+                      {formatDocumentType(document.document_type)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-[4/3] flex flex-col items-center justify-center text-gray-400 rounded-b-[32px]">
+                <FileText className="w-16 h-16 mb-2" />
+                <p className="text-sm mb-2">Failed to load image</p>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => {
+                    setImageError(false);
+                    if (imageUrl && document) {
+                      const img = window.document.querySelector(`img[alt="${document.document_name}"]`) as HTMLImageElement;
+                      if (img) {
+                        img.src = imageUrl + '?t=' + Date.now();
+                      }
                     }
-                  }
-                }}
-              >
-                Retry
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Urgency Banner */}
-        {showUrgencyBanner && (
-          <div className={`${getUrgencyBannerColor()} text-white px-4 py-3 flex items-center gap-2`}>
-            <AlertCircle className="w-5 h-5" />
-            <span className="text-sm font-medium">
-              {isExpired
-                ? `Expired ${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} ago!`
-                : `Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}!`}
-            </span>
-          </div>
-        )}
-
-        {/* Document Details */}
-        <div className="bg-white px-5 py-5">
-          {/* Document Name */}
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{document.document_name}</h2>
-
-          {/* Document Type Badge */}
-          <div className="inline-flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1 mb-6">
-            <FileText className="w-4 h-4 text-gray-600" />
-            <span className="text-xs font-medium text-gray-700">
-              {formatDocumentType(document.document_type)}
-            </span>
-          </div>
-
-          {/* Detail Rows */}
-          <div className="space-y-0">
-            {document.document_number && (
-              <div className="flex items-center justify-between h-11 border-b border-gray-200">
-                <span className="text-sm text-gray-600">Document Number:</span>
-                <span className="text-sm font-medium text-gray-900">{document.document_number}</span>
+                  }}
+                >
+                  Retry
+                </Button>
               </div>
             )}
-            
-            {document.issue_date && (
-              <div className="flex items-center justify-between h-11 border-b border-gray-200">
-                <span className="text-sm text-gray-600">Issue Date:</span>
-                <span className="text-sm font-medium text-gray-900">{formatDate(document.issue_date)}</span>
-              </div>
-            )}
-            
-            <div className="flex items-center justify-between h-11 border-b border-gray-200">
-              <span className="text-sm text-gray-600">Expiration Date:</span>
-              <span className={`text-sm font-medium ${getUrgencyTextColor()}`}>
-                {formatDate(document.expiration_date)}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between h-11 border-b border-gray-200">
-              <span className="text-sm text-gray-600">Status:</span>
-              <span className={`text-sm font-medium ${getUrgencyTextColor()}`}>
+          </div>
+
+          {/* Urgency Banner */}
+          {showUrgencyBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-4 py-4 flex items-center justify-center gap-2"
+              style={getUrgencyBannerStyle()}
+            >
+              {isExpired || urgency === 'urgent' ? (
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <AlertCircle className="w-5 h-5" />
+                </motion.div>
+              ) : urgency === 'soon' ? (
+                <AlertCircle className="w-5 h-5" />
+              ) : (
+                <Calendar className="w-5 h-5" />
+              )}
+              <span className="text-sm font-medium">
                 {isExpired
-                  ? `Expired ${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} ago`
-                  : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`}
+                  ? `⚠️ Expired ${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} ago - Take action now!`
+                  : urgency === 'urgent'
+                  ? `⚠️ Expires in ${daysLeft} days - Take action now!`
+                  : urgency === 'soon'
+                  ? `🔔 Expires in ${daysLeft} days`
+                  : `📅 Expires in ${daysLeft} days`}
               </span>
+            </motion.div>
+          )}
+
+          {/* Document Details Card */}
+          <div 
+            className="mx-5 mt-5 rounded-3xl p-6"
+            style={{
+              background: 'rgba(42, 38, 64, 0.6)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            {/* Days Remaining Special Card */}
+            <div 
+              className="mb-6 p-4 rounded-2xl"
+              style={{
+                background: 'rgba(139, 92, 246, 0.1)',
+                border: '1px solid rgba(139, 92, 246, 0.2)',
+              }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Clock className="w-5 h-5" style={{ color: getUrgencyColor() }} />
+                <span className="text-sm" style={{ color: '#A78BFA' }}>Days Remaining</span>
+              </div>
+              <div className="text-3xl font-bold" style={{ color: getUrgencyColor() }}>
+                {isExpired ? Math.abs(daysLeft) : daysLeft}
+              </div>
+              <div className="text-xs mt-1" style={{ color: '#A78BFA' }}>
+                {isExpired ? 'days expired' : 'days remaining'}
+              </div>
             </div>
-            
-            <div className="flex items-center justify-between h-11 border-b border-gray-200">
-              <span className="text-sm text-gray-600">Category:</span>
-              <span className="text-sm font-medium text-gray-900">
-                {formatDocumentType(document.category)}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between h-11">
-              <span className="text-sm text-gray-600">Added On:</span>
-              <span className="text-sm font-medium text-gray-900">
-                {formatDate(document.created_at)}
-              </span>
+
+            {/* Detail Rows */}
+            <div className="space-y-0">
+              {document.document_number && (
+                <div className="flex items-center justify-between h-12 border-b border-white/5">
+                  <span className="text-sm" style={{ color: '#A78BFA' }}>Document Number:</span>
+                  <span className="text-sm font-semibold text-white">{document.document_number}</span>
+                </div>
+              )}
+              
+              {document.issue_date && (
+                <div className="flex items-center justify-between h-12 border-b border-white/5">
+                  <span className="text-sm" style={{ color: '#A78BFA' }}>Issue Date:</span>
+                  <span className="text-sm font-semibold text-white">{formatDate(document.issue_date)}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between h-12 border-b border-white/5">
+                <span className="text-sm" style={{ color: '#A78BFA' }}>Expiration Date:</span>
+                <span className="text-sm font-semibold" style={{ color: getUrgencyColor() }}>
+                  {formatDate(document.expiration_date)}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between h-12 border-b border-white/5">
+                <span className="text-sm" style={{ color: '#A78BFA' }}>Category:</span>
+                <span className="text-sm font-semibold text-white">
+                  {formatDocumentType(document.category)}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between h-12">
+                <span className="text-sm" style={{ color: '#A78BFA' }}>Added On:</span>
+                <span className="text-sm font-semibold text-white">
+                  {formatDate(document.created_at)}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Notes Section */}
           {document.notes && (
-            <div className="mt-6">
-              <h3 className="text-base font-bold text-gray-900 mb-2">Notes</h3>
-              <button
-                onClick={() => setIsNotesModalOpen(true)}
-                className="w-full bg-gray-50 rounded-xl p-4 max-h-[200px] overflow-y-auto text-left hover:bg-gray-100 active:bg-gray-200 transition-colors"
+            <motion.div 
+              className="mx-5 mt-5 rounded-3xl p-6 cursor-pointer"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                triggerHaptic('light');
+                setIsNotesModalOpen(true);
+              }}
+              style={{
+                background: 'rgba(42, 38, 64, 0.6)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <h3 className="text-base font-bold mb-3" style={{ color: '#000000', background: '#FFFFFF', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>Notes</h3>
+              <div 
+                className="rounded-xl p-4 max-h-[200px] overflow-y-auto"
+                style={{
+                  background: 'rgba(35, 29, 51, 0.5)',
+                }}
               >
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap line-clamp-6">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap line-clamp-3" style={{ color: '#A78BFA' }}>
                   {document.notes}
                 </p>
-                {document.notes.length > 200 && (
-                  <p className="text-xs text-blue-600 mt-2 font-medium">Tap to view full notes</p>
-                )}
-              </button>
-            </div>
+              </div>
+            </motion.div>
           )}
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="fixed bottom-[88px] left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 safe-area-bottom">
-        <div className="flex gap-3">
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={handleEdit}
-            className="h-[52px] flex items-center justify-center gap-2"
-          >
-            <Edit className="w-5 h-5" />
-            Edit
-          </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={handleShare}
-            className="h-[52px] flex items-center justify-center gap-2"
-          >
-            <Share2 className="w-5 h-5" />
-            Share
-          </Button>
+        {/* Action Buttons Fixed at Bottom */}
+        <div 
+          className="fixed bottom-[88px] left-0 right-0 px-4 py-4 safe-area-bottom z-20"
+          style={{
+            background: 'rgba(26, 22, 37, 0.95)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
+          }}
+        >
+          <div className="flex gap-3">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                triggerHaptic('light');
+                handleEdit();
+              }}
+              className="flex-1 h-[52px] rounded-xl flex items-center justify-center gap-2 font-medium"
+              style={{
+                background: 'rgba(35, 29, 51, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#FFFFFF',
+              }}
+            >
+              <Edit className="w-5 h-5" style={{ color: '#A78BFA' }} />
+              <span>Edit</span>
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                triggerHaptic('light');
+                handleShare();
+              }}
+              className="flex-1 h-[52px] rounded-xl flex items-center justify-center gap-2 font-medium text-white"
+              style={{
+                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
+              }}
+            >
+              <Share2 className="w-5 h-5" />
+              <span>Share</span>
+            </motion.button>
+          </div>
         </div>
       </div>
 
@@ -436,16 +654,6 @@ export default function DocumentDetail() {
         isLoading={isDeleting}
       />
 
-      {/* Notes Modal */}
-      {document.notes && (
-        <NotesModal
-          isOpen={isNotesModalOpen}
-          onClose={() => setIsNotesModalOpen(false)}
-          notes={document.notes}
-          documentName={document.document_name}
-        />
-      )}
-
       {/* Fullscreen Image Modal */}
       {imageUrl && (
         <ImageFullscreenModal
@@ -453,6 +661,17 @@ export default function DocumentDetail() {
           onClose={() => setIsImageFullscreenOpen(false)}
           imageUrl={imageUrl}
           alt={document.document_name}
+        />
+      )}
+
+      {/* Notes Modal */}
+      {document && (
+        <NotesModal
+          isOpen={isNotesModalOpen}
+          onClose={() => setIsNotesModalOpen(false)}
+          notes={document.notes || ''}
+          documentName={document.document_name}
+          createdAt={document.created_at}
         />
       )}
 
@@ -468,4 +687,3 @@ export default function DocumentDetail() {
     </div>
   );
 }
-

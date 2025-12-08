@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, FileText } from 'lucide-react';
+import { Eye, EyeOff, FileText, Camera } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import Avatar from '../../components/ui/Avatar';
 import { validateEmail, validatePassword } from '../../utils/validation';
+import { selectImageFromGallery, openCamera, compressImage, validateImage } from '../../utils/imageHandler';
+import { supabase } from '../../config/supabase';
 
 interface SignupFormData {
   fullName: string;
@@ -20,6 +23,9 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -52,6 +58,56 @@ export default function Signup() {
     return null;
   }
 
+  const uploadAvatar = async (file: File, userId: string): Promise<string> => {
+    // Validate and compress
+    const validation = await validateImage(file);
+    if (!validation.valid) {
+      throw new Error(validation.error || 'Invalid image');
+    }
+    
+    const compressed = await compressImage(file, 400, 400, 0.9);
+    const finalFile = compressed instanceof File 
+      ? compressed 
+      : new File([compressed], file.name, { type: 'image/jpeg' });
+    
+    // Upload to avatars bucket
+    const fileName = `${userId}/${Date.now()}_${finalFile.name}`;
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, finalFile, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+    
+    if (error) throw error;
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(data.path);
+    
+    return urlData.publicUrl;
+  };
+
+  const handleAvatarSelect = async (source: 'camera' | 'gallery') => {
+    try {
+      setIsUploadingAvatar(true);
+      const file = source === 'camera' 
+        ? await openCamera()
+        : await selectImageFromGallery();
+      
+      if (!file) return;
+      
+      setAvatarFile(file);
+      const preview = URL.createObjectURL(file);
+      setAvatarPreview(preview);
+    } catch (error: any) {
+      setSubmitError(error.message || 'Failed to select image');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const onSubmit = async (data: SignupFormData) => {
     setSubmitError(null);
     
@@ -62,8 +118,27 @@ export default function Signup() {
         fullName: data.fullName,
       });
       
-      // If we have a session, user is immediately authenticated - go to dashboard
-      if (result?.session) {
+      // If we have a session, user is immediately authenticated
+      if (result?.session && result.user?.id) {
+        // Upload avatar if selected
+        if (avatarFile) {
+          try {
+            const avatarUrl = await uploadAvatar(avatarFile, result.user.id);
+            // Update user metadata with avatar
+            await supabase.auth.updateUser({
+              data: { avatar_url: avatarUrl },
+            });
+            // Also update user_profiles if it exists
+            await supabase
+              .from('user_profiles')
+              .update({ avatar_url: avatarUrl })
+              .eq('user_id', result.user.id);
+          } catch (avatarError) {
+            console.error('Failed to upload avatar:', avatarError);
+            // Don't fail signup if avatar upload fails
+          }
+        }
+        
         // Refresh auth state to ensure everything is up to date
         await checkAuth();
         // Small delay to ensure state propagation
@@ -87,10 +162,30 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-white py-8">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Avatar Upload */}
         <div className="flex justify-center mb-8">
-          <div className="w-20 h-20 bg-primary-600 rounded-2xl flex items-center justify-center">
-            <FileText className="w-10 h-10 text-white" />
+          <div className="relative">
+            <Avatar
+              src={avatarPreview || undefined}
+              fallback={watch('fullName')?.[0]?.toUpperCase() || 'U'}
+              size="large"
+              className="w-20 h-20"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const useCamera = window.confirm('Take photo? (Cancel to choose from gallery)');
+                handleAvatarSelect(useCamera ? 'camera' : 'gallery');
+              }}
+              disabled={isUploadingAvatar}
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center bg-primary-600 border-2 border-white"
+            >
+              {isUploadingAvatar ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4 text-white" />
+              )}
+            </button>
           </div>
         </div>
 

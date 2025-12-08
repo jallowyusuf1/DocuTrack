@@ -61,41 +61,58 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
       setIsOpen(false);
       setSearchQuery('');
 
-      if (onChange) {
-        // Create a proper event-like object for react-hook-form
-        // React-hook-form's register() returns onChange that expects { target: { value, name } }
-        const syntheticEvent = {
-          target: {
-            value: optionValue,
-            name: name || '',
-            type: 'select-one',
-          } as HTMLSelectElement,
-          currentTarget: {
-            value: optionValue,
-            name: name || '',
-            type: 'select-one',
-          } as HTMLSelectElement,
-          type: 'change',
-          preventDefault: () => {},
-          stopPropagation: () => {},
-          nativeEvent: new Event('change'),
-          bubbles: true,
-          cancelable: true,
-          defaultPrevented: false,
-          eventPhase: 0,
-          isTrusted: true,
-          timeStamp: Date.now(),
-        };
-
-        // Call onChange synchronously - react-hook-form handles it properly
+      // Handle onChange - support both Controller (value) and register() (event object)
+      if (onChange && typeof onChange === 'function') {
         try {
-          (onChange as any)(syntheticEvent);
+          // Try calling with just the value first (for Controller)
+          // This is the most common case and should work
+          onChange(optionValue as any);
         } catch (err) {
-          console.error('Error calling onChange:', err);
+          // If that fails, try with event object (for register)
+          try {
+            const syntheticEvent = {
+              target: {
+                value: optionValue,
+                name: name || '',
+                type: 'select-one',
+              },
+              currentTarget: {
+                value: optionValue,
+                name: name || '',
+                type: 'select-one',
+              },
+            };
+            onChange(syntheticEvent as any);
+          } catch (eventErr) {
+            console.error('Error in Select onChange:', eventErr);
+          }
         }
       }
 
-      onBlur?.();
+      // Call onBlur if provided
+      if (onBlur && typeof onBlur === 'function') {
+        try {
+          // Try calling without arguments first (for Controller)
+          onBlur();
+        } catch {
+          // If that fails, try with event object (for register)
+          try {
+            const blurEvent = {
+              target: {
+                name: name || '',
+                value: optionValue,
+              },
+              currentTarget: {
+                name: name || '',
+                value: optionValue,
+              },
+            };
+            onBlur(blurEvent as any);
+          } catch (blurErr) {
+            console.error('Error in Select onBlur:', blurErr);
+          }
+        }
+      }
     };
 
     if (disabled) {
@@ -118,9 +135,9 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
       <>
         <div className={`w-full ${className}`}>
           {label && (
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-white mb-3 mt-1">
               {label}
-              {required && <span className="text-red-500 ml-1">*</span>}
+              {required && <span className="text-red-400 ml-1">*</span>}
             </label>
           )}
           <button
@@ -134,30 +151,39 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               }
             }}
             className={`
-              w-full h-[52px] px-4 bg-white border rounded-xl
+              w-full h-[52px] px-4 rounded-xl
               flex items-center justify-between
               text-[15px] text-left
               transition-all duration-200
               cursor-pointer
               ${error 
-                ? 'border-red-500 focus:border-red-500' 
-                : 'border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20'
+                ? 'border-2 border-red-500' 
+                : 'border border-white/10'
               }
-              ${selectedOption ? 'text-gray-900' : 'text-gray-400'}
-              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-300 active:border-blue-600'}
+              ${selectedOption ? 'text-white' : 'text-glass-secondary'}
+              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-white/20'}
             `}
+            style={error ? {
+              background: 'rgba(239, 68, 68, 0.1)',
+              backdropFilter: 'blur(15px)',
+            } : {
+              background: 'rgba(35, 29, 51, 0.6)',
+              backdropFilter: 'blur(15px)',
+            }}
             aria-haspopup="listbox"
             aria-expanded={isOpen}
             disabled={disabled}
           >
             <span className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
               {selectedOption?.icon && <span className="flex-shrink-0">{selectedOption.icon}</span>}
-              <span className="truncate">{selectedOption?.label || placeholder}</span>
+              <span className={`truncate ${selectedOption ? 'text-white' : 'text-glass-secondary'}`}>
+                {selectedOption?.label || placeholder}
+              </span>
             </span>
-            <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform pointer-events-none ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform pointer-events-none ${isOpen ? 'rotate-180' : ''}`} style={{ color: selectedOption ? '#A78BFA' : '#A78BFA' }} />
           </button>
           {error && (
-            <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-600 animate-slide-down-fade-in">
+            <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-400 animate-slide-down-fade-in">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -166,38 +192,55 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
 
         {/* Options Modal */}
         {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-end bg-black bg-opacity-50" onClick={() => setIsOpen(false)}>
+          <div className="fixed inset-0 z-[100] flex items-end bg-black/60 backdrop-blur-md" onClick={() => setIsOpen(false)}>
             <div
               ref={modalRef}
-              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-hidden flex flex-col animate-slide-up relative z-[101]"
+              className="rounded-t-[32px] w-full max-h-[80vh] overflow-hidden flex flex-col relative z-[101]"
+              style={{
+                background: 'rgba(26, 22, 37, 0.95)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Handle bar */}
               <div className="flex justify-center pt-3 pb-2">
-                <div className="w-10 h-1 bg-gray-300 rounded-full" />
+                <div 
+                  className="w-10 h-1 rounded-full"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.3)',
+                  }}
+                />
               </div>
 
               {/* Header */}
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">{label || 'Select an option'}</h3>
+              <div className="px-6 py-4 border-b border-white/10">
+                <h3 className="text-lg font-bold text-white">{label || 'Select an option'}</h3>
               </div>
 
               {/* Search bar */}
               {searchable && (
-                <div className="px-6 py-4 border-b border-gray-200">
+                <div className="px-6 py-4 border-b border-white/10">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search..."
-                      className="w-full h-10 pl-10 pr-10 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+                      className="w-full h-10 pl-10 pr-10 rounded-lg text-sm text-white placeholder:text-glass-secondary focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                      style={{
+                        background: 'rgba(35, 29, 51, 0.6)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                      }}
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity"
+                        style={{ color: '#A78BFA' }}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -209,7 +252,7 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               {/* Options list */}
               <div className="flex-1 overflow-y-auto">
                 {filteredOptions.length === 0 ? (
-                  <div className="px-6 py-8 text-center text-gray-500">
+                  <div className="px-6 py-8 text-center" style={{ color: '#A78BFA' }}>
                     No options found
                   </div>
                 ) : (
@@ -224,17 +267,22 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                       }}
                       className={`
                         w-full h-14 px-6 flex items-center justify-between
-                        hover:bg-gray-50 active:bg-gray-100
-                        transition-colors
-                        ${value === option.value ? 'bg-blue-50' : ''}
+                        transition-all duration-200
+                        ${value === option.value ? '' : 'hover:bg-white/5'}
                       `}
+                      style={value === option.value ? {
+                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+                        borderLeft: '3px solid rgba(139, 92, 246, 0.5)',
+                      } : {
+                        background: 'transparent',
+                      }}
                     >
                       <span className="flex items-center gap-3 flex-1 min-w-0">
-                        {option.icon && <span className="flex-shrink-0 text-gray-600">{option.icon}</span>}
-                        <span className="text-gray-900 truncate">{option.label}</span>
+                        {option.icon && <span className="flex-shrink-0" style={{ color: '#A78BFA' }}>{option.icon}</span>}
+                        <span className="text-white truncate">{option.label}</span>
                       </span>
                       {value === option.value && (
-                        <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#A78BFA' }} />
                       )}
                     </button>
                   ))

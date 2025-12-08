@@ -35,12 +35,21 @@ export async function requestNotificationPermission(): Promise<boolean> {
     return false;
   }
 
+  const previousPermission = Notification.permission;
+
   if (Notification.permission === 'granted') {
     return true;
   }
 
   if (Notification.permission !== 'denied') {
     const permission = await Notification.requestPermission();
+    
+    // If permission changed to denied, set flag to show banner
+    if (permission === 'denied' && previousPermission !== 'denied') {
+      localStorage.setItem('notification_permission_changed', 'true');
+      localStorage.removeItem('notification_banner_shown');
+    }
+    
     return permission === 'granted';
   }
 
@@ -344,8 +353,8 @@ export async function getNotificationPreferences(
   const { data, error } = await supabase
     .from('user_profiles')
     .select('notification_preferences')
-    .eq('id', userId)
-    .single();
+    .eq('user_id', userId)
+    .maybeSingle();
 
   if (error || !data) {
     // Return defaults
@@ -381,14 +390,32 @@ export async function updateNotificationPreferences(
   const current = await getNotificationPreferences(userId);
   const updated = { ...current, ...preferences };
 
-  const { error } = await supabase
+  // Try to update existing profile
+  const { error: updateError } = await supabase
     .from('user_profiles')
     .update({ notification_preferences: updated })
-    .eq('id', userId);
+    .eq('user_id', userId);
 
-  if (error) {
-    console.error('Failed to update notification preferences:', error);
-    throw new Error(`Failed to update preferences: ${error.message}`);
+  // If update fails (profile might not exist), try to insert
+  if (updateError) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { error: insertError } = await supabase
+      .from('user_profiles')
+      .insert({
+        user_id: userId,
+        notification_preferences: updated,
+        full_name: user.user_metadata?.full_name || null,
+        email: user.email || null,
+      });
+
+    if (insertError) {
+      console.error('Failed to create/update notification preferences:', insertError);
+      throw new Error(`Failed to save preferences: ${insertError.message}`);
+    }
   }
 }
 

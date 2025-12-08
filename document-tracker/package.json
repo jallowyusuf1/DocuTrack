@@ -5,25 +5,32 @@
   "type": "module",
   "scripts": {
     "validate-imports": "node scripts/validate-imports.js",
-    "prebuild": "npm run validate-imports",
+    "check-naming": "node scripts/check-naming-conflicts.js",
+    "prebuild": "npm run validate-imports && npm run check-naming",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "type-check": "tsc --noEmit",
+    "preview": "vite preview",
+    "lighthouse": "node scripts/lighthouse-audit.js"
   },
   "dependencies": {
+    "@sentry/react": "^10.29.0",
     "@supabase/supabase-js": "^2.86.2",
     "autoprefixer": "^10.4.22",
     "date-fns": "^4.1.0",
     "dexie": "^4.2.1",
     "framer-motion": "^12.23.25",
+    "i18next": "^25.7.1",
     "lucide-react": "^0.556.0",
     "postcss": "^8.5.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.68.0",
+    "react-i18next": "^16.4.0",
     "react-router-dom": "^7.10.1",
     "tailwindcss": "^3.4.1",
+    "tailwindcss-rtl": "^0.9.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

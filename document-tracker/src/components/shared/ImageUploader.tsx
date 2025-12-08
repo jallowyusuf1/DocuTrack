@@ -252,10 +252,6 @@ export default function ImageUploader({
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-semibold text-gray-700">
-        Document Image <span className="text-red-500">*</span>
-      </label>
-
       {previewUrl && showPreview ? (
         <div className="relative">
           <div 

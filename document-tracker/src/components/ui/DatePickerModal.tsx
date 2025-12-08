@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths } from 'date-fns';
 import Button from './Button';
+import { getTransition, transitions, triggerHaptic } from '../../utils/animations';
 
 interface DatePickerModalProps {
   isOpen: boolean;
@@ -28,7 +30,6 @@ export default function DatePickerModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Reset processing flag when modal opens
       isProcessingRef.current = false;
       
       if (selectedDate) {
@@ -36,7 +37,6 @@ export default function DatePickerModal({
         setSelected(date);
         setCurrentMonth(date);
       } else {
-        // Reset to current month when opening
         setCurrentMonth(new Date());
         setSelected(null);
       }
@@ -49,15 +49,12 @@ export default function DatePickerModal({
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Get first day of week for the month
   const firstDayOfWeek = monthStart.getDay();
   const emptyDays = Array(firstDayOfWeek).fill(null);
 
   const handleDateSelect = (date: Date) => {
-    // Prevent rapid clicking
     if (isProcessingRef.current) return;
     
-    // Normalize dates to midnight for comparison
     const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
     if (minDate) {
@@ -72,15 +69,13 @@ export default function DatePickerModal({
       if (dateOnly > maxDateOnly) return;
     }
     
-    // Set processing flag
     isProcessingRef.current = true;
+    triggerHaptic('light');
     
-    // Automatically close and select the date when clicked
     const formattedDate = format(date, 'yyyy-MM-dd');
     onSelect(formattedDate);
     onClose();
     
-    // Reset processing flag after a short delay
     setTimeout(() => {
       isProcessingRef.current = false;
     }, 300);
@@ -90,6 +85,7 @@ export default function DatePickerModal({
     if (isProcessingRef.current || !selected) return;
     
     isProcessingRef.current = true;
+    triggerHaptic('light');
     onSelect(format(selected, 'yyyy-MM-dd'));
     onClose();
     
@@ -99,140 +95,180 @@ export default function DatePickerModal({
   };
 
   const handleClear = () => {
+    triggerHaptic('light');
     setSelected(null);
   };
 
   const goToPreviousMonth = () => {
+    triggerHaptic('light');
     setCurrentMonth(subMonths(currentMonth, 1));
   };
 
   const goToNextMonth = () => {
+    triggerHaptic('light');
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end bg-black bg-opacity-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+          />
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={getTransition(transitions.spring)}
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[90vh] overflow-hidden"
+            style={{
+              background: 'rgba(26, 22, 37, 0.95)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-          <h2 className="text-lg font-semibold text-gray-900">Select Date</h2>
-          <button
-            onClick={handleClear}
-            className="text-sm text-blue-600 font-medium px-3 py-1 rounded-lg hover:bg-blue-50"
-          >
-            Clear
-          </button>
-        </div>
-
-        {/* Month Navigation */}
-        <div className="flex items-center justify-between px-6 py-4">
-          <button
-            onClick={goToPreviousMonth}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <h3 className="text-lg font-semibold text-gray-900">
-            {format(currentMonth, 'MMMM yyyy')}
-          </h3>
-          <button
-            onClick={goToNextMonth}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="px-6 pb-4">
-          {/* Week day headers */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map((day) => (
-              <div
-                key={day}
-                className="text-center text-xs font-medium text-gray-500 py-2"
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  triggerHaptic('light');
+                  onClose();
+                }}
+                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
               >
-                {day}
+                <X className="w-5 h-5 text-white" />
+              </motion.button>
+              <h2 className="text-lg font-semibold text-white">Select Date</h2>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleClear}
+                className="text-sm font-medium px-3 py-1 rounded-lg hover:bg-purple-500/20 transition-colors"
+                style={{ color: '#A78BFA' }}
+              >
+                Clear
+              </motion.button>
+            </div>
+
+            {/* Month Navigation */}
+            <div className="flex items-center justify-between px-6 py-4">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={goToPreviousMonth}
+                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </motion.button>
+              <h3 className="text-lg font-semibold text-white">
+                {format(currentMonth, 'MMMM yyyy')}
+              </h3>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={goToNextMonth}
+                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+              >
+                <ChevronRight className="w-5 h-5 text-white" />
+              </motion.button>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="px-6 pb-4">
+              {/* Week day headers */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {weekDays.map((day) => (
+                  <div
+                    key={day}
+                    className="text-center text-xs font-medium py-2"
+                    style={{ color: '#A78BFA' }}
+                  >
+                    {day}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Calendar days */}
-          <div className="grid grid-cols-7 gap-1">
-            {emptyDays.map((_, index) => (
-              <div key={`empty-${index}`} className="aspect-square" />
-            ))}
-            {daysInMonth.map((day) => {
-              const isSelected = selected && isSameDay(day, selected);
-              const isTodayDate = isToday(day);
-              
-              // Normalize dates for comparison
-              const dayOnly = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-              let isDisabled = false;
-              
-              if (minDate) {
-                const minDateOnly = new Date(minDate);
-                minDateOnly.setHours(0, 0, 0, 0);
-                if (dayOnly < minDateOnly) isDisabled = true;
-              }
-              
-              if (maxDate) {
-                const maxDateOnly = new Date(maxDate);
-                maxDateOnly.setHours(23, 59, 59, 999);
-                if (dayOnly > maxDateOnly) isDisabled = true;
-              }
+              {/* Calendar days */}
+              <div className="grid grid-cols-7 gap-1">
+                {emptyDays.map((_, index) => (
+                  <div key={`empty-${index}`} className="aspect-square" />
+                ))}
+                {daysInMonth.map((day) => {
+                  const isSelected = selected && isSameDay(day, selected);
+                  const isTodayDate = isToday(day);
+                  
+                  const dayOnly = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+                  let isDisabled = false;
+                  
+                  if (minDate) {
+                    const minDateOnly = new Date(minDate);
+                    minDateOnly.setHours(0, 0, 0, 0);
+                    if (dayOnly < minDateOnly) isDisabled = true;
+                  }
+                  
+                  if (maxDate) {
+                    const maxDateOnly = new Date(maxDate);
+                    maxDateOnly.setHours(23, 59, 59, 999);
+                    if (dayOnly > maxDateOnly) isDisabled = true;
+                  }
 
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => handleDateSelect(day)}
-                  disabled={isDisabled}
-                  className={`
-                    aspect-square rounded-lg text-sm font-medium
-                    transition-all duration-200
-                    ${isSelected
-                      ? 'bg-blue-600 text-white'
-                      : isTodayDate
-                      ? 'bg-blue-50 text-blue-600 font-semibold'
-                      : 'text-gray-900 hover:bg-gray-100'
-                    }
-                    ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'active:scale-95'}
-                  `}
-                >
-                  {format(day, 'd')}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                  return (
+                    <motion.button
+                      key={day.toISOString()}
+                      whileTap={isDisabled ? {} : { scale: 0.9 }}
+                      onClick={() => handleDateSelect(day)}
+                      disabled={isDisabled}
+                      className={`
+                        aspect-square rounded-xl text-sm font-medium
+                        transition-all duration-200
+                        ${isDisabled ? 'opacity-30 cursor-not-allowed' : ''}
+                      `}
+                      style={isSelected
+                        ? {
+                            background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                            color: '#FFFFFF',
+                            boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+                          }
+                        : isTodayDate
+                        ? {
+                            background: 'rgba(59, 130, 246, 0.2)',
+                            color: '#93C5FD',
+                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                          }
+                        : {
+                            background: 'rgba(35, 29, 51, 0.3)',
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                          }}
+                    >
+                      {format(day, 'd')}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 safe-area-bottom">
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={handleConfirm}
-            disabled={!selected}
-          >
-            Done
-          </Button>
-        </div>
-      </div>
-    </div>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-white/10 safe-area-bottom">
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={handleConfirm}
+                disabled={!selected}
+              >
+                Done
+              </Button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
-
