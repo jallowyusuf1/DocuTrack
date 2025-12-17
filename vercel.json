@@ -1,5 +1,5 @@
 {
-  "buildCommand": "bash build.sh",
+  "buildCommand": "cd document-tracker && npm ci && npm run build",
   "outputDirectory": "document-tracker/dist",
   "installCommand": "cd document-tracker && npm ci",
   "framework": null,
