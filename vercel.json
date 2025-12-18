@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd document-tracker && npm ci && npm run build",
+  "buildCommand": "bash build.sh",
   "outputDirectory": "document-tracker/dist",
-  "installCommand": "echo 'Dependencies will be installed in buildCommand'",
+  "installCommand": "cd document-tracker && npm ci",
   "framework": null,
   "rewrites": [
     {
