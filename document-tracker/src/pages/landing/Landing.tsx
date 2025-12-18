@@ -1,1062 +1,1084 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import VideoModal from '../../components/shared/VideoModal';
+import DeviceShowcase from '../../components/landing/DeviceShowcase';
 import {
-  Bell,
-  Shield,
-  Camera,
-  Smartphone,
-  Calendar,
-  FolderSearch,
+  Menu,
+  X,
   ArrowRight,
   Play,
   Check,
+  Bell,
+  Lock,
+  Camera,
+  FolderSearch,
+  Search,
+  Calendar,
+  Users,
+  FileText,
   ChevronDown,
-  Menu,
-  X,
-  Star,
-  Twitter,
-  Facebook,
-  Instagram,
-  Linkedin,
 } from 'lucide-react';
-import { triggerHaptic } from '../../utils/animations';
+
+// Animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] } },
+};
+
+const springAnimation = {
+  type: "spring",
+  mass: 1,
+  stiffness: 200,
+  damping: 22,
+};
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const { scrollY } = useScroll();
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
-  const heroY = useTransform(scrollY, [0, 300], [0, 50]);
-
+  // Close menu on route change
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setMobileMenuOpen(false);
+    if (isMenuOpen) {
+      const timer = setTimeout(() => setIsMenuOpen(false), 300);
+      return () => clearTimeout(timer);
     }
-  };
-
-  const features = [
-    {
-      icon: Bell,
-      title: 'Smart Reminders',
-      description: 'Get notified 30, 7, and 1 day before documents expire. Never miss a deadline again.',
-    },
-    {
-      icon: Shield,
-      title: 'Secure Storage',
-      description: 'Your documents are encrypted and stored securely. Only you have access to your data.',
-    },
-    {
-      icon: Camera,
-      title: 'OCR Scanning',
-      description: 'Snap a photo and our AI extracts all the details. No manual typing needed.',
-    },
-    {
-      icon: Smartphone,
-      title: 'Multi-Device Sync',
-      description: 'Access your documents anywhere. Syncs seamlessly across all your devices.',
-    },
-    {
-      icon: Calendar,
-      title: 'Expiration Calendar',
-      description: 'Visual calendar showing all expiration dates. Plan ahead with confidence.',
-    },
-    {
-      icon: FolderSearch,
-      title: 'Categories & Search',
-      description: 'Organize by type and find any document instantly with powerful search.',
-    },
-  ];
-
-  const steps = [
-    {
-      number: '01',
-      icon: Camera,
-      title: 'Scan or Upload',
-      description: 'Take a photo of your document or upload from your device',
-    },
-    {
-      number: '02',
-      icon: Calendar,
-      title: 'Add Details',
-      description: 'Enter expiration date and other info. We\'ll extract what we can automatically.',
-    },
-    {
-      number: '03',
-      icon: Bell,
-      title: 'Get Reminded',
-      description: 'Relax and let us notify you before anything expires',
-    },
-  ];
-
-  const testimonials = [
-    {
-      text: 'Never missed a passport renewal since using DocuTrackr. The reminders are a lifesaver!',
-      name: 'Sarah M.',
-      role: 'Frequent Traveler',
-      rating: 5,
-    },
-    {
-      text: 'Perfect for managing all my subscriptions. I\'ve saved hundreds by canceling on time.',
-      name: 'James K.',
-      role: 'Small Business Owner',
-      rating: 5,
-    },
-    {
-      text: 'The OCR feature is incredible. Just snap and done. So much time saved!',
-      name: 'Priya S.',
-      role: 'Busy Professional',
-      rating: 5,
-    },
-  ];
-
-  const faqs = [
-    {
-      question: 'Is my data secure?',
-      answer: 'Yes, absolutely. All your documents are encrypted using industry-standard encryption. We use secure cloud storage and never share your data with third parties. Your privacy is our top priority.',
-    },
-    {
-      question: 'How do reminders work?',
-      answer: 'You\'ll receive notifications 30 days, 7 days, and 1 day before any document expires. You can customize these intervals in your settings. Notifications work even when the app is closed.',
-    },
-    {
-      question: 'Can I use it offline?',
-      answer: 'Yes! DocuTrackr works offline. You can view your documents and add new ones without an internet connection. Changes will sync when you\'re back online.',
-    },
-    {
-      question: 'What file types are supported?',
-      answer: 'We support images (JPG, PNG), PDFs, and all common document formats. You can take photos directly in the app or upload existing files.',
-    },
-    {
-      question: 'How much does it cost?',
-      answer: 'DocuTrackr offers a free plan with up to 10 documents. Our Pro plan is $4.99/month with unlimited documents and advanced features. Start with a 14-day free trial, no credit card required.',
-    },
-    {
-      question: 'Can I share documents with others?',
-      answer: 'Currently, documents are private to your account. We\'re working on sharing features for teams and families, coming soon!',
-    },
-    {
-      question: 'Do you offer refunds?',
-      answer: 'Yes, we offer a 30-day money-back guarantee. If you\'re not satisfied, contact us within 30 days for a full refund.',
-    },
-  ];
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      {/* Background Gradient Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <motion.div
-          className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full blur-[120px] opacity-15"
+    <div className="landing-page" style={{ background: '#F2F2F7', minHeight: '100vh' }}>
+      {/* Mobile Navigation */}
+      <MobileNav isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} navigate={navigate} />
+
+      {/* Hero Section with Device Showcase */}
+      <HeroSection navigate={navigate} onWatchDemo={() => setIsVideoModalOpen(true)} />
+
+      {/* How It Works Section */}
+      <HowItWorksSection />
+
+      {/* Features Section */}
+      <FeaturesSection />
+
+      {/* Final CTA Section */}
+      <FinalCTASection navigate={navigate} />
+
+      {/* Footer */}
+      <FooterSection navigate={navigate} />
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoUrl="/docutrackr-demo.mp4"
+      />
+    </div>
+  );
+}
+
+// Footer Section
+function FooterSection({ navigate }: { navigate: (path: string) => void }) {
+  return (
+    <footer
+      className="mobile-footer"
+      style={{
+        background: '#F2F2F7',
+        padding: '48px 16px 0',
+        borderTop: '0.33px solid rgba(0, 0, 0, 0.08)',
+      }}
+    >
+      <div
+        className="footer-container"
+        style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+        }}
+      >
+        {/* Brand Section */}
+        <div
+          className="footer-brand"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            textAlign: 'center',
+            marginBottom: '48px',
           }}
-          animate={{
-            x: [0, 30, 0],
-            y: [0, 20, 0],
+        >
+          <div
+            className="footer-logo"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: '16px',
+            }}
+          >
+            <svg className="logo-icon" width="40" height="40" viewBox="0 0 40 40" style={{ borderRadius: '10px', boxShadow: '0 4px 16px rgba(139, 92, 246, 0.3)' }}>
+              <rect width="40" height="40" rx="10" fill="url(#footerGradient)"/>
+              <path d="M12 10h16v20H12z" fill="white" opacity="0.9"/>
+              <path d="M14 14h12M14 19h12M14 24h8" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              <defs>
+                <linearGradient id="footerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#8B5CF6"/>
+                  <stop offset="100%" stopColor="#6D28D9"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h3
+            className="footer-brand-name"
+            style={{
+              font: 'var(--font-title-2)',
+              color: '#000000',
+              marginBottom: '8px',
+            }}
+          >
+            DocuTrackr
+          </h3>
+          <p
+            className="footer-tagline"
+            style={{
+              font: 'var(--font-callout)',
+              color: 'rgba(0, 0, 0, 0.6)',
+              marginBottom: '24px',
+            }}
+          >
+            Never miss another deadline
+          </p>
+          
+          {/* Social Links */}
+          <div
+            className="footer-social"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px',
+            }}
+          >
+            <a
+              href="https://twitter.com/docutrackr"
+              className="social-link liquid-glass"
+              aria-label="Twitter"
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(0, 0, 0, 0.8)',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'scale(0.95)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        {/* Navigation Sections */}
+        <div
+          className="footer-nav"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '32px 16px',
+            marginBottom: '48px',
           }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'easeInOut',
+        >
+          {/* Product */}
+          <div className="footer-section">
+            <h4
+              className="footer-section-title"
+              style={{
+                font: 'var(--font-subheadline)',
+                fontWeight: 600,
+                color: '#000000',
+                marginBottom: '12px',
+              }}
+            >
+              Product
+            </h4>
+            <ul
+              className="footer-links"
+              style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <li><Link to="/features" style={{ font: 'var(--font-callout)', color: 'rgba(0, 0, 0, 0.6)', textDecoration: 'none' }}>Features</Link></li>
+              <li><Link to="/faq" style={{ font: 'var(--font-callout)', color: 'rgba(0, 0, 0, 0.6)', textDecoration: 'none' }}>FAQ</Link></li>
+            </ul>
+          </div>
+          
+          {/* Legal */}
+          <div className="footer-section">
+            <h4
+              className="footer-section-title"
+              style={{
+                font: 'var(--font-subheadline)',
+                fontWeight: 600,
+                color: '#000000',
+                marginBottom: '12px',
+              }}
+            >
+              Legal
+            </h4>
+            <ul
+              className="footer-links"
+              style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <li><Link to="/privacy" style={{ font: 'var(--font-callout)', color: 'rgba(0, 0, 0, 0.6)', textDecoration: 'none' }}>Privacy Policy</Link></li>
+              <li><Link to="/terms" style={{ font: 'var(--font-callout)', color: 'rgba(0, 0, 0, 0.6)', textDecoration: 'none' }}>Terms of Service</Link></li>
+            </ul>
+          </div>
+        </div>
+        
+        {/* Divider */}
+        <div
+          className="footer-divider"
+          style={{
+            height: '0.33px',
+            background: 'rgba(0, 0, 0, 0.08)',
+            margin: '0 0 24px',
           }}
         />
-        <motion.div
-          className="absolute top-1/2 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-15"
+        
+        {/* Bottom */}
+        <div
+          className="footer-bottom"
           style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            textAlign: 'center',
+            paddingBottom: '24px',
           }}
-          animate={{
-            x: [0, -20, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
+        >
+          <p
+            className="footer-copyright"
+            style={{
+              font: 'var(--font-footnote)',
+              color: 'rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            © 2024 DocuTrackr. All rights reserved.
+          </p>
+        </div>
+      </div>
+      
+      {/* Safe Area */}
+      <div
+        className="footer-safe-area"
+        style={{
+          height: 'env(safe-area-inset-bottom)',
+          background: '#F2F2F7',
+        }}
+      />
+    </footer>
+  );
+}
+
+// Mobile Navigation Component
+function MobileNav({ 
+  isMenuOpen, 
+  setIsMenuOpen, 
+  navigate 
+}: { 
+  isMenuOpen: boolean; 
+  setIsMenuOpen: (open: boolean) => void;
+  navigate: (path: string) => void;
+}) {
+  return (
+    <>
+      <nav className="mobile-nav">
+        <div className="nav-container">
+          <div className="nav-logo">
+            <svg className="logo-icon" width="32" height="32" viewBox="0 0 32 32">
+              <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+              <path d="M10 8h12v16H10z" fill="white" opacity="0.9"/>
+              <path d="M12 12h8M12 16h8M12 20h5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#8B5CF6"/>
+                  <stop offset="100%" stopColor="#6D28D9"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="logo-text">DocuTrackr</span>
+          </div>
+          <button 
+            className="menu-button" 
+            aria-label="Menu"
+            onClick={() => setIsMenuOpen(true)}
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+      </nav>
+
+      {/* Menu Modal */}
+      <div className={`mobile-menu ${isMenuOpen ? 'active' : ''}`}>
+        <div className="menu-backdrop" onClick={() => setIsMenuOpen(false)} />
+        <div className="menu-content">
+          <div className="menu-header">
+            <div className="nav-logo">
+              <svg className="logo-icon" width="32" height="32" viewBox="0 0 32 32">
+                <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                <path d="M10 8h12v16H10z" fill="white" opacity="0.9"/>
+                <path d="M12 12h8M12 16h8M12 20h5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <defs>
+                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#8B5CF6"/>
+                    <stop offset="100%" stopColor="#6D28D9"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="logo-text">DocuTrackr</span>
+            </div>
+            <button 
+              className="close-button" 
+              aria-label="Close"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <nav className="menu-nav">
+            <a href="#features" className="menu-link" onClick={() => setIsMenuOpen(false)}>Features</a>
+            <a href="#how-it-works" className="menu-link" onClick={() => setIsMenuOpen(false)}>How It Works</a>
+            <a href="#faq" className="menu-link" onClick={() => setIsMenuOpen(false)}>FAQ</a>
+            <Link to="/features" className="menu-link" onClick={() => setIsMenuOpen(false)}>About</Link>
+          </nav>
+          <div className="menu-cta">
+            <Link to="/login" className="menu-button-secondary" onClick={() => setIsMenuOpen(false)}>Sign In</Link>
+            <Link to="/signup" className="menu-button-primary" onClick={() => setIsMenuOpen(false)}>Get Started</Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Hero Section
+function HeroSection({ 
+  navigate, 
+  onWatchDemo 
+}: { 
+  navigate: (path: string) => void;
+  onWatchDemo: () => void;
+}) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+
+  return (
+    <section 
+      ref={ref}
+      className="hero-section"
+      style={{
+        position: 'relative',
+        minHeight: '100vh',
+        padding: `calc(60px + env(safe-area-inset-top)) 16px 80px`,
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Background */}
+      <div 
+        className="hero-background"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(180deg, #F2F2F7 0%, #FFFFFF 50%, #F2F2F7 100%)',
+          zIndex: -1,
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: '-20%',
+            right: '-20%',
+            width: '400px',
+            height: '400px',
+            background: 'radial-gradient(circle, rgba(191, 90, 242, 0.15) 0%, transparent 70%)',
+            borderRadius: '50%',
+            animation: 'float 20s ease-in-out infinite',
           }}
         />
-        <motion.div
-          className="absolute bottom-0 left-1/2 w-[400px] h-[400px] rounded-full blur-[120px] opacity-15"
+        <div
           style={{
-            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.6) 0%, rgba(236, 72, 153, 0) 70%)',
-          }}
-          animate={{
-            x: [0, 15, 0],
-            y: [0, -25, 0],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: 'easeInOut',
+            position: 'absolute',
+            bottom: '-30%',
+            left: '-20%',
+            width: '500px',
+            height: '500px',
+            background: 'radial-gradient(circle, rgba(0, 122, 255, 0.1) 0%, transparent 70%)',
+            borderRadius: '50%',
+            animation: 'float 25s ease-in-out infinite reverse',
           }}
         />
       </div>
 
-      {/* Navigation Bar */}
-      <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'backdrop-blur-[20px]' : 'backdrop-blur-0'
-        }`}
+      <div 
+        className="hero-container"
         style={{
-          background: isScrolled
-            ? 'rgba(26, 22, 37, 0.8)'
-            : 'rgba(26, 22, 37, 0)',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.3)',
-          backdropFilter: isScrolled ? 'blur(20px)' : 'none',
+          width: '100%',
+          maxWidth: '600px',
+          margin: '0 auto',
+          textAlign: 'center',
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
-          {/* Logo */}
-          <motion.div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            whileHover={{ scale: 1.05 }}
-          >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
-                boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
-              }}
-            >
-              <Calendar className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-white" style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}>
-              DocuTrackr
-            </h1>
-          </motion.div>
+        {/* Eyebrow */}
+        <motion.p
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          style={{
+            font: 'var(--font-caption-1)',
+            fontWeight: 600,
+            letterSpacing: '0.5px',
+            textTransform: 'uppercase',
+            color: '#BF5AF2',
+            marginBottom: '16px',
+          }}
+        >
+          DOCUMENT MANAGEMENT
+        </motion.p>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {[
-              { name: 'Features', id: 'features' },
-              { name: 'How It Works', id: 'how-it-works' },
-              { name: 'About', id: 'about' }
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className="text-[15px] text-white hover:text-purple-300 transition-colors relative group"
-              >
-                {item.name}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-purple-400 group-hover:w-full transition-all duration-300" />
-              </button>
-            ))}
-          </div>
+        {/* Title */}
+        <motion.h1
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          style={{
+            font: 'var(--font-large-title)',
+            letterSpacing: '-0.4px',
+            color: '#000000',
+            marginBottom: '16px',
+          }}
+        >
+          Never miss another<br/>
+          <span style={{
+            background: 'linear-gradient(135deg, #BF5AF2 0%, #007AFF 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
+            expiration date
+          </span>
+        </motion.h1>
 
-          {/* Desktop CTA Buttons - Connected */}
-          <div className="hidden md:flex items-center gap-2">
-            <motion.button
-              onClick={() => {
-                triggerHaptic('light');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="px-6 py-2.5 rounded-xl text-[15px] font-semibold text-white transition-all"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-              whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Home
-            </motion.button>
-            <motion.button
-              onClick={() => {
-                triggerHaptic('light');
-                navigate('/login');
-              }}
-              className="px-6 py-2.5 rounded-xl text-[15px] font-semibold text-white transition-all"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-              whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Login
-            </motion.button>
-            <motion.button
-              onClick={() => {
-                triggerHaptic('light');
-                navigate('/signup');
-              }}
-              className="px-7 py-2.5 rounded-xl text-[15px] font-semibold text-white"
-              style={{
-                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
-              }}
-              whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(139, 92, 246, 0.7)' }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Sign Up
-            </motion.button>
-          </div>
+        {/* Subtitle */}
+        <motion.p
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          style={{
+            font: 'var(--font-body)',
+            color: 'rgba(0, 0, 0, 0.7)',
+            lineHeight: 1.5,
+            marginBottom: '32px',
+          }}
+        >
+          Track every document. Get reminded automatically. Simple, secure, and beautifully designed.
+        </motion.p>
 
-          {/* Mobile Menu Button */}
-          <motion.button
-            className="md:hidden w-10 h-10 flex items-center justify-center text-white rounded-lg transition-all"
-            onClick={() => {
-              triggerHaptic('light');
-              setMobileMenuOpen(!mobileMenuOpen);
-            }}
+        {/* CTA Buttons */}
+        <motion.div
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            marginBottom: '24px',
+          }}
+        >
+          <Link
+            to="/signup"
+            className="hero-button-primary"
             style={{
-              border: mobileMenuOpen ? '2px solid #000000' : '2px solid transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              height: '50px',
+              padding: '0 24px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+              color: '#FFFFFF',
+              font: 'var(--font-headline)',
+              textDecoration: 'none',
+              boxShadow: '0 4px 16px rgba(0, 122, 255, 0.3)',
+              transition: 'all 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
             }}
-            whileTap={{ scale: 0.95 }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'scale(0.98)';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </motion.button>
-        </div>
+            Get Started Free
+            <ArrowRight className="w-4 h-4" />
+          </Link>
 
-          {/* Mobile Menu Modal */}
-          {mobileMenuOpen && (
-            <>
-              {/* Backdrop with blur */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="md:hidden fixed inset-0 z-50"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  backdropFilter: 'blur(10px)',
-                }}
-                onClick={() => setMobileMenuOpen(false)}
-              />
-              
-              {/* Centered Modal */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="md:hidden fixed inset-0 z-50 flex items-center justify-center p-4"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div
-                  className="w-full max-w-sm rounded-2xl p-6 relative"
-                  style={{
-                    background: 'rgba(42, 38, 64, 0.85)',
-                    backdropFilter: 'blur(25px)',
-                    border: '2px solid #000000',
-                    boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
-                  }}
-                >
-                  {/* Close Button */}
-                  <motion.button
-                    onClick={() => {
-                      triggerHaptic('light');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-                    style={{
-                      color: '#A78BFA',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                    }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <X className="w-5 h-5" />
-                  </motion.button>
+          <button
+            onClick={onWatchDemo}
+            className="hero-button-secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              height: '50px',
+              padding: '0 24px',
+              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.7)',
+              backdropFilter: 'saturate(180%) blur(20px)',
+              WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+              border: '0.33px solid rgba(0, 0, 0, 0.08)',
+              color: '#000000',
+              font: 'var(--font-headline)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'scale(0.98)';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+            }}
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              style={{ display: 'inline-flex' }}
+            >
+              <Play className="w-5 h-5" />
+            </motion.div>
+            Watch Demo
+          </button>
+        </motion.div>
 
-                  {/* Modal Content - Only Login and Sign Up */}
-                  <div className="flex flex-col gap-4 mt-2">
-                    <motion.button
-                      onClick={() => {
-                        triggerHaptic('light');
-                        navigate('/login');
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full h-14 rounded-xl text-white font-semibold text-center transition-all"
-                      style={{
-                        background: 'rgba(42, 38, 64, 0.6)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                      }}
-                      whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Login
-                    </motion.button>
-                    <motion.button
-                      onClick={() => {
-                        triggerHaptic('light');
-                        navigate('/signup');
-                        setMobileMenuOpen(false);
-                      }}
-                      className="w-full h-14 rounded-xl text-white font-semibold text-center transition-all"
-                      style={{
-                        background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                        boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
-                      }}
-                      whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(139, 92, 246, 0.7)' }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Sign Up
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-      </motion.nav>
+        {/* Trust Indicators */}
+        <motion.div
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '8px',
+            font: 'var(--font-footnote)',
+            color: 'rgba(0, 0, 0, 0.6)',
+            marginBottom: '48px',
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Check className="w-3 h-3" style={{ color: '#34C759' }} />
+            Free forever
+          </span>
+          <span style={{ color: 'rgba(0, 0, 0, 0.3)' }}>•</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Check className="w-3 h-3" style={{ color: '#34C759' }} />
+            No credit card
+          </span>
+          <span style={{ color: 'rgba(0, 0, 0, 0.3)' }}>•</span>
+          <span>10,000+ users</span>
+        </motion.div>
 
-      {/* Hero Section */}
-      <section 
-        id="home"
-        className="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden"
+        {/* Device Showcase Animation */}
+        <motion.div
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { duration: 0.8, delay: 0.7 } },
+          }}
+          style={{
+            position: 'relative',
+            width: '100%',
+            marginTop: '32px',
+          }}
+        >
+          <DeviceShowcase />
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// How It Works Section
+function HowItWorksSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+
+  const steps = [
+    {
+      number: 1,
+      icon: '📷',
+      title: 'Capture',
+      description: 'Snap a photo or upload any document. We\'ll handle the rest.',
+    },
+    {
+      number: 2,
+      icon: '📁',
+      title: 'Organize',
+      description: 'Everything auto-categorized. Find any document instantly.',
+    },
+    {
+      number: 3,
+      icon: '🔔',
+      title: 'Relax',
+      description: 'Smart reminders keep you ahead of every deadline.',
+    },
+  ];
+
+  return (
+    <section
+      ref={ref}
+      className="how-it-works-section"
+      style={{
+        padding: '80px 16px',
+        background: '#FFFFFF',
+      }}
+    >
+      <div
+        className="section-container"
         style={{
-          background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
+          maxWidth: '600px',
+          margin: '0 auto',
         }}
       >
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="grid lg:grid-cols-5 gap-12 items-center">
-            {/* Left Column - 60% */}
-            <motion.div
-              className="lg:col-span-3"
-              style={{ opacity: heroOpacity, y: heroY }}
-            >
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-xs uppercase tracking-widest font-bold mb-4"
-                style={{ color: '#A78BFA' }}
-              >
-                DOCUMENT MANAGEMENT MADE SIMPLE
-              </motion.p>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight"
-                style={{
-                  background: 'linear-gradient(135deg, #FFFFFF 0%, #A78BFA 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                Revolutionize Your Document Tracking
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-xl md:text-2xl mb-6"
-                style={{ color: '#A78BFA' }}
-              >
-                Never miss an expiration date again
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="text-lg mb-10 leading-relaxed"
-                style={{ color: '#C7C3D9' }}
-              >
-                Keep track of passports, visas, subscriptions, and important documents. Get smart reminders before they expire. All in one beautiful, secure app.
-              </motion.p>
-
-              {/* CTA Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="flex flex-col sm:flex-row gap-4 mb-6"
-              >
-                <motion.button
-                  onClick={() => {
-                    triggerHaptic('medium');
-                    navigate('/signup');
-                  }}
-                  className="h-14 px-10 rounded-2xl text-lg font-bold text-white flex items-center justify-center gap-2"
-                  style={{
-                    background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                    boxShadow: '0 8px 32px rgba(139, 92, 246, 0.6)',
-                  }}
-                  whileHover={{ scale: 1.05, boxShadow: '0 12px 40px rgba(139, 92, 246, 0.8)' }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Start Free Trial
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-
-                <motion.button
-                  onClick={() => scrollToSection('features')}
-                  className="h-14 px-10 rounded-2xl text-lg font-semibold text-white flex items-center justify-center gap-2"
-                  style={{
-                    background: 'rgba(42, 38, 64, 0.6)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                  }}
-                  whileHover={{ boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Play className="w-5 h-5" />
-                  Watch Demo
-                </motion.button>
-              </motion.div>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="text-sm mb-8"
-                style={{ color: '#A78BFA' }}
-              >
-                No credit card required • 14-day free trial • Cancel anytime
-              </motion.p>
-
-              {/* Social Proof */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="flex items-center gap-4"
-              >
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className="w-10 h-10 rounded-full border-2 border-purple-500"
-                      style={{
-                        background: `linear-gradient(135deg, hsl(${i * 60}, 70%, 60%), hsl(${i * 60 + 30}, 70%, 50%))`,
-                      }}
-                    />
-                  ))}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">Join 10,000+ users</p>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Right Column - 40% */}
-            <motion.div
-              className="lg:col-span-2 hidden lg:block"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-            >
-              <motion.div
-                className="relative"
-                animate={{
-                  y: [0, -20, 0],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                <div
-                  className="w-full max-w-md mx-auto rounded-3xl p-8"
-                  style={{
-                    background: 'rgba(42, 38, 64, 0.6)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(139, 92, 246, 0.3)',
-                  }}
-                >
-                  <div className="aspect-[9/19] rounded-2xl overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Calendar className="w-24 h-24 mx-auto mb-4 text-purple-300" />
-                      <p className="text-white font-semibold text-lg">DocuTrackr</p>
-                      <p className="text-purple-300 text-sm mt-2">Your documents, organized</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="relative py-[120px] px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-white text-center mb-16"
+        {/* Section Header */}
+        <motion.div
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          className="section-header"
+          style={{ textAlign: 'center', marginBottom: '48px' }}
+        >
+          <p
+            style={{
+              font: 'var(--font-caption-1)',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+              color: '#BF5AF2',
+              marginBottom: '12px',
+            }}
           >
-            Powerful Features for Document Tracking
-          </motion.h2>
+            SIMPLE TO START
+          </p>
+          <h2
+            style={{
+              font: 'var(--font-title-1)',
+              letterSpacing: '-0.3px',
+              color: '#000000',
+            }}
+          >
+            Three steps to organized bliss
+          </h2>
+        </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
+        {/* Steps */}
+        <div
+          className="steps-container"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.number}
+              initial="hidden"
+              animate={isInView ? 'visible' : 'hidden'}
+              variants={{
+                ...fadeInUp,
+                visible: { ...fadeInUp.visible, transition: { ...fadeInUp.visible.transition, delay: index * 0.1 } },
+              }}
+              className="step-card liquid-glass"
+              style={{
+                padding: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.04)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {/* Step Number Badge */}
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #BF5AF2, #007AFF)',
+                  color: '#FFFFFF',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(191, 90, 242, 0.3)',
+                  flexShrink: 0,
+                }}
+              >
+                {step.number}
+              </div>
+              
+              {/* Content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3
+                  style={{
+                    font: 'var(--font-title-3)',
+                    color: '#000000',
+                    marginBottom: '4px',
+                  }}
+                >
+                  {step.title}
+                </h3>
+                <p
+                  style={{
+                    font: 'var(--font-callout)',
+                    color: 'rgba(0, 0, 0, 0.7)',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {step.description}
+                </p>
+              </div>
+              
+              {/* Icon */}
+              <div style={{ fontSize: '32px', flexShrink: 0 }}>
+                {step.icon}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Features Section
+function FeaturesSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+
+  const features = [
+    {
+      title: 'Document Scanning',
+      description: 'Capture documents with your camera or upload files. AI-powered text recognition.',
+      icon: Camera,
+      color: '#007AFF',
+    },
+    {
+      title: 'Expiration Tracking',
+      description: 'Track expiration dates for passports, visas, licenses, insurance, and more.',
+      icon: Calendar,
+      color: '#BF5AF2',
+    },
+    {
+      title: 'Smart Reminders',
+      description: 'Get notified 30, 7, and 1 day before anything expires. Customize to your schedule.',
+      icon: Bell,
+      color: '#FF3B30',
+    },
+    {
+      title: 'Secure Storage',
+      description: 'Bank-level encryption keeps your sensitive documents safe and private.',
+      icon: Lock,
+      color: '#34C759',
+    },
+    {
+      title: 'Family Sharing',
+      description: 'Share documents with family members. Manage household documents together.',
+      icon: Users,
+      color: '#FF9500',
+    },
+    {
+      title: 'Quick Search',
+      description: 'Find any document instantly with powerful search. Filter by type, date, or status.',
+      icon: Search,
+      color: '#5856D6',
+    },
+  ];
+
+  return (
+    <section
+      ref={ref}
+      id="features"
+      className="features-section"
+      style={{
+        padding: '80px 16px',
+        background: '#F2F2F7',
+      }}
+    >
+      <div
+        className="section-container"
+        style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+        }}
+      >
+        {/* Section Header */}
+        <motion.div
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          className="section-header"
+          style={{ textAlign: 'center', marginBottom: '48px' }}
+        >
+          <p
+            style={{
+              font: 'var(--font-caption-1)',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+              color: '#BF5AF2',
+              marginBottom: '12px',
+            }}
+          >
+            POWERFUL FEATURES
+          </p>
+          <h2
+            style={{
+              font: 'var(--font-title-1)',
+              letterSpacing: '-0.3px',
+              color: '#000000',
+            }}
+          >
+            Everything you need.<br/>Nothing you don't.
+          </h2>
+        </motion.div>
+
+        {/* Feature Cards */}
+        <div
+          className="features-grid"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="p-10 rounded-3xl transition-all duration-300"
+                initial="hidden"
+                animate={isInView ? 'visible' : 'hidden'}
+                variants={{
+                  ...fadeInUp,
+                  visible: { ...fadeInUp.visible, transition: { ...fadeInUp.visible.transition, delay: index * 0.1 } },
+                }}
+                className="feature-card liquid-glass"
                 style={{
-                  background: 'rgba(42, 38, 64, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                  padding: '32px 24px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(139, 92, 246, 0.4)';
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.98)';
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.4)';
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+                <div style={{ marginBottom: '16px' }}>
+                  <div
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      background: `${feature.color}15`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      animation: 'iconFloat 3s ease-in-out infinite',
+                    }}
+                  >
+                    <Icon className="w-6 h-6" style={{ color: feature.color }} />
+                  </div>
+                </div>
+                <h3
                   style={{
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
-                    boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+                    font: 'var(--font-title-3)',
+                    color: '#000000',
+                    marginBottom: '8px',
                   }}
                 >
-                  <feature.icon className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
-                <p className="text-base leading-relaxed" style={{ color: '#C7C3D9' }}>
+                  {feature.title}
+                </h3>
+                <p
+                  style={{
+                    font: 'var(--font-callout)',
+                    color: 'rgba(0, 0, 0, 0.7)',
+                    lineHeight: 1.4,
+                  }}
+                >
                   {feature.description}
                 </p>
               </motion.div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="relative py-[120px] px-6 lg:px-12" style={{ background: '#231D33' }}>
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              How DocuTrackr Works
-            </h2>
-            <p className="text-xl" style={{ color: '#A78BFA' }}>
-              Get started in 3 simple steps
-            </p>
-          </motion.div>
+// Final CTA Section
+function FinalCTASection({ navigate }: { navigate: (path: string) => void }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
 
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-24 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent)' }} />
-
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                className="relative"
-              >
-                <div
-                  className="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10"
-                  style={{
-                    background: 'rgba(42, 38, 64, 0.6)',
-                    backdropFilter: 'blur(20px)',
-                    border: '2px solid rgba(139, 92, 246, 0.5)',
-                    boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)',
-                  }}
-                >
-                  <span
-                    className="text-5xl font-bold"
-                    style={{
-                      background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    {step.number}
-                  </span>
-                </div>
-
-                <div
-                  className="p-8 rounded-2xl max-w-xs mx-auto"
-                  style={{
-                    background: 'rgba(42, 38, 64, 0.5)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                  }}
-                >
-                  <div className="flex justify-center mb-4">
-                    <step.icon className="w-8 h-8" style={{ color: '#A78BFA' }} />
-                  </div>
-                  <h3 className="text-xl font-bold text-white text-center mb-3">{step.title}</h3>
-                  <p className="text-center" style={{ color: '#C7C3D9' }}>
-                    {step.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Screenshots/Demo Section */}
-      <section id="screenshots" className="relative py-[120px] px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-white text-center mb-16"
-          >
-            Beautiful Design, Powerful Features
-          </motion.h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="rounded-2xl overflow-hidden"
-                style={{
-                  background: 'rgba(42, 38, 64, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                }}
-              >
-                <div className="aspect-video bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                  <Calendar className="w-16 h-16 text-purple-300" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="relative py-[100px] px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-white text-center mb-16"
-          >
-            Loved by Users Worldwide
-          </motion.h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="p-8 rounded-2xl"
-                style={{
-                  background: 'rgba(42, 38, 64, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-base mb-6 leading-relaxed" style={{ color: '#C7C3D9' }}>
-                  "{testimonial.text}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-12 h-12 rounded-full"
-                    style={{
-                      background: `linear-gradient(135deg, hsl(${index * 120}, 70%, 60%), hsl(${index * 120 + 30}, 70%, 50%))`,
-                    }}
-                  />
-                  <div>
-                    <p className="font-semibold text-white">{testimonial.name}</p>
-                    <p className="text-sm" style={{ color: '#A78BFA' }}>{testimonial.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section id="faq" className="relative py-[100px] px-6 lg:px-12" style={{ background: '#231D33' }}>
-        <div className="max-w-4xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-white text-center mb-16"
-          >
-            Frequently Asked Questions
-          </motion.h2>
-
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="rounded-2xl overflow-hidden"
-                style={{
-                  background: 'rgba(42, 38, 64, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <button
-                  onClick={() => {
-                    triggerHaptic('light');
-                    setExpandedFaq(expandedFaq === index ? null : index);
-                  }}
-                  className="w-full p-6 flex items-center justify-between text-left"
-                >
-                  <span className="text-lg font-semibold text-white">{faq.question}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-purple-300 transition-transform ${
-                      expandedFaq === index ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                {expandedFaq === index && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="px-6 pb-6"
-                  >
-                    <p className="text-base leading-relaxed" style={{ color: '#C7C3D9' }}>
-                      {faq.answer}
-                    </p>
-                  </motion.div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
-      <section className="relative py-[120px] px-6 lg:px-12">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="p-16 rounded-[32px] text-center"
+  return (
+    <section
+      ref={ref}
+      className="final-cta-section"
+      style={{
+        padding: '80px 16px',
+        background: '#FFFFFF',
+      }}
+    >
+      <div
+        className="cta-container"
+        style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+        }}
+      >
+        <motion.div
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+          variants={fadeInUp}
+          className="cta-card"
+          style={{
+            background: 'linear-gradient(135deg, rgba(191, 90, 242, 0.1) 0%, rgba(0, 122, 255, 0.1) 100%)',
+            backdropFilter: 'saturate(180%) blur(40px)',
+            WebkitBackdropFilter: 'saturate(180%) blur(40px)',
+            border: '0.33px solid rgba(191, 90, 242, 0.2)',
+            borderRadius: '32px',
+            padding: '48px 24px',
+            textAlign: 'center',
+            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.08)',
+          }}
+        >
+          <div
             style={{
-              background: 'rgba(42, 38, 64, 0.7)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(139, 92, 246, 0.3)',
+              fontSize: '64px',
+              marginBottom: '24px',
+              animation: 'sparkle 2s ease-in-out infinite',
             }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Ready to Never Miss a Deadline?
-            </h2>
-            <p className="text-xl mb-10" style={{ color: '#A78BFA' }}>
-              Join thousands of users who trust DocuTrackr
-            </p>
-            <motion.button
-              onClick={() => {
-                triggerHaptic('medium');
-                navigate('/signup');
-              }}
-              className="h-16 px-12 rounded-2xl text-lg font-bold text-white flex items-center justify-center gap-2 mx-auto"
-              style={{
-                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                boxShadow: '0 8px 32px rgba(139, 92, 246, 0.6)',
-              }}
-              whileHover={{ scale: 1.05, boxShadow: '0 12px 40px rgba(139, 92, 246, 0.8)' }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Started for Free
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
-            <p className="text-sm mt-6" style={{ color: '#A78BFA' }}>
-              No credit card required
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="relative py-[100px] px-6 lg:px-12" style={{ background: '#231D33' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-white mb-6"
-          >
-            About DocuTrackr
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-lg leading-relaxed"
-            style={{ color: '#C7C3D9' }}
-          >
-            DocuTrackr was born from a simple need: never miss an important document expiration date again. 
-            We've built a beautiful, secure platform that helps thousands of users stay organized and on top of their documents.
-          </motion.p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative py-[60px] px-6 lg:px-12" style={{ background: '#0F0D1A', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            {/* Brand Column */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
-                  }}
-                >
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white">DocuTrackr</h3>
-              </div>
-              <p className="text-sm mb-6" style={{ color: '#A78BFA' }}>
-                Never miss a deadline
-              </p>
-              <div className="flex gap-4">
-                {[Twitter, Facebook, Instagram, Linkedin].map((Icon, i) => (
-                  <motion.a
-                    key={i}
-                    href="#"
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{
-                      background: 'rgba(42, 38, 64, 0.6)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                    }}
-                    whileHover={{ scale: 1.1, boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
-                  >
-                    <Icon className="w-5 h-5 text-white" />
-                  </motion.a>
-                ))}
-              </div>
-            </div>
-
-            {/* Product Column */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-2">
-                {['Features', 'How it Works', 'Download'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-sm hover:text-purple-300 transition-colors" style={{ color: '#C7C3D9' }}>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Company Column */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2">
-                {['About Us', 'Blog', 'Careers', 'Contact'].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-sm hover:text-purple-300 transition-colors" style={{ color: '#C7C3D9' }}>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal Column */}
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate('/privacy');
-                    }}
-                    className="text-sm hover:text-purple-300 transition-colors"
-                    style={{ color: '#C7C3D9' }}
-                  >
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate('/terms');
-                    }}
-                    className="text-sm hover:text-purple-300 transition-colors"
-                    style={{ color: '#C7C3D9' }}
-                  >
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm hover:text-purple-300 transition-colors" style={{ color: '#C7C3D9' }}>
-                    Cookie Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm hover:text-purple-300 transition-colors" style={{ color: '#C7C3D9' }}>
-                    Security
-                  </a>
-                </li>
-              </ul>
-            </div>
+            ✨
           </div>
-
-          <div className="pt-8 border-t border-white/5 text-center">
-            <p className="text-sm" style={{ color: '#A78BFA' }}>
-              © 2024 DocuTrackr. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+          <h2
+            style={{
+              font: 'var(--font-title-1)',
+              letterSpacing: '-0.3px',
+              color: '#000000',
+              marginBottom: '12px',
+            }}
+          >
+            Ready to get organized?
+          </h2>
+          <p
+            style={{
+              font: 'var(--font-body)',
+              color: 'rgba(0, 0, 0, 0.7)',
+              marginBottom: '32px',
+            }}
+          >
+            Start tracking for free. No credit card required.
+          </p>
+          <Link
+            to="/signup"
+            className="cta-button"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              height: '56px',
+              padding: '0 32px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+              color: '#FFFFFF',
+              font: 'var(--font-headline)',
+              textDecoration: 'none',
+              boxShadow: '0 8px 24px rgba(0, 122, 255, 0.4)',
+              transition: 'all 0.2s ease',
+              marginBottom: '24px',
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'scale(0.98)';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            Get Started Free
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <p
+            style={{
+              font: 'var(--font-footnote)',
+              color: 'rgba(0, 0, 0, 0.5)',
+              marginBottom: '16px',
+            }}
+          >
+            Available on iPhone, iPad, Mac, and Web
+          </p>
+        </motion.div>
+      </div>
+    </section>
   );
 }

@@ -34,12 +34,31 @@ export default function SuccessToast({
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(16, 185, 129, 0.3)',
           boxShadow: '0 8px 32px rgba(16, 185, 129, 0.4)',
+          width: '340px',
+          height: '60px',
         }}
+        data-tablet-toast="true"
         role="status"
         aria-live="polite"
       >
-        <CheckCircle2 className="w-5 h-5 text-white flex-shrink-0" />
-        <span className="text-white font-medium text-sm">{message}</span>
+        <style>{`
+          @media (min-width: 768px) {
+            [data-tablet-toast="true"] {
+              width: 420px !important;
+              height: 72px !important;
+            }
+          }
+        `}</style>
+        <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-white flex-shrink-0" data-tablet-toast-icon="true" />
+        <style>{`
+          @media (min-width: 768px) {
+            [data-tablet-toast-icon="true"] {
+              width: 24px !important;
+              height: 24px !important;
+            }
+          }
+        `}</style>
+        <span className="text-white font-medium text-[15px] md:text-[17px]">{message}</span>
       </motion.div>
     </AnimatePresence>
   );

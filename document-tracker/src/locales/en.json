@@ -153,6 +153,17 @@
     "expired": "Expired",
     "languageChanged": "Language changed to {{language}}"
   },
+  "family": {
+    "title": "Family Sharing",
+    "connections": "Connections",
+    "sharedWithMe": "Shared With Me",
+    "households": "Households",
+    "addConnection": "Add Connection",
+    "shareDocument": "Share Document",
+    "noConnections": "No connections yet",
+    "noShared": "No shared documents",
+    "noHouseholds": "No households yet"
+  },
   "notifications": {
     "documentExpiring": "Document Expiring",
     "expiresIn": "Expires in {{days}} days",
@@ -230,4 +241,8 @@
     "dateAdded": "Important date added successfully!"
   }
 }
+
+
+
+
 

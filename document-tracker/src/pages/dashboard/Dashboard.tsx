@@ -8,8 +8,7 @@ import { staggerContainer, staggerItem, fadeInUp, float, getTransition, transiti
 import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import UrgencySummaryCard from '../../components/documents/UrgencySummaryCard';
 import DashboardDocumentCard from '../../components/documents/DashboardDocumentCard';
-import GreetingSection from '../../components/dashboard/GreetingSection';
-import ActivityChart from '../../components/dashboard/ActivityChart';
+import CalendarView from '../../components/dates/CalendarView';
 import MarkRenewedModal from '../../components/documents/MarkRenewedModal';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
@@ -45,7 +44,10 @@ export default function Dashboard() {
 
   // Fetch documents
   const fetchDocuments = async (showRefreshing = false) => {
-    if (!user) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       if (showRefreshing) {
@@ -69,6 +71,8 @@ export default function Dashboard() {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load documents';
       setError(errorMessage);
       console.error('Error fetching documents:', err);
+      // Set empty array on error so we don't show skeleton forever
+      setDocuments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -78,6 +82,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchDocuments();
+    } else {
+      // If no user, stop loading and show empty state
+      setIsLoading(false);
+      setDocuments([]);
     }
   }, [user]);
 
@@ -92,8 +100,14 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Handle mark as renewed
-  const handleMarkRenewed = async (documentId: string, newExpirationDate: string) => {
+  // Handle mark as renewed - opens modal
+  const handleMarkRenewed = (document: Document) => {
+    setSelectedDocument(document);
+    setIsModalOpen(true);
+  };
+
+  // Handle confirm renewal - updates document
+  const handleConfirmRenew = async (documentId: string, newExpirationDate: string) => {
     if (!user) return;
 
     try {
@@ -139,40 +153,37 @@ export default function Dashboard() {
     pullDistance.current = 0;
   };
 
-  // Loading skeleton
-  if (isLoading && documents.length === 0) {
+  // Loading skeleton - only show if actually loading and we have a user
+  if (isLoading && documents.length === 0 && user) {
     return (
       <div className="pb-[72px]">
-        {/* Page Title */}
-        <div className="px-5 py-4">
-          <h1 className="text-2xl font-bold text-white mb-1">Expire Soon</h1>
-          <p className="text-sm text-glass-secondary">Items expiring in next 30 days</p>
-        </div>
-
-        {/* Greeting Skeleton */}
-        <div className="px-5 mb-5">
-          <Skeleton className="h-32 rounded-3xl bg-white/10" />
-        </div>
-
-        {/* Summary Cards Skeleton */}
-        <div className="px-5 mb-5">
-          <div className="flex gap-3">
-            <Skeleton className="w-[31%] h-[100px] rounded-2xl bg-white/10" />
-            <Skeleton className="w-[31%] h-[100px] rounded-2xl bg-white/10" />
-            <Skeleton className="w-[31%] h-[100px] rounded-2xl bg-white/10" />
+        <div className="px-4 md:px-6 md:max-w-[1024px] md:mx-auto">
+          {/* Page Title */}
+          <div className="py-4 md:py-6">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">Expire Soon</h1>
+            <p className="text-sm md:text-base text-glass-secondary">Items expiring in next 30 days</p>
           </div>
-        </div>
 
-        {/* Activity Chart Skeleton */}
-        <div className="px-5 mb-6">
-          <Skeleton className="h-64 rounded-2xl bg-white/10" />
-        </div>
+          {/* Summary Cards Skeleton */}
+          <div className="mb-5 md:mb-12">
+            <div className="flex gap-3 md:gap-4">
+              <Skeleton className="w-[31%] h-[100px] md:h-[140px] rounded-2xl bg-white/10" />
+              <Skeleton className="w-[31%] h-[100px] md:h-[140px] rounded-2xl bg-white/10" />
+              <Skeleton className="w-[31%] h-[100px] md:h-[140px] rounded-2xl bg-white/10" />
+            </div>
+          </div>
 
-        {/* Document Cards Skeleton */}
-        <div className="px-5 space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl bg-white/10" />
-          ))}
+          {/* Calendar Skeleton */}
+          <div className="mb-6 md:mb-12">
+            <Skeleton className="h-64 md:h-80 rounded-2xl bg-white/10" />
+          </div>
+
+          {/* Document Cards Skeleton */}
+          <div className="space-y-3 md:space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-20 md:h-28 rounded-2xl bg-white/10" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -197,7 +208,7 @@ export default function Dashboard() {
   const totalExpiring = urgentCount + soonCount + upcomingCount;
 
   return (
-    <div className="pb-[72px] min-h-screen relative overflow-hidden">
+    <div className="pb-[72px] min-h-screen relative overflow-hidden pt-16">
       {/* Background Gradient Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
@@ -217,59 +228,66 @@ export default function Dashboard() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 px-5 pt-4">
-        {/* Greeting Section */}
-        <GreetingSection expiringCount={totalExpiring} />
+      <div className="relative z-10 px-4 md:px-6 pt-4 md:pt-6 md:max-w-[1024px] md:mx-auto">
+        {/* Page Header */}
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Expiring Soon</h1>
+          <p className="text-sm md:text-base text-glass-secondary">
+            {totalExpiring === 0 
+              ? 'No documents expiring in the next 30 days'
+              : `${totalExpiring} document${totalExpiring !== 1 ? 's' : ''} expiring in the next 30 days`}
+          </p>
+        </div>
 
         {/* Urgency Summary Cards */}
-        <div className="mb-5">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-3 gap-2.5"
-          >
-            <motion.div variants={staggerItem}>
-              <UrgencySummaryCard
-                count={urgentCount}
-                label="URGENT"
-                icon={AlertCircle}
-                bgColor=""
-                textColor="text-red-500"
-                iconColor="text-red-400"
-              />
+        {totalExpiring > 0 && (
+          <div className="mb-6 md:mb-8">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-3 gap-3 md:gap-4"
+            >
+              <motion.div variants={staggerItem}>
+                <UrgencySummaryCard
+                  count={urgentCount}
+                  label="URGENT"
+                  icon={AlertCircle}
+                  bgColor=""
+                  textColor="text-red-500"
+                  iconColor="text-red-400"
+                />
+              </motion.div>
+              <motion.div variants={staggerItem}>
+                <UrgencySummaryCard
+                  count={soonCount}
+                  label="SOON"
+                  icon={AlertCircle}
+                  bgColor=""
+                  textColor="text-orange-500"
+                  iconColor="text-orange-400"
+                />
+              </motion.div>
+              <motion.div variants={staggerItem}>
+                <UrgencySummaryCard
+                  count={upcomingCount}
+                  label="UPCOMING"
+                  icon={AlertCircle}
+                  bgColor=""
+                  textColor="text-yellow-500"
+                  iconColor="text-yellow-400"
+                />
+              </motion.div>
             </motion.div>
-            <motion.div variants={staggerItem}>
-              <UrgencySummaryCard
-                count={soonCount}
-                label="SOON"
-                icon={AlertCircle}
-                bgColor=""
-                textColor="text-orange-500"
-                iconColor="text-orange-400"
-              />
-            </motion.div>
-            <motion.div variants={staggerItem}>
-              <UrgencySummaryCard
-                count={upcomingCount}
-                label="UPCOMING"
-                icon={AlertCircle}
-                bgColor=""
-                textColor="text-yellow-500"
-                iconColor="text-yellow-400"
-              />
-            </motion.div>
-          </motion.div>
-        </div>
+          </div>
+        )}
 
-        {/* Activity Chart */}
-        <ActivityChart documents={documents} />
-
-        {/* Document List Section */}
-        <div className="mt-6 mb-4">
-          <h3 className="text-xl font-bold text-white mb-1">Expiring Soon</h3>
-          <p className="text-sm text-glass-secondary mb-4">Next 30 days</p>
-        </div>
+        {/* Calendar View */}
+        {totalExpiring > 0 && (
+          <div className="mb-6 md:mb-8">
+            <CalendarView dates={[]} />
+          </div>
+        )}
 
         {/* Pull to Refresh Indicator */}
         {isRefreshing && (
@@ -293,7 +311,7 @@ export default function Dashboard() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="space-y-0"
+          className="space-y-0 md:space-y-4"
         >
           {documents.length === 0 ? (
             // Empty State
@@ -345,7 +363,7 @@ export default function Dashboard() {
             setIsModalOpen(false);
             setSelectedDocument(null);
           }}
-          onSave={handleMarkRenewed}
+          onSave={handleConfirmRenew}
         />
       )}
     </div>

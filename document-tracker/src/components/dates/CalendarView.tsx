@@ -1,65 +1,47 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
-import type { Document } from '../../types';
-import { getDaysUntil } from '../../utils/dateUtils';
-import DocumentCard from '../documents/DocumentCard';
+import type { ImportantDate } from '../../types';
+import { safeArray, cleanArray } from '../../utils/safeArray';
 
 interface CalendarViewProps {
-  documents: Document[];
-  onDocumentClick?: (documentId: string) => void;
-  onMarkRenewed: (document: Document) => void;
+  dates?: ImportantDate[];
 }
 
-const getUrgencyColor = (daysLeft: number): string => {
-  if (daysLeft < 0) return 'bg-red-500';
-  if (daysLeft <= 7) return 'bg-red-500';
-  if (daysLeft <= 14) return 'bg-orange-500';
-  if (daysLeft <= 30) return 'bg-yellow-500';
-  return 'bg-green-500';
-};
-
-export default function CalendarView({ documents, onDocumentClick, onMarkRenewed }: CalendarViewProps) {
+export default function CalendarView({ dates = [] }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Get documents for each date
-  const documentsByDate = useMemo(() => {
-    const map = new Map<string, Document[]>();
-    documents.forEach((doc) => {
-      const dateKey = format(new Date(doc.expiration_date), 'yyyy-MM-dd');
-      if (!map.has(dateKey)) {
-        map.set(dateKey, []);
+  // Get important dates for each date - SAFE VERSION
+  const datesByDate = useMemo(() => {
+    const map = new Map<string, ImportantDate[]>();
+    // Use safeArray utility to ensure we always have an array
+    const safeDates = cleanArray<ImportantDate>(dates);
+    
+    safeDates.forEach((importantDate) => {
+      if (!importantDate?.date) {
+        console.warn('CalendarView: Invalid importantDate (missing date)', importantDate);
+        return;
       }
-      map.get(dateKey)!.push(doc);
+      try {
+        const dateKey = format(new Date(importantDate.date), 'yyyy-MM-dd');
+        if (!map.has(dateKey)) {
+          map.set(dateKey, []);
+        }
+        map.get(dateKey)!.push(importantDate);
+      } catch (error) {
+        console.error('CalendarView: Error processing date', importantDate.date, error);
+      }
     });
     return map;
-  }, [documents]);
+  }, [dates]);
 
-  // Get documents for selected date
-  const selectedDateDocuments = useMemo(() => {
+  // Get important dates for selected date
+  const selectedDateItems = useMemo(() => {
     if (!selectedDate) return [];
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    return documentsByDate.get(dateKey) || [];
-  }, [selectedDate, documentsByDate]);
-
-  // Get most urgent color for a date
-  const getDateUrgencyColor = (date: Date): string | null => {
-    const dateKey = format(date, 'yyyy-MM-dd');
-    const docs = documentsByDate.get(dateKey);
-    if (!docs || docs.length === 0) return null;
-    
-    // Find most urgent document
-    let mostUrgentDays = Infinity;
-    docs.forEach((doc) => {
-      const days = getDaysUntil(doc.expiration_date);
-      if (days < mostUrgentDays) {
-        mostUrgentDays = days;
-      }
-    });
-    
-    return getUrgencyColor(mostUrgentDays);
-  };
+    return datesByDate.get(dateKey) || [];
+  }, [selectedDate, datesByDate]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -126,8 +108,7 @@ export default function CalendarView({ documents, onDocumentClick, onMarkRenewed
             const isTodayDate = isToday(day);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
             const dateKey = format(day, 'yyyy-MM-dd');
-            const dateDocs = documentsByDate.get(dateKey) || [];
-            const urgencyColor = getDateUrgencyColor(day);
+            const dateItems = datesByDate.get(dateKey) || [];
 
             return (
               <button
@@ -145,16 +126,16 @@ export default function CalendarView({ documents, onDocumentClick, onMarkRenewed
                 `}
               >
                 <span>{format(day, 'd')}</span>
-                {isCurrentMonth && dateDocs.length > 0 && (
+                {isCurrentMonth && dateItems.length > 0 && (
                   <div className="absolute bottom-1 flex gap-0.5">
-                    {dateDocs.slice(0, 3).map((_, index) => (
+                    {dateItems.slice(0, 3).map((_, index) => (
                       <div
                         key={index}
-                        className={`w-1 h-1 rounded-full ${urgencyColor || 'bg-gray-400'}`}
+                        className="w-1 h-1 rounded-full bg-purple-500"
                       />
                     ))}
-                    {dateDocs.length > 3 && (
-                      <div className="w-1 h-1 rounded-full bg-gray-400" />
+                    {dateItems.length > 3 && (
+                      <div className="w-1 h-1 rounded-full bg-purple-400" />
                     )}
                   </div>
                 )}
@@ -164,28 +145,47 @@ export default function CalendarView({ documents, onDocumentClick, onMarkRenewed
         </div>
       </div>
 
-      {/* Selected Date Documents */}
+      {/* Selected Date Important Dates */}
       {selectedDate && (
         <div className="space-y-3">
           <h4 className="text-base font-bold text-white">
-            Documents expiring on {format(selectedDate, 'MMM d')}
+            Important dates on {format(selectedDate, 'MMM d, yyyy')}
           </h4>
-          {selectedDateDocuments.length === 0 ? (
+          {selectedDateItems.length === 0 ? (
             <p className="text-sm text-glass-secondary text-center py-4">
-              No documents expiring on this date
+              No important dates on this date
             </p>
           ) : (
             <div className="space-y-3">
-              {selectedDateDocuments.map((document) => (
+              {selectedDateItems.map((item) => (
                 <div
-                  key={document.id}
-                  onClick={() => onDocumentClick?.(document.id)}
-                  className="cursor-pointer"
+                  key={item.id}
+                  className="p-4 rounded-2xl"
+                  style={{
+                    background: 'rgba(55, 48, 70, 0.6)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                  }}
                 >
-                  <DocumentCard
-                    document={document}
-                    onMarkRenewed={onMarkRenewed}
-                  />
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                      <CalendarIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-semibold text-white mb-1">{item.title}</h5>
+                      {item.description && (
+                        <p className="text-sm text-white/70 mb-2">{item.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 text-xs text-white/50">
+                        <span className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-300">
+                          {item.category}
+                        </span>
+                        {item.reminder_days && (
+                          <span>Reminder: {item.reminder_days} days before</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

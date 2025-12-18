@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
-import SyncStatusIndicator from '../shared/SyncStatusIndicator';
 import NotificationPermissionStatus from '../shared/NotificationPermissionStatus';
 import { useAuth } from '../../hooks/useAuth';
 import Avatar from '../ui/Avatar';
 import QuickAddModal from '../documents/QuickAddModal';
 import AddImportantDateModal from '../dates/AddImportantDateModal';
+import SearchOverlay from '../search/SearchOverlay';
 
 export default function Header() {
   const { user } = useAuth();
@@ -17,6 +17,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isImportantDateOpen, setIsImportantDateOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,41 +69,45 @@ export default function Header() {
         initial={{ backdropFilter: 'blur(0px)' }}
         animate={{
           backdropFilter: isScrolled ? 'blur(20px)' : 'blur(0px)',
-          backgroundColor: isScrolled ? 'rgba(35, 29, 51, 0.6)' : 'rgba(35, 29, 51, 0)',
+          backgroundColor: isScrolled ? 'rgba(35, 29, 51, 0.6)' : 'rgba(35, 29, 51, 0.3)',
         }}
         transition={{ duration: 0.3 }}
-        className="sticky top-0 z-20 border-b border-white/10 h-[70px] flex items-center"
+        className="sticky top-0 z-50 border-b border-white/10 h-[70px] flex items-center"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+        }}
       >
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full md:max-w-[1024px] md:mx-auto md:px-6">
           <motion.h1
-            onClick={() => navigate('/')}
-            className="text-lg font-bold text-white pl-4 pr-2 cursor-pointer"
+            onClick={() => navigate('/dashboard')}
+            className="text-lg font-bold text-white pl-4 md:pl-0 pr-2 cursor-pointer"
             style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             DocuTrack
           </motion.h1>
-          <div className="flex items-center gap-3 pr-5">
+          <div className="flex items-center gap-3 md:gap-4 pr-5 md:pr-0">
             {showAddButton && (
               <motion.button
+                data-fab-button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddClick}
-                className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 touch-manipulation active:scale-95"
+                className="w-9 h-9 md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all duration-300 touch-manipulation active:scale-95"
                 style={{
                   background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
                   boxShadow: '0 2px 12px rgba(139, 92, 246, 0.4)',
-                  minWidth: '40px',
-                  minHeight: '40px',
                 }}
+                aria-label="Add document"
               >
-                <Plus className="w-3.5 h-3.5 text-white" />
+                <Plus className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </motion.button>
             )}
-            <SyncStatusIndicator compact />
             <NotificationBell />
-            <div className="w-10 h-10 rounded-full glass-card border border-white/20 flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 md:w-[40px] md:h-[40px] rounded-full glass-card border border-white/20 flex items-center justify-center overflow-hidden">
               <Avatar
                 src={user?.user_metadata?.avatar_url}
                 fallback={getInitials()}
@@ -135,6 +140,10 @@ export default function Header() {
           }}
         />
       )}
+      <SearchOverlay
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </>
   );
 }

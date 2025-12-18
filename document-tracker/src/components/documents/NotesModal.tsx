@@ -76,7 +76,7 @@ export default function NotesModal({ isOpen, onClose, notes, documentName, creat
                     return (
                       <div
                         key={index}
-                        className="text-white text-base leading-relaxed"
+                        className="text-white text-base md:text-[19px] leading-relaxed"
                         style={{
                           fontFamily: 'system-ui, -apple-system, sans-serif',
                         }}

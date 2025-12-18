@@ -158,17 +158,16 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               cursor-pointer
               ${error 
                 ? 'border-2 border-red-500' 
-                : 'border border-white/10'
+                : 'border border-gray-300'
               }
-              ${selectedOption ? 'text-white' : 'text-glass-secondary'}
-              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-white/20'}
+              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-purple-400'}
             `}
             style={error ? {
-              background: 'rgba(239, 68, 68, 0.1)',
-              backdropFilter: 'blur(15px)',
+              background: '#FFFFFF',
+              color: '#000000',
             } : {
-              background: 'rgba(35, 29, 51, 0.6)',
-              backdropFilter: 'blur(15px)',
+              background: '#FFFFFF',
+              color: selectedOption ? '#000000' : 'rgba(0, 0, 0, 0.6)',
             }}
             aria-haspopup="listbox"
             aria-expanded={isOpen}
@@ -176,11 +175,13 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
           >
             <span className="flex items-center gap-2 flex-1 min-w-0 pointer-events-none">
               {selectedOption?.icon && <span className="flex-shrink-0">{selectedOption.icon}</span>}
-              <span className={`truncate ${selectedOption ? 'text-white' : 'text-glass-secondary'}`}>
+              <span className="truncate" style={{
+                color: selectedOption ? '#000000' : 'rgba(0, 0, 0, 0.6)',
+              }}>
                 {selectedOption?.label || placeholder}
               </span>
             </span>
-            <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform pointer-events-none ${isOpen ? 'rotate-180' : ''}`} style={{ color: selectedOption ? '#A78BFA' : '#A78BFA' }} />
+            <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform pointer-events-none ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#8B5CF6' }} />
           </button>
           {error && (
             <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-400 animate-slide-down-fade-in">

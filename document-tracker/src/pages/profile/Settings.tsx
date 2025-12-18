@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ChevronDown,
   Check,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -36,6 +37,7 @@ import QuietHoursModal from '../../components/profile/QuietHoursModal';
 import LanguagePickerModal from '../../components/profile/LanguagePickerModal';
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
 import ExportDataModal from '../../components/profile/ExportDataModal';
+import OnboardingTutorial from '../../components/onboarding/OnboardingTutorial';
 import { triggerHaptic } from '../../utils/animations';
 import Skeleton from '../../components/ui/Skeleton';
 import type { NotificationPreferences } from '../../services/notifications';
@@ -92,6 +94,7 @@ export default function Settings() {
   const [isLanguagePickerOpen, setIsLanguagePickerOpen] = useState(false);
   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [isExportDataOpen, setIsExportDataOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isClearCacheConfirmOpen, setIsClearCacheConfirmOpen] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -315,24 +318,25 @@ export default function Settings() {
     <motion.button
       whileTap={{ scale: 0.98 }}
       onClick={onPress}
-      className="w-full h-[60px] px-4 flex items-center justify-between border-b border-white/5 last:border-b-0"
+      className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5 last:border-b-0"
       style={{
         color: isDanger ? '#F87171' : '#FFFFFF',
       }}
     >
-      <div className="flex items-center gap-4 flex-1 min-w-0">
+      <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
         <div
-          className="w-6 h-6 flex items-center justify-center flex-shrink-0"
+          className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0"
           style={{
+            background: 'rgba(167, 139, 250, 0.1)',
             color: isDanger ? '#F87171' : '#A78BFA',
           }}
         >
-          <Icon className="w-6 h-6" />
+          <Icon className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-base font-semibold text-left">{label}</div>
+          <div className="text-[17px] md:text-[19px] font-semibold text-left">{label}</div>
           {description && (
-            <div className="text-[13px] text-left mt-0.5" style={{ color: '#A78BFA' }}>
+            <div className="text-[13px] md:text-[15px] text-left mt-0.5" style={{ color: '#A78BFA' }}>
               {description}
             </div>
           )}
@@ -340,7 +344,7 @@ export default function Settings() {
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {value && (
-          <span className="text-sm" style={{ color: '#A78BFA' }}>
+          <span className="text-[15px] md:text-[17px]" style={{ color: '#A78BFA' }}>
             {value}
           </span>
         )}
@@ -417,7 +421,7 @@ export default function Settings() {
         </header>
 
         {/* Scrollable Content */}
-        <div className="px-4 py-6 space-y-6">
+        <div className="px-4 md:px-5 py-6 space-y-6 md:max-w-[700px] md:mx-auto">
           {/* Section 1: Account Settings */}
           <div>
             <h3
@@ -486,12 +490,14 @@ export default function Settings() {
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
               }}
             >
-              <div className="w-full h-[60px] px-4 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <Bell className="w-6 h-6 flex-shrink-0" style={{ color: '#A78BFA' }} />
+              <div className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5">
+                <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
+                    <Bell className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-semibold text-white">Push Notifications</div>
-                    <div className="text-[13px] mt-0.5" style={{ color: '#A78BFA' }}>
+                    <div className="text-[17px] md:text-[19px] font-semibold text-white">Push Notifications</div>
+                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#A78BFA' }}>
                       Get notified about expiring documents
                     </div>
                   </div>
@@ -505,12 +511,14 @@ export default function Settings() {
                 />
               </div>
 
-              <div className="w-full h-[60px] px-4 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <Mail className="w-6 h-6 flex-shrink-0" style={{ color: '#A78BFA' }} />
+              <div className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5">
+                <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
+                    <Mail className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-semibold text-white">Email Notifications</div>
-                    <div className="text-[13px] mt-0.5" style={{ color: '#A78BFA' }}>
+                    <div className="text-[17px] md:text-[19px] font-semibold text-white">Email Notifications</div>
+                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#A78BFA' }}>
                       Receive email reminders
                     </div>
                   </div>
@@ -532,11 +540,13 @@ export default function Settings() {
                     triggerHaptic('light');
                     setExpandedIntervals(!expandedIntervals);
                   }}
-                  className="w-full h-[60px] px-4 flex items-center justify-between border-b border-white/5"
+                  className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5"
                 >
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <Clock className="w-6 h-6 flex-shrink-0" style={{ color: '#A78BFA' }} />
-                    <div className="text-base font-semibold text-white">Notification Intervals</div>
+                  <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
+                      <Clock className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                    </div>
+                    <div className="text-[17px] md:text-[19px] font-semibold text-white">Notification Intervals</div>
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 transition-transform ${expandedIntervals ? 'rotate-180' : ''}`}
@@ -646,12 +656,14 @@ export default function Settings() {
                   setIsLanguagePickerOpen(true);
                 }}
               />
-              <div className="w-full h-[60px] px-4 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <Moon className="w-6 h-6 flex-shrink-0" style={{ color: '#A78BFA' }} />
+              <div className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5">
+                <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
+                    <Moon className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-base font-semibold text-white">Dark Mode</div>
-                    <div className="text-[13px] mt-0.5" style={{ color: '#A78BFA' }}>
+                    <div className="text-[17px] md:text-[19px] font-semibold text-white">Dark Mode</div>
+                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#A78BFA' }}>
                       Always dark mode
                     </div>
                   </div>
@@ -683,13 +695,15 @@ export default function Settings() {
               }}
             >
               {/* Storage Used */}
-              <div className="px-4 py-4 border-b border-white/5">
-                <div className="flex items-center gap-4 mb-3">
-                  <Database className="w-6 h-6 flex-shrink-0" style={{ color: '#A78BFA' }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-base font-semibold text-white">Storage Used</div>
+              <div className="px-4 md:px-5 py-4 md:py-5 border-b border-white/5">
+                <div className="flex items-center gap-3 md:gap-4 mb-3">
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
+                    <Database className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
                   </div>
-                  <span className="text-sm" style={{ color: '#A78BFA' }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[17px] md:text-[19px] font-semibold text-white">Storage Used</div>
+                  </div>
+                  <span className="text-[15px] md:text-[17px]" style={{ color: '#A78BFA' }}>
                     {storageUsed} / {storageTotal}
                   </span>
                 </div>
@@ -779,12 +793,30 @@ export default function Settings() {
                   showToast('Help & Support coming soon', 'info');
                 }}
               />
+              <SettingsRow
+                icon={RefreshCw}
+                label="Replay Tutorial"
+                onPress={() => {
+                  triggerHaptic('light');
+                  setIsTutorialOpen(true);
+                }}
+              />
             </div>
           </div>
         </div>
       </div>
 
       {/* Modals */}
+      <OnboardingTutorial
+        isOpen={isTutorialOpen}
+        onComplete={() => {
+          setIsTutorialOpen(false);
+          showToast('Tutorial completed!', 'success');
+        }}
+        onSkip={() => {
+          setIsTutorialOpen(false);
+        }}
+      />
       <QuietHoursModal
         isOpen={isQuietHoursOpen}
         onClose={() => setIsQuietHoursOpen(false)}

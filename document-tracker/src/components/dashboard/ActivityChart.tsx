@@ -69,17 +69,17 @@ export default function ActivityChart({ documents = [], data }: ActivityChartPro
   };
 
   return (
-    <div className="glass-card rounded-2xl p-6 mt-5">
+    <div className="glass-card rounded-2xl p-6 md:p-8 mt-5 md:mt-12">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-white">Activity</h3>
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <h3 className="text-xl md:text-2xl font-bold text-white">Activity</h3>
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="glass-card-subtle px-3 py-1.5 rounded-lg text-sm text-white flex items-center gap-2 hover:bg-white/10 transition-colors"
+            className="glass-card-subtle px-4 md:px-5 py-2 md:py-2.5 rounded-lg text-sm md:text-base text-white flex items-center gap-2 hover:bg-white/10 transition-colors"
           >
             {selectedPeriod}
-            <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Dropdown Menu */}

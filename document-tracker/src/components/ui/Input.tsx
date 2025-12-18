@@ -62,6 +62,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             }}
             transition={{ duration: 0.2 }}
             className="block text-sm font-semibold text-white mb-3 mt-1"
+            style={{ color: '#FFFFFF' }}
           >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
@@ -85,22 +86,25 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             onFocus={handleFocus}
             onBlur={handleBlur}
             className={`
-              w-full h-[52px] px-4 glass-input
-              text-[15px] text-white
+              w-full h-[52px] px-4 rounded-xl
+              text-[15px]
               ${icon ? 'pl-11' : ''}
               ${isPassword ? 'pr-11' : ''}
               ${error 
-                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                : 'focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
+                ? 'border-2 border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
+                : 'border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
               }
               ${props.disabled ? 'opacity-50 cursor-not-allowed' : ''}
               ${className}
             `}
             style={{
+              background: '#FFFFFF',
+              color: '#000000',
               boxShadow: isFocused && !error
                 ? '0 0 0 3px rgba(139, 92, 246, 0.3)'
                 : '0 0 0 0px rgba(139, 92, 246, 0)',
             }}
+            placeholder={props.placeholder}
             transition={{ duration: 0.2 }}
             {...props}
           />

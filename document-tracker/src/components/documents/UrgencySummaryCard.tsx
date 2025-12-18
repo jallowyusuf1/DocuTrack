@@ -58,12 +58,28 @@ export default function UrgencySummaryCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       whileHover={{ y: -2 }}
-      className={`${cardStyle.bg} ${cardStyle.border} ${cardStyle.glow} backdrop-blur-md rounded-2xl p-4 min-h-[100px] flex flex-col justify-center relative`}
+      className={`${cardStyle.bg} ${cardStyle.border} ${cardStyle.glow} backdrop-blur-md rounded-2xl p-4 md:p-6 min-h-[100px] flex flex-col justify-center relative`}
     >
-      <Icon className={`w-4 h-4 ${iconColor} absolute top-2.5 right-2.5 opacity-80`} />
-      <div className="pr-5">
-        <p className={`text-3xl font-bold ${textColor} leading-none mb-1`}>{displayCount}</p>
-        <p className={`text-[9px] font-bold ${textColor} uppercase tracking-wider leading-tight`}>{label}</p>
+      <Icon className={`w-[44px] h-[44px] md:w-[52px] md:h-[52px] ${iconColor} absolute top-4 right-4 opacity-80`} />
+      <div className="pr-14 md:pr-16">
+        <p
+          className={`text-[32px] md:text-[40px] font-bold ${textColor} leading-none mb-1 md:mb-1.5`}
+          style={{
+            fontFamily: 'SF Pro Display, -apple-system, sans-serif',
+            letterSpacing: '-0.5px',
+          }}
+        >
+          {displayCount}
+        </p>
+        <p
+          className={`text-[9px] md:text-[10px] font-bold ${textColor} uppercase tracking-wider leading-tight`}
+          style={{
+            fontFamily: 'SF Pro Text, -apple-system, sans-serif',
+            letterSpacing: '0.06px',
+          }}
+        >
+          {label}
+        </p>
       </div>
     </motion.div>
   );

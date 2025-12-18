@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, FileText, Calendar } from 'lucide-react';
 import type { Document } from '../../types';
-import { formatDate, getDaysUntil, getUrgencyLevel } from '../../utils/dateUtils';
+import { getDaysUntil, getUrgencyLevel } from '../../utils/dateUtils';
 import { triggerHaptic } from '../../utils/animations';
 
 interface DashboardDocumentCardProps {
@@ -10,17 +9,9 @@ interface DashboardDocumentCardProps {
 }
 
 const getUrgencyColor = (urgency: string, daysLeft: number) => {
-  if (daysLeft < 0 || urgency === 'urgent') return '#EF4444';
-  if (urgency === 'soon') return '#F59E0B';
-  if (urgency === 'upcoming') return '#EAB308';
-  return '#10B981';
-};
-
-const getUrgencyGlow = (urgency: string, daysLeft: number) => {
-  if (daysLeft < 0 || urgency === 'urgent') return 'shadow-[0_0_20px_rgba(239,68,68,0.3)]';
-  if (urgency === 'soon') return 'shadow-[0_0_20px_rgba(249,115,22,0.3)]';
-  if (urgency === 'upcoming') return 'shadow-[0_0_20px_rgba(234,179,8,0.3)]';
-  return '';
+  if (daysLeft < 0 || urgency === 'urgent') return '#FF3B30'; // Red for urgent
+  if (urgency === 'soon') return '#FF9500'; // Orange for soon
+  return '#34C759'; // Green for upcoming
 };
 
 export default function DashboardDocumentCard({ document }: DashboardDocumentCardProps) {
@@ -28,76 +19,86 @@ export default function DashboardDocumentCard({ document }: DashboardDocumentCar
   const daysUntil = getDaysUntil(document.expiration_date);
   const urgency = getUrgencyLevel(document.expiration_date);
   const urgencyColor = getUrgencyColor(urgency, daysUntil);
-  const urgencyGlow = getUrgencyGlow(urgency, daysUntil);
 
   const handleClick = () => {
     triggerHaptic('light');
     navigate(`/documents/${document.id}`);
   };
 
+  const daysText = daysUntil === 0
+    ? 'Expires today'
+    : daysUntil === 1
+    ? '1 day left'
+    : daysUntil < 0
+    ? `${Math.abs(daysUntil)} days overdue`
+    : `${daysUntil} days left`;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      whileHover={{ y: -4, boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)' }}
+    <motion.button
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
       onClick={handleClick}
-      className={`
-        glass-card rounded-2xl p-4 mb-3 cursor-pointer
-        border-l-4 transition-all duration-200
-        ${urgencyGlow}
-      `}
-      style={{ borderLeftColor: urgencyColor }}
+      className="w-full text-left mb-3 md:mb-4"
+      style={{
+        fontFamily: 'SF Pro Text, -apple-system, sans-serif',
+      }}
     >
-      <div className="flex items-center gap-4">
-        {/* Document Type Icon */}
+      <div
+        className="w-full rounded-xl p-3 md:p-4 flex items-center gap-3 md:gap-4 transition-all active:opacity-80"
+        style={{
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'saturate(180%) blur(60px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(60px)',
+          border: `1px solid ${urgencyColor}20`,
+          borderLeft: `3px solid ${urgencyColor}`,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+        }}
+      >
+        {/* Purple Document Thumbnail */}
         <div
-          className="w-10 h-10 rounded-full glass-card-subtle flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: 'rgba(42, 38, 64, 0.6)' }}
-        >
-          <FileText className="w-5 h-5 text-white" />
-        </div>
+          className="flex-shrink-0 w-[72px] h-[96px] md:w-[80px] md:h-[107px] rounded bg-gradient-to-br from-purple-500 to-purple-700"
+          style={{
+            boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+          }}
+        />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-white mb-1 truncate">
-            {document.document_name}
-          </h3>
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="w-3 h-3 text-glass-secondary" />
-            <p className="text-sm text-glass-secondary">
-              {formatDate(document.expiration_date)}
-            </p>
-          </div>
-          <div
-            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+          {/* Document Name */}
+          <h3
+            className="text-base md:text-lg font-semibold text-black truncate mb-1 md:mb-1.5"
             style={{
-              backgroundColor: `${urgencyColor}20`,
-              color: urgencyColor,
+              fontFamily: 'SF Pro Display, -apple-system, sans-serif',
+              letterSpacing: '-0.24px',
             }}
           >
-            {daysUntil === 0
-              ? 'Expires today'
-              : daysUntil === 1
-              ? '1 day left'
-              : daysUntil < 0
-              ? `${Math.abs(daysUntil)} days overdue`
-              : `${daysUntil} days left`}
+            {document.document_name}
+          </h3>
+
+          {/* Days Left - Color Coded */}
+          <div
+            className="text-xs md:text-sm font-semibold"
+            style={{
+              color: urgencyColor,
+              fontFamily: 'SF Pro Text, -apple-system, sans-serif',
+              letterSpacing: '-0.08px',
+            }}
+          >
+            {daysText}
           </div>
         </div>
 
-        {/* Action Button */}
-        <button
-          className="w-8 h-8 rounded-full glass-card-subtle flex items-center justify-center flex-shrink-0 hover:bg-white/10 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleClick();
+        {/* Urgency Dot Indicator */}
+        <div
+          className="flex-shrink-0 w-2 h-2 rounded-full"
+          style={{
+            background: urgencyColor,
+            boxShadow: `0 0 8px ${urgencyColor}80`,
           }}
-        >
-          <ChevronRight className="w-5 h-5 text-glass-primary" />
-        </button>
+        />
       </div>
-    </motion.div>
+    </motion.button>
   );
 }
 

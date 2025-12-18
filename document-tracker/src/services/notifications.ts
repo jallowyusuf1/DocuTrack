@@ -294,6 +294,21 @@ export async function markAllAsRead(userId: string): Promise<void> {
 }
 
 /**
+ * Delete a notification
+ */
+export async function deleteNotification(notificationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('id', notificationId);
+
+  if (error) {
+    console.error('Failed to delete notification:', error);
+    throw new Error(`Failed to delete notification: ${error.message}`);
+  }
+}
+
+/**
  * Get unread notification count
  */
 export async function getUnreadCount(userId: string): Promise<number> {
@@ -352,7 +367,7 @@ export async function getNotificationPreferences(
 ): Promise<NotificationPreferences> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('notification_preferences')
+    .select('push_notifications, email_notifications')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -369,9 +384,10 @@ export async function getNotificationPreferences(
     };
   }
 
-  return (data.notification_preferences as NotificationPreferences) || {
-    push_enabled: true,
-    email_enabled: false,
+  // Map database columns to preferences object
+  return {
+    push_enabled: data.push_notifications ?? true,
+    email_enabled: data.email_notifications ?? false,
     notify_30_days: true,
     notify_14_days: false,
     notify_7_days: true,
@@ -387,13 +403,21 @@ export async function updateNotificationPreferences(
   userId: string,
   preferences: Partial<NotificationPreferences>
 ): Promise<void> {
-  const current = await getNotificationPreferences(userId);
-  const updated = { ...current, ...preferences };
+  // Map preferences to database columns
+  const updateData: any = {};
+  
+  if (preferences.push_enabled !== undefined) {
+    updateData.push_notifications = preferences.push_enabled;
+  }
+  
+  if (preferences.email_enabled !== undefined) {
+    updateData.email_notifications = preferences.email_enabled;
+  }
 
   // Try to update existing profile
   const { error: updateError } = await supabase
     .from('user_profiles')
-    .update({ notification_preferences: updated })
+    .update(updateData)
     .eq('user_id', userId);
 
   // If update fails (profile might not exist), try to insert
@@ -407,9 +431,9 @@ export async function updateNotificationPreferences(
       .from('user_profiles')
       .insert({
         user_id: userId,
-        notification_preferences: updated,
+        push_notifications: preferences.push_enabled ?? true,
+        email_notifications: preferences.email_enabled ?? false,
         full_name: user.user_metadata?.full_name || null,
-        email: user.email || null,
       });
 
     if (insertError) {

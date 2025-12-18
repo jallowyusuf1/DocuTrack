@@ -91,25 +91,54 @@ export default function ImageSelectionModal({
               backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(30px)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
+              maxWidth: '100%',
             }}
+            data-tablet-image-modal="true"
             onClick={(e) => e.stopPropagation()}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
+            <style>{`
+              @media (min-width: 768px) {
+                [data-tablet-image-modal="true"] {
+                  max-width: 600px !important;
+                  left: 50% !important;
+                  transform: translateX(-50%) !important;
+                  right: auto !important;
+                }
+              }
+            `}</style>
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-2">
               <div 
-                className="w-10 h-1 rounded-full"
+                className="h-1 rounded-full"
                 style={{
                   background: 'rgba(255, 255, 255, 0.3)',
+                  width: '36px',
                 }}
+                data-tablet-handle="true"
               />
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-handle="true"] {
+                    width: 48px !important;
+                  }
+                }
+              `}</style>
             </div>
 
             {/* Content */}
-            <div className="px-6 pb-6">
-              <h2 className="text-xl font-bold text-white mb-6">Add Document</h2>
+            <div className="px-5 md:px-6 pb-6" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-padding="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-padding="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
+              <h2 className="text-[17px] md:text-[20px] font-bold text-white mb-6">Add Document</h2>
 
               <div className="space-y-4">
                 {/* Upload Image Button */}
@@ -117,7 +146,7 @@ export default function ImageSelectionModal({
                   whileTap={{ scale: 0.98 }}
                   onClick={handleUploadImage}
                   className="
-                    w-full h-14 rounded-xl
+                    w-full rounded-xl
                     flex items-center gap-4 px-4
                     font-medium
                     transition-all duration-200
@@ -127,10 +156,29 @@ export default function ImageSelectionModal({
                     background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))',
                     border: '2px solid rgba(59, 130, 246, 0.5)',
                     color: '#93C5FD',
+                    height: '80px',
                   }}
+                  data-tablet-image-btn="true"
                 >
-                  <Upload className="w-6 h-6" />
-                  <span className="flex-1 text-left">Choose from Gallery</span>
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-image-btn="true"] {
+                        height: 100px !important;
+                        width: 280px !important;
+                        margin: 0 auto;
+                      }
+                    }
+                  `}</style>
+                  <Upload className="w-6 h-6 md:w-16 md:h-16" data-tablet-icon="true" />
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-icon="true"] {
+                        width: 64px !important;
+                        height: 64px !important;
+                      }
+                    }
+                  `}</style>
+                  <span className="flex-1 text-left text-[17px] md:text-[20px]">Choose from Gallery</span>
                 </motion.button>
 
                 {/* Add Without Image Button */}
@@ -138,7 +186,7 @@ export default function ImageSelectionModal({
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddWithoutImage}
                   className="
-                    w-full h-14 rounded-xl
+                    w-full rounded-xl
                     flex items-center gap-4 px-4
                     font-medium
                     transition-all duration-200
@@ -149,10 +197,29 @@ export default function ImageSelectionModal({
                     backdropFilter: 'blur(10px)',
                     border: '2px solid rgba(255, 255, 255, 0.1)',
                     color: '#A78BFA',
+                    height: '80px',
                   }}
+                  data-tablet-image-btn2="true"
                 >
-                  <FileText className="w-6 h-6" />
-                  <span className="flex-1 text-left">Add Document Details</span>
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-image-btn2="true"] {
+                        height: 100px !important;
+                        width: 280px !important;
+                        margin: 0 auto;
+                      }
+                    }
+                  `}</style>
+                  <FileText className="w-6 h-6 md:w-16 md:h-16" data-tablet-icon2="true" />
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-icon2="true"] {
+                        width: 64px !important;
+                        height: 64px !important;
+                      }
+                    }
+                  `}</style>
+                  <span className="flex-1 text-left text-[17px] md:text-[20px]">Add Document Details</span>
                 </motion.button>
               </div>
 

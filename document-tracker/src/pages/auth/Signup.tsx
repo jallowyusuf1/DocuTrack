@@ -1,23 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Loader2, Calendar, Camera, Check } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Loader2, Calendar, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic } from '../../utils/animations';
 import { useAuth } from '../../hooks/useAuth';
 import { validateEmail, validatePassword } from '../../utils/validation';
-import { selectImageFromGallery, openCamera, compressImage, validateImage } from '../../utils/imageHandler';
+import { logTermsAcceptance } from '../../services/terms';
+import TermsModal from '../../components/auth/TermsModal';
 import { supabase } from '../../config/supabase';
-import TabSwitcher from '../../components/ui/TabSwitcher';
-import Avatar from '../../components/ui/Avatar';
-import Checkbox from '../../components/ui/Checkbox';
 
 interface SignupFormData {
   fullName: string;
   email: string;
   password: string;
   confirmPassword: string;
-  agreeToTerms: boolean;
+  acceptedTerms: boolean;
 }
 
 export default function Signup() {
@@ -26,10 +24,10 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  const [termsModalType, setTermsModalType] = useState<'terms' | 'privacy'>('terms');
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -43,14 +41,12 @@ export default function Signup() {
     mode: 'onSubmit',
     reValidateMode: 'onBlur',
     defaultValues: {
-      agreeToTerms: false,
+      acceptedTerms: false,
     },
   });
 
   const password = watch('password');
   const fullName = watch('fullName');
-
-  // Note: Home button navigation is handled directly in TabSwitcher component
 
   useEffect(() => {
     setTimeout(() => {
@@ -68,53 +64,6 @@ export default function Signup() {
     return null;
   }
 
-  const uploadAvatar = async (file: File, userId: string): Promise<string> => {
-    const validation = await validateImage(file);
-    if (!validation.valid) {
-      throw new Error(validation.error || 'Invalid image');
-    }
-    
-    const compressed = await compressImage(file, 400, 400, 0.9);
-    const finalFile = compressed instanceof File 
-      ? compressed 
-      : new File([compressed], file.name, { type: 'image/jpeg' });
-    
-    const fileName = `${userId}/${Date.now()}_${finalFile.name}`;
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, finalFile, {
-        cacheControl: '3600',
-        upsert: false,
-      });
-    
-    if (error) throw error;
-    
-    const { data: urlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(data.path);
-    
-    return urlData.publicUrl;
-  };
-
-  const handleAvatarSelect = async (source: 'camera' | 'gallery') => {
-    try {
-      setIsUploadingAvatar(true);
-      const file = source === 'camera' 
-        ? await openCamera()
-        : await selectImageFromGallery();
-      
-      if (!file) return;
-      
-      setAvatarFile(file);
-      const preview = URL.createObjectURL(file);
-      setAvatarPreview(preview);
-    } catch (error: any) {
-      setSubmitError(error.message || 'Failed to select image');
-    } finally {
-      setIsUploadingAvatar(false);
-    }
-  };
-
   const passwordRequirements = {
     minLength: password?.length >= 8,
     hasNumber: /[0-9]/.test(password || ''),
@@ -125,6 +74,11 @@ export default function Signup() {
     setSubmitError(null);
     triggerHaptic('light');
     
+    if (!data.acceptedTerms) {
+      setSubmitError('You must accept the Terms of Service and Privacy Policy to sign up');
+      return;
+    }
+    
     try {
       const result = await signup({
         email: data.email,
@@ -133,18 +87,7 @@ export default function Signup() {
       });
       
       if (result?.session && result.user?.id) {
-        if (avatarFile) {
-          try {
-            const avatarUrl = await uploadAvatar(avatarFile, result.user.id);
-            await supabase.auth.updateUser({
-              data: { avatar_url: avatarUrl },
-            });
-            await supabase.from('user_profiles').update({ avatar_url: avatarUrl }).eq('user_id', result.user.id);
-          } catch (avatarError) {
-            console.error('Avatar upload failed:', avatarError);
-          }
-        }
-        
+        await logTermsAcceptance(result.user.id);
         await checkAuth();
         setShowSuccess(true);
         triggerHaptic('medium');
@@ -163,568 +106,575 @@ export default function Signup() {
     }
   };
 
+  const isDarkMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Animated Background Gradient */}
-      <motion.div
-        className="fixed inset-0 z-0"
+    <div
+      className="signup-page"
+      style={{
+        minHeight: '100vh',
+          background: '#FFFFFF',
+          display: 'flex',
+          flexDirection: 'column',
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
+      >
+        {/* Background */}
+        <div
+          className="signup-background"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(180deg, #F2F2F7 0%, #FFFFFF 100%)',
+            zIndex: -1,
+          }}
+        />
+
+        {/* Container */}
+        <div
+          className="signup-container"
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '40px 16px',
+            maxWidth: '480px',
+            margin: '0 auto',
+            width: '100%',
+          }}
+        >
+          {/* Header - Glass Bubble Navigation */}
+          <div className="signup-header" style={{ padding: '16px 0', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              display: 'inline-flex',
+              borderRadius: '100px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'saturate(180%) blur(20px)',
+              WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+              border: '0.5px solid rgba(255, 255, 255, 0.3)',
+              padding: '4px',
+            }}>
+              <Link to="/" style={{ padding: '8px 18px', background: 'transparent', color: '#000000', textDecoration: 'none', borderRadius: '100px', fontSize: '15px', fontWeight: 500, transition: 'background 0.2s ease', WebkitTapHighlightColor: 'transparent' }}>
+                Home
+              </Link>
+              <Link to="/login" style={{ padding: '8px 18px', background: 'transparent', color: '#000000', textDecoration: 'none', borderRadius: '100px', fontSize: '15px', fontWeight: 500, transition: 'background 0.2s ease', WebkitTapHighlightColor: 'transparent' }}>
+                Login
+              </Link>
+              <div style={{ padding: '8px 18px', background: 'rgba(255, 255, 255, 0.6)', color: '#000000', borderRadius: '100px', fontSize: '15px', fontWeight: 600 }}>
+                Sign Up
+              </div>
+            </div>
+          </div>
+
+          {/* Logo Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="signup-logo-section"
+            style={{
+              textAlign: 'center',
+              marginBottom: '32px',
+            }}
+          >
+            <div
+              className="app-icon"
+              style={{
+                display: 'inline-block',
+                marginBottom: '16px',
+              }}
+            >
+              <svg width="64" height="64" viewBox="0 0 64 64" style={{ borderRadius: '14px', boxShadow: '0 8px 24px rgba(139, 92, 246, 0.3)' }}>
+                <rect width="64" height="64" rx="14" fill="url(#signupGradient)"/>
+                <path d="M19 16h26v32H19z" fill="white" opacity="0.9"/>
+                <path d="M22 22h20M22 30h20M22 38h13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                <defs>
+                  <linearGradient id="signupGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#8B5CF6"/>
+                    <stop offset="100%" stopColor="#6D28D9"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h1
+              className="page-title"
+              style={{
+                fontSize: '28px',
+                fontWeight: 700,
+                letterSpacing: '-0.3px',
+                color: '#000000',
+                marginBottom: '8px',
+              }}
+            >
+              Create your account
+            </h1>
+            <p
+              className="page-subtitle"
+              style={{
+                fontSize: '17px',
+                color: 'rgba(0, 0, 0, 0.6)',
+                marginTop: '8px',
+              }}
+            >
+              Start tracking documents in seconds
+            </p>
+          </motion.div>
+
+          {/* Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Full Name */}
+            <div className="apple-input-group">
+              <label htmlFor="fullName">Full Name</label>
+              <input
+                {...register('fullName', {
+                  required: 'Full name is required',
+                  minLength: {
+                    value: 2,
+                    message: 'Full name must be at least 2 characters',
+                  },
+                })}
+                ref={firstInputRef}
+                type="text"
+                id="fullName"
+                placeholder="Enter your full name"
+                autoComplete="name"
+                className={errors.fullName && touchedFields.fullName ? 'error' : ''}
+                aria-invalid={errors.fullName ? 'true' : 'false'}
+              />
+              {errors.fullName && touchedFields.fullName && (
+                <p className="apple-error-message">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.fullName.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="apple-input-group">
+              <label htmlFor="email">Email</label>
+              <input
+                {...register('email', {
+                  required: 'Email is required',
+                  validate: (value) => validateEmail(value) || 'Please enter a valid email address',
+                })}
+                type="email"
+                id="email"
+                placeholder="name@example.com"
+                autoComplete="email"
+                className={errors.email && touchedFields.email ? 'error' : ''}
+                aria-invalid={errors.email ? 'true' : 'false'}
+              />
+              {errors.email && touchedFields.email && (
+                <p className="apple-error-message">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="apple-input-group">
+              <label htmlFor="password">Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  {...register('password', {
+                    required: 'Password is required',
+                    validate: (value) =>
+                      validatePassword(value) ||
+                      'Password must be at least 8 characters with uppercase, lowercase, and number',
+                  })}
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  placeholder="Enter your password"
+                  autoComplete="new-password"
+                  className={errors.password && touchedFields.password ? 'error' : ''}
+                  style={{ paddingRight: '48px' }}
+                  aria-invalid={errors.password ? 'true' : 'false'}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setShowPassword(!showPassword);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    color: isDarkMode ? 'rgba(235, 235, 245, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+                  }}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.password && touchedFields.password && (
+                <p className="apple-error-message">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.password.message}
+                </p>
+              )}
+
+              {/* Password Requirements */}
+              {password && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-3 space-y-2"
+                  style={{
+                    fontSize: '13px',
+                    color: isDarkMode ? 'rgba(235, 235, 245, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+                  }}
+                >
+                  {[
+                    { key: 'minLength', label: 'At least 8 characters', met: passwordRequirements.minLength },
+                    { key: 'hasNumber', label: 'One number', met: passwordRequirements.hasNumber },
+                    { key: 'hasSpecial', label: 'One special character', met: passwordRequirements.hasSpecial },
+                  ].map((req) => (
+                    <div key={req.key} className="flex items-center gap-2">
+                      {req.met ? (
+                        <span style={{ color: '#34C759', fontSize: '16px' }}>✓</span>
+                      ) : (
+                        <span style={{ color: isDarkMode ? 'rgba(235, 235, 245, 0.3)' : 'rgba(60, 60, 67, 0.3)' }}>○</span>
+                      )}
+                      <span style={{ color: req.met ? '#34C759' : 'inherit' }}>{req.label}</span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="apple-input-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  {...register('confirmPassword', {
+                    required: 'Please confirm your password',
+                    validate: (value) => value === password || 'Passwords do not match',
+                  })}
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  className={errors.confirmPassword && touchedFields.confirmPassword ? 'error' : ''}
+                  style={{ paddingRight: '48px' }}
+                  aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setShowConfirmPassword(!showConfirmPassword);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    color: isDarkMode ? 'rgba(235, 235, 245, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+                  }}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.confirmPassword && touchedFields.confirmPassword && (
+                <p className="apple-error-message">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            {/* Terms Checkbox */}
+            <div className="apple-checkbox-container" style={{ marginBottom: '24px' }}>
+              <input
+                type="checkbox"
+                id="acceptedTerms"
+                {...register('acceptedTerms', {
+                  required: 'You must accept the Terms and Privacy Policy',
+                })}
+                checked={watch('acceptedTerms') || false}
+                onChange={(e) => {
+                  setValue('acceptedTerms', e.target.checked);
+                  trigger('acceptedTerms');
+                }}
+              />
+              <label htmlFor="acceptedTerms" style={{ fontSize: '15px', cursor: 'pointer', flex: 1 }}>
+                I agree to the{' '}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setTermsModalType('terms');
+                    setTermsModalOpen(true);
+                  }}
+                  className="apple-link"
+                  style={{ fontSize: '15px', padding: 0, background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Terms
+                </button>
+                {' '}and{' '}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setTermsModalType('privacy');
+                    setPrivacyModalOpen(true);
+                  }}
+                  className="apple-link"
+                  style={{ fontSize: '15px', padding: 0, background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Privacy Policy
+                </button>
+              </label>
+            </div>
+            {errors.acceptedTerms && touchedFields.acceptedTerms && (
+              <p className="apple-error-message" style={{ marginTop: '-16px', marginBottom: '16px' }}>
+                <AlertCircle className="w-4 h-4" />
+                {errors.acceptedTerms.message}
+              </p>
+            )}
+
+            {/* Error Message */}
+            <AnimatePresence>
+              {submitError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="apple-error-message"
+                  style={{ marginBottom: '16px' }}
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {submitError}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Divider */}
+            <div style={{ position: 'relative', margin: '8px 0' }}>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: '100%', height: '1px', background: 'rgba(0, 0, 0, 0.1)' }} />
+              </div>
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                <span style={{ background: '#FFFFFF', padding: '0 12px', fontSize: '13px', color: 'rgba(0, 0, 0, 0.5)' }}>or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign-Up Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                triggerHaptic('medium');
+                try {
+                  const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                      queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                      },
+                      redirectTo: `${window.location.origin}/dashboard`,
+                    }
+                  });
+                  if (error) throw error;
+                } catch (error: any) {
+                  console.error('Google sign-up error:', error);
+                  
+                  // Check for OAuth configuration errors
+                  if (error?.message?.includes('invalid_client') || 
+                      error?.message?.includes('OAuth client was not found') ||
+                      error?.status === 401) {
+                    setSubmitError('Google sign-up is not configured. Please use email and password to sign up, or contact support.');
+                  } else {
+                    setSubmitError('Failed to sign up with Google. Please try again or use email and password.');
+                  }
+                }
+              }}
+              style={{
+                width: '100%',
+                height: '50px',
+                borderRadius: '12px',
+                background: '#FFFFFF',
+                color: '#000000',
+                fontSize: '17px',
+                fontWeight: 600,
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'scale(0.98)';
+                e.currentTarget.style.boxShadow = '0 1px 4px rgba(0, 0, 0, 0.05)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20">
+                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
+                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
+                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
+                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
+              </svg>
+              <span>Sign up with Google</span>
+            </button>
+
+            {/* Create Account Button */}
+            <button
+              type="submit"
+              disabled={isLoading || !watch('acceptedTerms')}
+              style={{
+                width: '100%',
+                height: '50px',
+                borderRadius: '12px',
+                background: (isLoading || !watch('acceptedTerms'))
+                  ? 'rgba(0, 122, 255, 0.3)'
+                  : 'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                color: '#FFFFFF',
+                fontSize: '17px',
+                fontWeight: 600,
+                border: 'none',
+                cursor: (isLoading || !watch('acceptedTerms')) ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 16px rgba(0, 122, 255, 0.3)',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                WebkitTapHighlightColor: 'transparent',
+                position: 'relative',
+                zIndex: 10,
+                pointerEvents: 'auto',
+              }}
+              onMouseDown={(e) => {
+                if (!isLoading && watch('acceptedTerms')) {
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 122, 255, 0.3)';
+                }
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 122, 255, 0.3)';
+              }}
+              onTouchStart={(e) => {
+                if (!isLoading && watch('acceptedTerms')) {
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 122, 255, 0.3)';
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 122, 255, 0.3)';
+              }}
+            >
+              {isLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Creating account...</span>
+                </div>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+
+            {/* Sign In Link */}
+            <p
+              className="text-center"
+              style={{
+                marginTop: '32px',
+                fontSize: '15px',
+                color: isDarkMode ? 'rgba(235, 235, 245, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+              }}
+            >
+              Already have an account?{' '}
+              <Link to="/login" className="apple-link">
+                Sign In
+              </Link>
+            </p>
+          </form>
+        </motion.div>
+      </div>
+
+      {/* Safe Area */}
+      <div
+        className="page-safe-area"
         style={{
-          background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
-        }}
-        animate={{
-          background: [
-            'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
-            'linear-gradient(135deg, #231D33 0%, #2A2640 50%, #1A1625 100%)',
-            'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
-          ],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: 'linear',
+          height: 'env(safe-area-inset-bottom)',
+          background: '#FFFFFF',
         }}
       />
 
-      {/* Floating Gradient Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <motion.div
-          className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full blur-[100px] opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
-          }}
-          animate={{
-            x: [0, 30, 0],
-            y: [0, 20, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 right-0 w-[350px] h-[350px] rounded-full blur-[100px] opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
-          }}
-          animate={{
-            x: [0, -20, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-0 left-1/4 w-[300px] h-[300px] rounded-full blur-[100px] opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.6) 0%, rgba(236, 72, 153, 0) 70%)',
-          }}
-          animate={{
-            x: [0, 15, 0],
-            y: [0, -25, 0],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      </div>
+      {/* Success Overlay */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="apple-success-overlay"
+          >
+            <div className="apple-success-checkmark">✓</div>
+            <p>Account created successfully</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Main Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 w-full max-w-md px-4"
-      >
-              {/* Logo Section */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-center mb-6"
-              >
-                <motion.div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{
-                    background: 'rgba(42, 38, 64, 0.6)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: '0 0 30px rgba(139, 92, 246, 0.3)',
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <Calendar className="w-7 h-7 text-white" />
-                </motion.div>
-                <h1 className="text-2xl font-bold text-white mb-1.5" style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}>
-                  DocuTrackr
-                </h1>
-                <p className="text-xs" style={{ color: '#A78BFA' }}>
-                  Never miss a deadline
-                </p>
-              </motion.div>
+      {/* Terms Modal */}
+      <TermsModal
+        type="terms"
+        isOpen={termsModalOpen && termsModalType === 'terms'}
+        onAccept={() => {
+          setValue('acceptedTerms', true);
+          trigger('acceptedTerms');
+          setTermsModalOpen(false);
+        }}
+        onDecline={() => {
+          setTermsModalOpen(false);
+        }}
+      />
 
-        {/* Tab Switcher */}
-        <TabSwitcher
-          activeTab="signup"
-        />
-
-        {/* Main Glass Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="p-6 rounded-[24px] w-full max-w-md"
-          style={{
-            background: 'rgba(42, 38, 64, 0.7)',
-            backdropFilter: 'blur(25px)',
-            WebkitBackdropFilter: 'blur(25px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.2)',
-          }}
-        >
-          {/* Success State */}
-          <AnimatePresence>
-            {showSuccess ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="text-center py-8"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                  className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                  style={{
-                    background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                    boxShadow: '0 0 40px rgba(139, 92, 246, 0.6)',
-                  }}
-                >
-                  <Check className="w-10 h-10 text-white" />
-                </motion.div>
-                <h2 className="text-2xl font-bold text-white mb-2">Account Created!</h2>
-                <p className="text-sm mb-4" style={{ color: '#A78BFA' }}>Redirecting...</p>
-              </motion.div>
-            ) : (
-              <>
-                      {/* Heading */}
-                      <div className="mb-6">
-                        <h2 className="text-xl font-bold text-white mb-1.5">Create Account</h2>
-                        <p className="text-xs" style={{ color: '#A78BFA' }}>Join us today</p>
-                      </div>
-
-                {/* Avatar Upload */}
-                <div className="flex justify-center mb-6">
-                  <div className="relative">
-                    <Avatar
-                      src={avatarPreview || undefined}
-                      fallback={fullName?.[0]?.toUpperCase() || 'U'}
-                      size="large"
-                      className="w-20 h-20"
-                    />
-                    <motion.button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('light');
-                        const useCamera = window.confirm('Take photo? (Cancel to choose from gallery)');
-                        handleAvatarSelect(useCamera ? 'camera' : 'gallery');
-                      }}
-                      disabled={isUploadingAvatar}
-                      className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white transition-all"
-                      style={{
-                        background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      {isUploadingAvatar ? (
-                        <Loader2 className="w-4 h-4 text-white animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4 text-white" />
-                      )}
-                    </motion.button>
-                  </div>
-                </div>
-
-                      {/* Form */}
-                      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  {/* Full Name */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">Full Name</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
-                      <input
-                        {...register('fullName', {
-                          required: 'Full name is required',
-                          minLength: {
-                            value: 2,
-                            message: 'Full name must be at least 2 characters',
-                          },
-                        })}
-                        ref={(e) => {
-                          const { ref } = register('fullName');
-                          ref(e);
-                          firstInputRef.current = e;
-                        }}
-                        type="text"
-                        placeholder="Enter your full name"
-                        className="w-full h-[52px] pl-12 pr-4 rounded-2xl text-white placeholder:text-purple-300/50 transition-all"
-                        style={{
-                          background: 'rgba(35, 29, 51, 0.6)',
-                          backdropFilter: 'blur(10px)',
-                          border: errors.fullName ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                          e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = errors.fullName ? 'rgba(239, 68, 68, 0.5)' : 'rgba(255, 255, 255, 0.1)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        aria-invalid={errors.fullName ? 'true' : 'false'}
-                      />
-                    </div>
-                    {errors.fullName && touchedFields.fullName && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-400 flex items-center gap-1.5"
-                      >
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.fullName.message}
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
-                      <input
-                        {...register('email', {
-                          required: 'Email is required',
-                          validate: (value) => validateEmail(value) || 'Please enter a valid email address',
-                        })}
-                        type="email"
-                        placeholder="Enter your email"
-                        className="w-full h-[52px] pl-12 pr-4 rounded-2xl text-white placeholder:text-purple-300/50 transition-all"
-                        style={{
-                          background: 'rgba(35, 29, 51, 0.6)',
-                          backdropFilter: 'blur(10px)',
-                          border: errors.email ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                          e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = errors.email ? 'rgba(239, 68, 68, 0.5)' : 'rgba(255, 255, 255, 0.1)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        aria-invalid={errors.email ? 'true' : 'false'}
-                      />
-                    </div>
-                    {errors.email && touchedFields.email && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-400 flex items-center gap-1.5"
-                      >
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.email.message}
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
-                      <input
-                        {...register('password', {
-                          required: 'Password is required',
-                          validate: (value) =>
-                            validatePassword(value) ||
-                            'Password must be at least 8 characters with uppercase, lowercase, and number',
-                        })}
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter your password"
-                        className="w-full h-[52px] pl-12 pr-12 rounded-2xl text-white placeholder:text-purple-300/50 transition-all"
-                        style={{
-                          background: 'rgba(35, 29, 51, 0.6)',
-                          backdropFilter: 'blur(10px)',
-                          border: errors.password ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                          e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = errors.password ? 'rgba(239, 68, 68, 0.5)' : 'rgba(255, 255, 255, 0.1)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        aria-invalid={errors.password ? 'true' : 'false'}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic('light');
-                          setShowPassword(!showPassword);
-                        }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all"
-                        style={{ color: '#A78BFA' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {errors.password && touchedFields.password && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-400 flex items-center gap-1.5"
-                      >
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.password.message}
-                      </motion.p>
-                    )}
-
-                    {/* Password Requirements */}
-                    {password && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-3 p-3 rounded-xl"
-                        style={{
-                          background: 'rgba(35, 29, 51, 0.4)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                      >
-                        <div className="space-y-2">
-                          {[
-                            { key: 'minLength', label: 'At least 8 characters', met: passwordRequirements.minLength },
-                            { key: 'hasNumber', label: 'One number', met: passwordRequirements.hasNumber },
-                            { key: 'hasSpecial', label: 'One special character', met: passwordRequirements.hasSpecial },
-                          ].map((req) => (
-                            <div key={req.key} className="flex items-center gap-2">
-                              {req.met ? (
-                                <div
-                                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                                  style={{
-                                    background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                                  }}
-                                >
-                                  <Check className="w-3 h-3 text-white" />
-                                </div>
-                              ) : (
-                                <div
-                                  className="w-5 h-5 rounded-full border-2 flex-shrink-0"
-                                  style={{
-                                    borderColor: '#A78BFA',
-                                  }}
-                                />
-                              )}
-                              <span
-                                className="text-xs"
-                                style={{
-                                  color: req.met ? '#A78BFA' : '#6B7280',
-                                }}
-                              >
-                                {req.label}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div>
-                    <label className="block text-sm font-semibold text-white mb-2">Confirm Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
-                      <input
-                        {...register('confirmPassword', {
-                          required: 'Please confirm your password',
-                          validate: (value) => value === password || 'Passwords do not match',
-                        })}
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="Confirm your password"
-                        className="w-full h-[52px] pl-12 pr-12 rounded-2xl text-white placeholder:text-purple-300/50 transition-all"
-                        style={{
-                          background: 'rgba(35, 29, 51, 0.6)',
-                          backdropFilter: 'blur(10px)',
-                          border: errors.confirmPassword ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                        onFocus={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                          e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
-                        }}
-                        onBlur={(e) => {
-                          e.currentTarget.style.borderColor = errors.confirmPassword ? 'rgba(239, 68, 68, 0.5)' : 'rgba(255, 255, 255, 0.1)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic('light');
-                          setShowConfirmPassword(!showConfirmPassword);
-                        }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all"
-                        style={{ color: '#A78BFA' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {errors.confirmPassword && touchedFields.confirmPassword && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-400 flex items-center gap-1.5"
-                      >
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.confirmPassword.message}
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Terms Checkbox */}
-                  <div>
-                    <Checkbox
-                      checked={watch('agreeToTerms') || false}
-                      onChange={(checked) => {
-                        setValue('agreeToTerms', checked);
-                        trigger('agreeToTerms');
-                      }}
-                      id="agreeToTerms"
-                      label={
-                        <>
-                          I agree to the{' '}
-                          <Link
-                            to="/terms"
-                            className="font-semibold underline"
-                            style={{ color: '#A78BFA' }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Terms of Service
-                          </Link>
-                          {' '}and{' '}
-                          <Link
-                            to="/privacy"
-                            className="font-semibold underline"
-                            style={{ color: '#A78BFA' }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Privacy Policy
-                          </Link>
-                        </>
-                      }
-                    />
-                  </div>
-                  {errors.agreeToTerms && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-red-400 flex items-center gap-1.5 -mt-3"
-                    >
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.agreeToTerms.message}
-                    </motion.p>
-                  )}
-
-                  {/* Error Message */}
-                  <AnimatePresence>
-                    {submitError && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="p-4 rounded-xl flex items-start gap-3"
-                        style={{
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
-                        }}
-                      >
-                        <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-400">{submitError}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Sign Up Button */}
-                  <motion.button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full h-14 rounded-2xl font-bold text-white flex items-center justify-center gap-2 transition-all"
-                    style={{
-                      background: isLoading
-                        ? 'rgba(139, 92, 246, 0.5)'
-                        : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      boxShadow: '0 8px 24px rgba(139, 92, 246, 0.5)',
-                    }}
-                    whileHover={!isLoading ? { scale: 1.02, boxShadow: '0 12px 32px rgba(139, 92, 246, 0.6)' } : {}}
-                    whileTap={!isLoading ? { scale: 0.98 } : {}}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Creating Account...
-                      </>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </motion.button>
-                </form>
-
-                {/* Login Link */}
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-white">
-                    Already have an account?{' '}
-                    <Link
-                      to="/login"
-                      className="font-semibold transition-all"
-                      style={{ color: '#A78BFA' }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#C4B5FD';
-                        e.currentTarget.style.textShadow = '0 0 10px rgba(139, 92, 246, 0.5)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = '#A78BFA';
-                        e.currentTarget.style.textShadow = 'none';
-                      }}
-                    >
-                      Sign In
-                    </Link>
-                  </p>
-                </div>
-              </>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </motion.div>
+      {/* Privacy Modal */}
+      <TermsModal
+        type="privacy"
+        isOpen={privacyModalOpen || (termsModalOpen && termsModalType === 'privacy')}
+        onAccept={() => {
+          setValue('acceptedTerms', true);
+          trigger('acceptedTerms');
+          setPrivacyModalOpen(false);
+          setTermsModalOpen(false);
+        }}
+        onDecline={() => {
+          setPrivacyModalOpen(false);
+          setTermsModalOpen(false);
+        }}
+      />
     </div>
   );
 }

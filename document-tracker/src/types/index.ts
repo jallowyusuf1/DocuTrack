@@ -27,6 +27,7 @@ export interface Document {
   category: string;
   notes?: string;
   image_url: string;
+  is_locked?: boolean;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -89,4 +90,64 @@ export interface DateFormData {
   date: string;
   category: string;
   reminder_days?: number;
+}
+
+// Social/Connection types
+export type ConnectionStatus = 'pending' | 'accepted' | 'blocked';
+export type RelationshipType = 'spouse' | 'parent' | 'child' | 'sibling' | 'friend' | 'other';
+export type Permission = 'view' | 'edit';
+export type HouseholdRole = 'admin' | 'member';
+
+export interface Connection {
+  id: string;
+  user_id: string;
+  connected_user_id: string;
+  status: ConnectionStatus;
+  relationship: RelationshipType;
+  created_at: string;
+  accepted_at?: string;
+  connected_user?: {
+    email: string;
+    full_name?: string;
+    avatar_url?: string;
+  };
+}
+
+export interface SharedDocument {
+  id: string;
+  document_id: string;
+  owner_id: string;
+  shared_with_id: string;
+  permission: Permission;
+  shared_at: string;
+  message?: string;
+  document?: Document;
+  owner?: {
+    email: string;
+    full_name?: string;
+  };
+  shared_with?: {
+    email: string;
+    full_name?: string;
+  };
+}
+
+export interface Household {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HouseholdMember {
+  household_id: string;
+  user_id: string;
+  role: HouseholdRole;
+  joined_at: string;
+  user?: {
+    email: string;
+    full_name?: string;
+    avatar_url?: string;
+  };
 }

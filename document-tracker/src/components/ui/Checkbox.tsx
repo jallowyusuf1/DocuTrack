@@ -35,9 +35,14 @@ export default function Checkbox({
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         }`}
         style={{
+          width: '24px',
+          height: '24px',
+        }}
+        style={{
           background: checked
             ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
-            : 'rgba(35, 29, 51, 0.6)',
+            : 'rgba(42, 38, 64, 0.6)',
+          backdropFilter: 'blur(10px)',
           border: checked
             ? 'none'
             : '2px solid rgba(255, 255, 255, 0.3)',
@@ -71,7 +76,7 @@ export default function Checkbox({
       {label && (
         <label
           htmlFor={id}
-          className={`text-sm cursor-pointer select-none ${
+          className={`text-[15px] cursor-pointer select-none ${
             disabled ? 'opacity-50' : ''
           }`}
           style={{ color: '#FFFFFF' }}

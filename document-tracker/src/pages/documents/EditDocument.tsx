@@ -14,6 +14,8 @@ import Button from '../../components/ui/Button';
 import DatePickerModal from '../../components/ui/DatePickerModal';
 import Toast from '../../components/ui/Toast';
 import Skeleton from '../../components/ui/Skeleton';
+import { useImageUrl } from '../../hooks/useImageUrl';
+import { motion } from 'framer-motion';
 
 const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
   { value: 'passport', label: 'Passport' },
@@ -42,11 +44,17 @@ export default function EditDocument() {
   const [document, setDocument] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [datePickerField, setDatePickerField] = useState<'issue_date' | 'expiration_date' | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // Use hook to get signed URL for document image
+  const { signedUrl: documentImageUrl, loading: imageUrlLoading } = useImageUrl(document?.image_url);
+  
+  // Use local preview if new image selected, otherwise use signed URL
+  const imagePreview = selectedImage ? localImagePreview : documentImageUrl;
 
   const {
     register,
@@ -77,7 +85,6 @@ export default function EditDocument() {
         const doc = await documentService.getDocumentById(id, user.id);
         if (doc) {
           setDocument(doc);
-          setImagePreview(doc.image_url);
           reset({
             document_type: doc.document_type,
             document_name: doc.document_name,
@@ -134,7 +141,7 @@ export default function EditDocument() {
       setSelectedImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setLocalImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
       setHasChanges(true);
@@ -243,17 +250,13 @@ export default function EditDocument() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-[140px]">
-        <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
-          <div className="flex items-center gap-4 px-4 py-3 h-16">
-            <Skeleton className="w-8 h-8 rounded" />
-            <Skeleton className="flex-1 h-6 rounded" />
-          </div>
-        </header>
+      <div className="min-h-screen pb-[140px] relative overflow-hidden" style={{
+        background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
+      }}>
         <div className="px-4 py-6 space-y-6">
-          <Skeleton className="w-20 h-20 rounded-lg" />
-          <Skeleton className="h-12 w-full rounded" />
-          <Skeleton className="h-12 w-full rounded" />
+          <Skeleton className="w-full h-48 rounded-2xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
         </div>
       </div>
     );
@@ -261,9 +264,11 @@ export default function EditDocument() {
 
   if (!document) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-[140px] flex items-center justify-center px-4">
+      <div className="min-h-screen pb-[140px] flex items-center justify-center px-4" style={{
+        background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
+      }}>
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Document not found</p>
+          <p className="text-white mb-4">Document not found</p>
           <Button variant="primary" onClick={() => navigate(-1)}>
             Go Back
           </Button>
@@ -273,52 +278,104 @@ export default function EditDocument() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-[140px]">
+    <div className="min-h-screen pb-[140px] relative overflow-hidden" style={{
+      background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
+    }}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center gap-4 px-4 py-3 h-16">
-          <button
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-10 border-b border-white/10 h-[70px] flex items-center"
+        style={{
+          background: 'rgba(35, 29, 51, 0.6)',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        <div className="flex items-center gap-4 px-4 w-full">
+          <motion.button
             onClick={handleBack}
-            className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200"
+            className="p-2 rounded-lg transition-colors"
+            style={{
+              color: '#A78BFA',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
-          <h1 className="text-xl font-bold text-gray-900 flex-1">Edit Document</h1>
+            <ArrowLeft className="w-6 h-6" />
+          </motion.button>
+          <h1 className="text-xl font-bold text-white flex-1">Edit Document</h1>
         </div>
-      </header>
+      </motion.header>
 
       {/* Form */}
-      <form onSubmit={handleFormSubmit} className="px-4 py-6 space-y-6">
+      <form onSubmit={handleFormSubmit} className="px-4 py-6 space-y-5">
         {/* Image Preview */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-semibold text-white mb-3 mt-1">
             Document Image
           </label>
-          {imagePreview ? (
+          {imagePreview || imageUrlLoading ? (
             <div className="relative">
-              <img
-                src={imagePreview}
-                alt="Document preview"
-                className="w-20 h-20 object-cover rounded-lg border-2 border-gray-300"
-              />
-              <button
+              {imageUrlLoading && !selectedImage ? (
+                <div className="w-full h-48 rounded-2xl bg-gray-800 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                </div>
+              ) : (
+                <img
+                  src={imagePreview || undefined}
+                  alt="Document preview"
+                  className="w-full h-48 object-cover rounded-2xl border border-white/15"
+                  style={{
+                    background: 'rgba(42, 38, 64, 0.6)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                />
+              )}
+              <motion.button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-2 text-sm text-blue-600 font-medium"
+                className="mt-3 text-sm font-medium transition-colors"
+                style={{ color: '#A78BFA' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#C4B5FD';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#A78BFA';
+                }}
+                whileTap={{ scale: 0.95 }}
               >
                 Change Image
-              </button>
+              </motion.button>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8">
-              <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
-              <button
+            <div 
+              className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-8"
+              style={{
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                background: 'rgba(42, 38, 64, 0.3)',
+              }}
+            >
+              <ImageIcon className="w-12 h-12 mb-2" style={{ color: '#A78BFA' }} />
+              <motion.button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-sm text-blue-600 font-medium"
+                className="text-sm font-medium transition-colors"
+                style={{ color: '#A78BFA' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#C4B5FD';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#A78BFA';
+                }}
+                whileTap={{ scale: 0.95 }}
               >
                 Select Image
-              </button>
+              </motion.button>
             </div>
           )}
           <input
@@ -374,55 +431,70 @@ export default function EditDocument() {
 
         {/* Issue Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-white mb-3 mt-1">
             Issue Date
           </label>
-          <button
+          <motion.button
             type="button"
             onClick={() => openDatePicker('issue_date')}
             className={`
-              w-full h-[52px] px-4 rounded-lg border-2
+              w-full h-[52px] px-4 rounded-xl border
               flex items-center gap-3
-              text-left
-              ${errors.issue_date ? 'border-red-500' : 'border-black'}
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+              text-left text-[15px]
+              ${errors.issue_date ? 'border-red-500' : 'border-white/10'}
+              focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500
             `}
+            style={{
+              background: 'rgba(35, 29, 51, 0.6)',
+              backdropFilter: 'blur(15px)',
+              color: watchedIssueDate ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
+            }}
+            whileTap={{ scale: 0.98 }}
           >
-            <Calendar className="w-5 h-5 text-gray-400" />
-            <span className={watchedIssueDate ? 'text-gray-900' : 'text-gray-400'}>
+            <Calendar className="w-5 h-5" style={{ color: '#A78BFA' }} />
+            <span>
               {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : 'Select issue date'}
             </span>
-          </button>
+          </motion.button>
           <input
             type="hidden"
             {...register('issue_date')}
           />
           {errors.issue_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.issue_date.message}</p>
+            <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4" />
+              {errors.issue_date.message}
+            </p>
           )}
         </div>
 
         {/* Expiration Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Expiration Date <span className="text-red-500">*</span>
+          <label className="block text-sm font-semibold text-white mb-3 mt-1">
+            Expiration Date <span className="text-red-400">*</span>
           </label>
-          <button
+          <motion.button
             type="button"
             onClick={() => openDatePicker('expiration_date')}
             className={`
-              w-full h-[52px] px-4 rounded-lg border-2
+              w-full h-[52px] px-4 rounded-xl border
               flex items-center gap-3
-              text-left
-              ${errors.expiration_date ? 'border-red-500' : watchedExpirationDate ? getExpirationDateColor() : 'border-black'}
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+              text-left text-[15px]
+              ${errors.expiration_date ? 'border-red-500' : 'border-white/10'}
+              focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500
             `}
+            style={{
+              background: 'rgba(35, 29, 51, 0.6)',
+              backdropFilter: 'blur(15px)',
+              color: watchedExpirationDate ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
+            }}
+            whileTap={{ scale: 0.98 }}
           >
-            <AlertCircle className={`w-5 h-5 ${watchedExpirationDate ? getExpirationDateColor().split(' ')[0] : 'text-gray-400'}`} />
-            <span className={watchedExpirationDate ? 'text-gray-900' : 'text-gray-400'}>
+            <AlertCircle className="w-5 h-5" style={{ color: '#A78BFA' }} />
+            <span>
               {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
             </span>
-          </button>
+          </motion.button>
           <input
             type="hidden"
             {...register('expiration_date', {
@@ -440,7 +512,10 @@ export default function EditDocument() {
             })}
           />
           {errors.expiration_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.expiration_date.message}</p>
+            <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4" />
+              {errors.expiration_date.message}
+            </p>
           )}
         </div>
 
@@ -449,7 +524,7 @@ export default function EditDocument() {
           label="Category"
           value={watchedDocumentType || ''}
           disabled
-          className="h-[52px] bg-gray-50"
+          className="h-[52px]"
         />
 
         {/* Notes */}
@@ -464,14 +539,21 @@ export default function EditDocument() {
             error={errors.notes?.message}
             className="min-h-[80px]"
           />
-          <p className="mt-1 text-xs text-gray-500 text-right">
+          <p className="mt-1 text-xs text-right" style={{ color: '#A78BFA' }}>
             {watch('notes')?.length || 0}/500
           </p>
         </div>
       </form>
 
       {/* Fixed Save Button */}
-      <div className="fixed bottom-[88px] left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 safe-area-bottom">
+      <div 
+        className="fixed bottom-[88px] left-0 right-0 px-4 py-4 safe-area-bottom"
+        style={{
+          background: 'rgba(35, 29, 51, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
         <Button
           type="submit"
           variant="primary"

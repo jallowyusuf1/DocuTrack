@@ -29,8 +29,8 @@ export default function FloatingActionButton({ onClick }: FloatingActionButtonPr
         onClick();
       }}
       className="
-        fixed bottom-[100px] right-5 z-40
-        w-16 h-16 rounded-full
+        fixed bottom-[100px] right-5 md:right-6 z-40
+        w-14 h-14 md:w-16 md:h-16 rounded-full
         bg-gradient-to-br from-purple-600 to-purple-700
         text-white
         flex items-center justify-center
@@ -42,7 +42,7 @@ export default function FloatingActionButton({ onClick }: FloatingActionButtonPr
       }}
       aria-label="Add Document"
     >
-      <Plus className="w-8 h-8" strokeWidth={2.5} />
+      <Plus className="w-7 h-7 md:w-8 md:h-8" strokeWidth={2.5} />
     </motion.button>
   );
 }

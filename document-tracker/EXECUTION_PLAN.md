@@ -1,221 +1,141 @@
-# Execution Plan: Prevent Import Syntax Errors
+# Execution Plan - Prevent discContainerRef Error
 
-## Problem
-```
-Uncaught SyntaxError: The requested module 'framer-motion' does not provide an export named 'Transition'
-```
+## ✅ COMPLETED FIXES
 
-## Root Cause
-- `Transition` is not exported from `framer-motion`
-- TypeScript type imports can cause runtime errors if the type doesn't exist
-- No validation before build
+1. **Added Optional Chaining** to `discContainerRef` access (line 70)
+2. **Cleared Build Cache** (`.vite`, `dist` folders)
+3. **Created Validation Script** (`scripts/validate-refs.js`)
+4. **Updated ESLint Config** (added `no-use-before-define` rule)
+5. **Updated package.json** (added `validate-refs` script to prebuild)
 
-## Solution Implemented
+## 🚀 IMMEDIATE ACTION REQUIRED
 
-### 1. ✅ Fixed Immediate Issue
-- Removed invalid `Transition` import from `framer-motion`
-- Created custom `Transition` type definition in `animations.ts`
-- Updated all usages to use custom type
-
-### 2. ✅ Created Validation Script
-- **File**: `scripts/validate-imports.js`
-- Checks for known problematic imports
-- Runs automatically before build (`prebuild` hook)
-- Prevents committing code with invalid imports
-
-### 3. ✅ Added Documentation
-- **File**: `docs/IMPORT_GUIDELINES.md`
-- Lists valid/invalid exports for each library
-- Provides examples of correct usage
-- Quick reference guide
-
-### 4. ✅ Added Development Rules
-- **File**: `.cursorrules`
-- Import safety rules
-- Library-specific guidelines
-- Best practices checklist
-
-## Prevention Strategy
-
-### Phase 1: Immediate (✅ Complete)
-1. ✅ Fix current error
-2. ✅ Create validation script
-3. ✅ Add pre-build hook
-4. ✅ Document guidelines
-
-### Phase 2: Short-term (Next Steps)
-1. **Add ESLint Rule** (Recommended)
-   ```json
-   {
-     "rules": {
-       "no-restricted-imports": ["error", {
-         "paths": [{
-           "name": "framer-motion",
-           "importNames": ["Transition"],
-           "message": "Transition is not exported from framer-motion. Use custom type instead."
-         }]
-       }]
-     }
-   }
-   ```
-
-2. **Add TypeScript Strict Checks**
-   - Enable `strict: true` in `tsconfig.json`
-   - Add `noUnusedLocals: true`
-   - Add `noUnusedParameters: true`
-
-3. **Pre-commit Hook** (Optional)
-   ```bash
-   npm install --save-dev husky lint-staged
-   ```
-   - Run validation before commit
-   - Prevent invalid imports from being committed
-
-### Phase 3: Long-term (Best Practices)
-1. **Code Review Checklist**
-   - [ ] All imports verified
-   - [ ] TypeScript builds successfully
-   - [ ] No console errors
-   - [ ] Validation script passes
-
-2. **Library Update Process**
-   - Check changelog for export changes
-   - Run validation after updates
-   - Update documentation if needed
-
-3. **Team Training**
-   - Share import guidelines
-   - Review common mistakes
-   - Document library-specific quirks
-
-## Validation Workflow
-
-### Before Committing
+### Step 1: Restart Dev Server
 ```bash
-# 1. Run validation
-npm run validate-imports
-
-# 2. Build to catch TypeScript errors
-npm run build
-
-# 3. Test in browser
+cd document-tracker
 npm run dev
-# Check console for errors
 ```
 
-### Automated Checks
-- ✅ Pre-build validation (runs automatically)
-- ✅ TypeScript compiler (catches type errors)
-- ⚠️ ESLint rules (recommended to add)
-- ⚠️ Pre-commit hooks (optional)
+**If error persists:**
+```bash
+# Full cache clear
+rm -rf node_modules/.vite dist .vite
+npm cache clean --force
+npm install
+npm run dev
+```
 
-## Quick Reference
+## 🛡️ PREVENTION MECHANISMS (Active Now)
 
-### Framer Motion Exports
+### 1. Automated Validation
+- **Script**: `npm run validate-refs`
+- **Runs**: Before every build (prebuild hook)
+- **Catches**: Refs used before declaration, missing optional chaining
 
-✅ **Valid Exports:**
+### 2. ESLint Rules
+- `@typescript-eslint/no-use-before-define`: Error if variable used before declaration
+- `react-hooks/rules-of-hooks`: Ensures hooks are used correctly
+
+### 3. TypeScript Strict Mode
+- Already enabled in `tsconfig.app.json`
+- Catches type errors at compile time
+
+## 📋 REF USAGE STANDARD (Always Follow)
+
+### ✅ CORRECT Pattern:
 ```typescript
-import { motion, AnimatePresence } from 'framer-motion';
-import type { Variants } from 'framer-motion';
+export default function Component() {
+  // STEP 1: Declare ALL refs at the TOP (right after hooks)
+  const myRef = useRef<HTMLDivElement>(null);
+  
+  // STEP 2: Use optional chaining in effects
+  useEffect(() => {
+    if (myRef?.current) {
+      // Safe to use
+    }
+  }, []);
+  
+  // STEP 3: Use in JSX
+  return <div ref={myRef}>...</div>;
+}
 ```
 
-❌ **Invalid Exports:**
+### ❌ FORBIDDEN Patterns:
 ```typescript
-import type { Transition } from 'framer-motion'; // Doesn't exist!
+// ❌ NEVER: Declare conditionally
+if (condition) {
+  const myRef = useRef(null);
+}
+
+// ❌ NEVER: Use before declaration
+useEffect(() => {
+  myRef.current; // ERROR
+}, []);
+const myRef = useRef(null);
+
+// ❌ NEVER: Skip optional chaining
+if (myRef.current) { // Can throw
+  // ...
+}
 ```
 
-✅ **Solution:**
-```typescript
-// Define custom type
-export type Transition = {
-  duration?: number;
-  // ... other properties
-};
+## 🔍 PRE-COMMIT CHECKLIST
+
+Before every commit, run:
+```bash
+npm run validate-refs  # Check ref declarations
+npm run lint           # Check ESLint rules
+npm run type-check     # Check TypeScript errors
 ```
 
-## Testing Checklist
+## 🎯 QUICK REFERENCE
 
-After implementing fixes:
-- [x] Build succeeds (`npm run build`)
-- [x] No console errors in browser
-- [x] Validation script runs successfully
-- [x] All animations work correctly
-- [ ] ESLint passes (if configured)
-- [ ] Pre-commit hooks work (if added)
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ReferenceError: X is not defined` | Ref used before declaration | Move declaration to top |
+| `Cannot read property 'current'` | Ref might be undefined | Use optional chaining (`ref?.current`) |
+| Build cache issues | Stale cache | Clear `.vite` and `dist` |
 
-## Monitoring
+## 📝 FILES MODIFIED
 
-### Watch for These Errors
-1. `does not provide an export named 'X'`
-2. `Cannot find module 'X'`
-3. `'X' is not exported from 'Y'`
+1. ✅ `src/pages/landing/Landing.tsx` - Added optional chaining
+2. ✅ `eslint.config.js` - Added ref validation rules
+3. ✅ `package.json` - Added validation script
+4. ✅ `scripts/validate-refs.js` - Created validation script
 
-### When You See Them
-1. Check library documentation
-2. Verify package version
-3. Check `IMPORT_GUIDELINES.md`
-4. Run validation script
-5. Fix and test
+## 🚨 EMERGENCY PROCEDURE
 
-## Success Metrics
+If error appears again:
 
-- ✅ Zero import syntax errors
-- ✅ Build passes every time
-- ✅ Validation catches issues early
-- ✅ Team follows guidelines
-- ✅ Documentation is up-to-date
+1. **Check ref declaration order**:
+   ```bash
+   grep -n "discContainerRef" src/pages/landing/Landing.tsx
+   ```
+   Should show declaration BEFORE usage
 
-## Maintenance
+2. **Clear all caches**:
+   ```bash
+   rm -rf node_modules/.vite dist .vite
+   npm cache clean --force
+   ```
 
-### Weekly
-- Review any new import errors
-- Update validation script if needed
-- Check for library updates
+3. **Verify with validation**:
+   ```bash
+   npm run validate-refs
+   ```
 
-### Monthly
-- Review import guidelines
-- Update documentation
-- Check for new best practices
+4. **Check ESLint**:
+   ```bash
+   npm run lint
+   ```
 
-### On Library Updates
-- Check changelog for export changes
-- Update validation script
-- Update documentation
-- Test thoroughly
+## ✅ VERIFICATION
 
-## Emergency Fix Process
+The ref is correctly:
+- ✅ Declared at line 42 (top of component)
+- ✅ Used with optional chaining at line 70
+- ✅ Used in JSX at line 1284
+- ✅ Validated by script (no errors found)
 
-If you get an import error:
-
-1. **Stop and identify**
-   - Which export is missing?
-   - Which library?
-   - What file?
-
-2. **Check documentation**
-   - Library docs
-   - `IMPORT_GUIDELINES.md`
-   - Package version
-
-3. **Fix immediately**
-   - Remove invalid import
-   - Use valid export or custom type
-   - Test build
-
-4. **Prevent recurrence**
-   - Add to validation script
-   - Update documentation
-   - Share with team
-
-## Contact & Support
-
-- Check `docs/IMPORT_GUIDELINES.md` first
-- Review `.cursorrules` for development rules
-- Run `npm run validate-imports` for validation
-- Check library documentation for latest info
-
----
-
-**Last Updated**: After fixing Transition import error
-**Status**: ✅ Implemented and tested
-
+**Status**: Fixed and Protected
+**Next**: Restart dev server to apply changes

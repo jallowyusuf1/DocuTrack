@@ -11,12 +11,12 @@ interface EmptyStateProps {
 
 export default function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-16 px-4 md:py-24">
       <motion.div
         animate="animate"
         variants={float}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="w-30 h-30 rounded-full flex items-center justify-center mb-6"
+        className="w-30 h-30 rounded-full flex items-center justify-center mb-6 md:mb-8"
         style={{
           width: '120px',
           height: '120px',
@@ -27,12 +27,12 @@ export default function EmptyState({ icon, title, description, action }: EmptySt
           boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)',
         }}
       >
-        <div className="text-white">
+        <div className="text-white [&>svg]:w-20 [&>svg]:h-20 md:[&>svg]:w-[100px] md:[&>svg]:h-[100px]">
           {icon}
         </div>
       </motion.div>
-      <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-      <p className="text-sm text-center mb-6" style={{ color: '#A78BFA' }}>
+      <h3 className="text-xl font-bold text-white mb-2 md:text-[24px] md:mb-3">{title}</h3>
+      <p className="text-sm text-center mb-6 md:text-base md:mb-8" style={{ color: '#A78BFA' }}>
         {description}
       </p>
       {action && (
@@ -40,10 +40,24 @@ export default function EmptyState({ icon, title, description, action }: EmptySt
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="w-full"
+          style={{
+            maxWidth: '300px',
+          }}
         >
+          <div className="md:[&>button]:h-[56px] md:[&>button]:text-base">
           {action}
+          </div>
         </motion.div>
       )}
+      <style>{`
+        @media (min-width: 768px) {
+          .w-30.h-30 {
+            width: 160px !important;
+            height: 160px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

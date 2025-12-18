@@ -19,6 +19,16 @@ export interface UserProfile {
   updated_at: string;
 }
 
+// Helper function to add timeout to promises
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+    })
+  ]);
+}
+
 export const authService = {
   // Sign up new user
   async signup({ email, password, fullName }: SignupData) {
@@ -91,66 +101,87 @@ export const authService = {
 
   // Sign in existing user
   async login({ email, password }: LoginData) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    }, {
-      // Persist session across browser sessions
-      persistSession: true,
-    });
-
-    if (error) {
-      // Handle specific error cases
-      if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
-        // If email confirmation is disabled but user still has unconfirmed status,
-        // try to resend confirmation or provide helpful message
-        throw new Error('Please check your email and confirm your account before signing in. If you did not receive an email, please try signing up again.');
-      }
-      throw error;
-    }
-    if (!data.user) throw new Error('Login failed');
-
-    // Fetch user profile - use explicit columns to avoid 406 errors
-    let profile = null;
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('id, user_id, full_name, created_at, updated_at')
-        .eq('user_id', data.user.id)
-        .maybeSingle(); // Use maybeSingle to avoid errors when not found
+      // Add 15 second timeout for login
+      const { data, error } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email,
+          password,
+        }, {
+          // Persist session across browser sessions
+          persistSession: true,
+        }),
+        15000,
+        'Login request timed out. Please check your internet connection and try again.'
+      );
 
-      if (profileError) {
-        if (profileError.code === 'PGRST116') {
-          // Profile doesn't exist - trigger should have created it, but if not, wait and retry once
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Try fetching again once
-          const { data: retryProfile } = await supabase
+      if (error) {
+        // Handle specific error cases
+        if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
+          throw new Error('Please check your email and confirm your account before signing in. If you did not receive an email, please try signing up again.');
+        }
+        if (error.message?.includes('Invalid login credentials') || error.message?.includes('invalid_credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        }
+        throw error;
+      }
+      if (!data.user) throw new Error('Login failed');
+
+      // Fetch user profile - non-blocking, don't wait if it takes too long
+      let profile = null;
+      try {
+        // Add timeout for profile fetch (3 seconds max)
+        const profileResult = await Promise.race([
+          supabase
             .from('user_profiles')
             .select('id, user_id, full_name, created_at, updated_at')
             .eq('user_id', data.user.id)
-            .maybeSingle();
-          
-          profile = retryProfile || null;
-        } else {
-          // Other error - log but don't fail login
-          console.warn('Profile fetch error:', profileError);
-          profile = null;
+            .maybeSingle(),
+          new Promise<{ data: null; error: null }>((resolve) => {
+            setTimeout(() => resolve({ data: null, error: null }), 3000);
+          })
+        ]);
+        
+        if (profileResult.data) {
+          profile = profileResult.data;
+        } else if (profileResult.error) {
+          const profileError = profileResult.error;
+          if (profileError.code === 'PGRST116') {
+            // Profile doesn't exist - try once more quickly (1 second timeout)
+            const retryResult = await Promise.race([
+              supabase
+                .from('user_profiles')
+                .select('id, user_id, full_name, created_at, updated_at')
+                .eq('user_id', data.user.id)
+                .maybeSingle(),
+              new Promise<{ data: null; error: null }>((resolve) => {
+                setTimeout(() => resolve({ data: null, error: null }), 1000);
+              })
+            ]);
+            
+            if (retryResult.data) {
+              profile = retryResult.data;
+            }
+          } else {
+            // Other error - log but don't fail login
+            console.warn('Profile fetch error:', profileError);
+          }
         }
-      } else {
-        profile = profileData;
+      } catch (error) {
+        // Profile fetch failed, but login should still succeed
+        console.warn('Profile fetch exception during login:', error);
+        profile = null;
       }
-    } catch (error) {
-      // Profile fetch failed, but login should still succeed
-      console.warn('Profile fetch exception during login:', error);
-      profile = null;
-    }
 
-    return {
-      user: data.user,
-      session: data.session,
-      profile: profile,
-    };
+      return {
+        user: data.user,
+        session: data.session,
+        profile: profile,
+      };
+    } catch (error) {
+      // Re-throw timeout and other errors
+      throw error;
+    }
   },
 
   // Sign out

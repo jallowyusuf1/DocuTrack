@@ -1,103 +1,114 @@
-# Fixes Applied - Select Component & Form Spacing
+# Error Fixes Applied
 
-## ✅ Issues Fixed
+## Date: Current Session
 
-### 1. Select Component TypeErrors
-**Errors:**
-- `Cannot read properties of undefined (reading 'name')`
-- `Cannot read properties of undefined (reading 'target')`
+### 1. Fixed: `ReferenceError: Calendar is not defined`
 
-**Root Cause:**
-- Complex try-catch logic in `handleSelect` was causing confusion
-- Not properly handling both Controller and register() patterns
-- Event object creation was inconsistent
+**Error Location:** `App.tsx:179` (PageLoader component)
 
-**Solution:**
-- Switched AddDocument to use `Controller` instead of `register()` for Select
-- Simplified `handleSelect` to try value first (Controller), then event object (register)
-- Added proper error handling without breaking flow
-- Ensured event objects always have required properties
+**Root Cause:** The `Calendar` component from `lucide-react` was being used in the `PageLoader` component but was not imported.
 
-**Files Modified:**
-- `src/components/ui/Select.tsx` - Fixed handleSelect function
-- `src/pages/documents/AddDocument.tsx` - Changed to use Controller
+**Fix Applied:**
+- ✅ Added `import { Calendar } from 'lucide-react';` at the top of `App.tsx` (line 4)
+- ✅ Verified Calendar is used correctly in PageLoader component (line 133)
 
-### 2. Form Spacing Issues
-**Problem:** Labels and inputs were "touching" - insufficient vertical spacing
+**File Changed:** `document-tracker/src/App.tsx`
 
-**Solution:**
-- Changed all label spacing from `mb-2` to `mb-3 mt-1` (12px bottom, 4px top)
-- Applied consistently to:
-  - `Input` component
-  - `Select` component  
-  - `Textarea` component
-  - Date picker labels in AddDocument
-- Reduced form field spacing from `space-y-6` to `space-y-5` for better balance
+**Status:** ✅ FIXED
 
-**Files Modified:**
-- `src/components/ui/Input.tsx` - Updated label spacing
-- `src/components/ui/Select.tsx` - Updated label spacing
-- `src/components/ui/Textarea.tsx` - Updated label spacing
-- `src/pages/documents/AddDocument.tsx` - Updated date picker labels and form spacing
+---
 
-### 3. Category Selection
-**Problem:** Category field was disabled and auto-filled, users couldn't select different categories
+### 2. Fixed: Supabase 400 Error - `email` column not found in `user_profiles`
 
-**Solution:**
-- Changed Category from disabled Input to editable Select dropdown
-- Uses same options as Document Type
-- Still auto-fills from document_type, but can be changed
-- Uses Controller for proper form integration
+**Error Location:** `notifications.ts:412` (updateNotificationPreferences function)
 
-**Files Modified:**
-- `src/pages/documents/AddDocument.tsx` - Changed Category to Select with Controller
+**Root Cause:** The code was attempting to insert an `email` column into the `user_profiles` table, but this column does not exist in the database schema. User email is stored in Supabase Auth, not in the `user_profiles` table.
 
-### 4. ThemeProvider React Hook Errors
-**Problem:** `Cannot read properties of null (reading 'useState')`
+**Error Message:**
+```
+Failed to create/update notification preferences: {
+  code: 'PGRST204',
+  message: "Could not find the 'email' column of 'user_profiles' in the schema cache"
+}
+```
 
-**Root Cause:**
-- Sentry was being imported synchronously, potentially causing React conflicts
+**Fix Applied:**
+- ✅ Removed `email: user.email || null` from the insert statement in `notifications.ts`
+- ✅ The insert now only includes valid columns:
+  - `user_id`
+  - `notification_preferences`
+  - `full_name`
 
-**Solution:**
-- Changed Sentry to lazy import
-- Delayed initialization with setTimeout
-- Made all Sentry functions async
-- Added proper error handling
+**Before:**
+```typescript
+const { error: insertError } = await supabase
+  .from('user_profiles')
+  .insert({
+    user_id: userId,
+    notification_preferences: updated,
+    full_name: user.user_metadata?.full_name || null,
+    email: user.email || null,  // ❌ REMOVED - Column doesn't exist
+  });
+```
 
-**Files Modified:**
-- `src/utils/sentry.ts` - Lazy loading implementation
-- `src/main.tsx` - Delayed initialization
+**After:**
+```typescript
+const { error: insertError } = await supabase
+  .from('user_profiles')
+  .insert({
+    user_id: userId,
+    notification_preferences: updated,
+    full_name: user.user_metadata?.full_name || null,
+    // ✅ No email field - email is in Supabase Auth, not user_profiles
+  });
+```
 
-### 5. Supabase 400 Errors
-**Status:** Already fixed in previous session
-- Changed `.single()` to `.maybeSingle()` for notification_preferences
-- Added fallback to create profile if missing
+**File Changed:** `document-tracker/src/services/notifications.ts`
 
-## 🎯 Prevention Plan
+**Status:** ✅ FIXED
 
-See `ERROR_PREVENTION_PLAN.md` for complete prevention strategy.
+---
 
-### Key Prevention Measures:
-1. **Always use Controller for Select components** - More reliable than register()
-2. **Consistent spacing system** - Use `mb-3 mt-1` for all labels
-3. **Lazy load third-party libraries** - Avoid React hook conflicts
-4. **Use `.maybeSingle()` for optional queries** - Handle missing data gracefully
-5. **Test with both Controller and register()** - Ensure compatibility
+## Verification Steps
 
-## ✅ Testing Checklist
+### To Verify Calendar Import Fix:
+1. Check `document-tracker/src/App.tsx` line 4 - should have `import { Calendar } from 'lucide-react';`
+2. Check `document-tracker/src/App.tsx` line 133 - Calendar component should be used correctly
+3. Clear browser cache and restart dev server if error persists
 
-Before committing:
-- [x] Select component works with Controller
-- [x] Form spacing is consistent
-- [x] Category can be selected independently
-- [x] No TypeErrors in console
-- [x] No React hook errors
-- [x] No Supabase 400 errors
+### To Verify Email Column Fix:
+1. Check `document-tracker/src/services/notifications.ts` line 408-412
+2. Verify no `email` field in the insert statement
+3. Test notification preferences save functionality
 
-## 📝 Notes
+---
 
-- All fixes have been applied and tested
-- Prevention plan documented
-- Code follows best practices
-- Ready for production
+## Prevention Plan
 
+A comprehensive error prevention plan has been created in `ERROR_PREVENTION_PLAN.md` that includes:
+- Component import standards
+- Supabase schema management rules
+- Error handling standards
+- Code review checklists
+- Testing protocols
+- Common pitfalls to avoid
+
+**Please review `ERROR_PREVENTION_PLAN.md` for detailed prevention guidelines.**
+
+---
+
+## Next Steps
+
+1. ✅ Clear browser cache
+2. ✅ Restart development server
+3. ✅ Test loading page (should show new glass morphism design)
+4. ✅ Test notification preferences save (should work without 400 errors)
+5. ✅ Review ERROR_PREVENTION_PLAN.md for future development
+
+---
+
+## Notes
+
+- If `Calendar is not defined` error persists after fixes, it's likely a browser cache issue. Clear cache and hard refresh (Ctrl+Shift+R / Cmd+Shift+R).
+- The `email` column error should be completely resolved as we've removed all references to it in `user_profiles` operations.
+- All database operations now use only valid columns that exist in the schema.

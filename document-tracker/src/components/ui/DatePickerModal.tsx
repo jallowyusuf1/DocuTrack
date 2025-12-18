@@ -133,11 +133,31 @@ export default function DatePickerModal({
               backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(30px)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
+              maxWidth: '100%',
             }}
+            data-tablet-date-modal="true"
             onClick={(e) => e.stopPropagation()}
           >
+            <style>{`
+              @media (min-width: 768px) {
+                [data-tablet-date-modal="true"] {
+                  max-width: 600px !important;
+                  left: 50% !important;
+                  transform: translateX(-50%) !important;
+                  right: auto !important;
+                }
+              }
+            `}</style>
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-date-padding="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-date-padding="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
@@ -148,7 +168,7 @@ export default function DatePickerModal({
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
-              <h2 className="text-lg font-semibold text-white">Select Date</h2>
+              <h2 className="text-[17px] md:text-[20px] font-semibold text-white">Select Date</h2>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={handleClear}
@@ -181,13 +201,21 @@ export default function DatePickerModal({
             </div>
 
             {/* Calendar Grid */}
-            <div className="px-6 pb-4">
+            <div className="px-5 md:px-6 pb-4" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-date-grid="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-date-grid="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
               {/* Week day headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {weekDays.map((day) => (
                   <div
                     key={day}
-                    className="text-center text-xs font-medium py-2"
+                    className="text-center text-xs md:text-sm font-medium py-2"
                     style={{ color: '#A78BFA' }}
                   >
                     {day}
@@ -226,28 +254,39 @@ export default function DatePickerModal({
                       onClick={() => handleDateSelect(day)}
                       disabled={isDisabled}
                       className={`
-                        aspect-square rounded-xl text-sm font-medium
+                        aspect-square rounded-xl font-medium
                         transition-all duration-200
                         ${isDisabled ? 'opacity-30 cursor-not-allowed' : ''}
                       `}
-                      style={isSelected
-                        ? {
-                            background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                            color: '#FFFFFF',
-                            boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
-                          }
-                        : isTodayDate
-                        ? {
-                            background: 'rgba(59, 130, 246, 0.2)',
-                            color: '#93C5FD',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
-                          }
-                        : {
-                            background: 'rgba(35, 29, 51, 0.3)',
-                            color: '#FFFFFF',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                          }}
+                      style={{
+                        fontSize: '22px',
+                        ...(isSelected
+                          ? {
+                              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                              color: '#FFFFFF',
+                              boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+                            }
+                          : isTodayDate
+                          ? {
+                              background: 'rgba(59, 130, 246, 0.2)',
+                              color: '#93C5FD',
+                              border: '1px solid rgba(59, 130, 246, 0.3)',
+                            }
+                          : {
+                              background: 'rgba(35, 29, 51, 0.3)',
+                              color: '#FFFFFF',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                            })
+                      }}
+                      data-tablet-date-value="true"
                     >
+                      <style>{`
+                        @media (min-width: 768px) {
+                          [data-tablet-date-value="true"] {
+                            font-size: 26px !important;
+                          }
+                        }
+                      `}</style>
                       {format(day, 'd')}
                     </motion.button>
                   );
@@ -256,13 +295,30 @@ export default function DatePickerModal({
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-white/10 safe-area-bottom">
+            <div className="px-5 md:px-6 py-4 border-t border-white/10 safe-area-bottom" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-date-footer="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-date-footer="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
               <Button
                 variant="primary"
                 fullWidth
                 onClick={handleConfirm}
                 disabled={!selected}
+                style={{ height: '50px' }}
+                data-tablet-date-btn="true"
               >
+                <style>{`
+                  @media (min-width: 768px) {
+                    [data-tablet-date-btn="true"] {
+                      height: 56px !important;
+                    }
+                  }
+                `}</style>
                 Done
               </Button>
             </div>

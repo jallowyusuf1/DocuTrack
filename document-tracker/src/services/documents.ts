@@ -34,35 +34,68 @@ export const documentService = {
       throw new Error('Image is required');
     }
 
-    // Create document record
+    // Create document record (no auto-lock - user must manually lock)
+    const documentData = {
+      user_id: userId,
+      document_type: formData.document_type,
+      document_name: formData.document_name,
+      document_number: formData.document_number || null,
+      issue_date: formData.issue_date || null,
+      expiration_date: formData.expiration_date,
+      category: formData.category || formData.document_type,
+      notes: formData.notes || null,
+      image_url: imageUrl,
+      is_locked: false, // Documents are not auto-locked
+      deleted_at: null, // Explicitly set to null to ensure document is not deleted
+    };
+
+    console.log('Inserting document to Supabase:', {
+      userId,
+      documentName: formData.document_name,
+      documentType: formData.document_type,
+      imageUrl: imageUrl.substring(0, 50) + '...',
+    });
+
     const { data, error } = await supabase
       .from('documents')
-      .insert([
-        {
-          user_id: userId,
-          document_type: formData.document_type,
-          document_name: formData.document_name,
-          document_number: formData.document_number || null,
-          issue_date: formData.issue_date || null,
-          expiration_date: formData.expiration_date,
-          category: formData.category || formData.document_type,
-          notes: formData.notes || null,
-          image_url: imageUrl,
-        },
-      ])
+      .insert([documentData])
       .select()
       .single();
 
     if (error) {
       console.error('Database insert error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
       throw new Error(`Failed to create document: ${error.message}`);
     }
 
     if (!data) {
-      throw new Error('Document created but no data returned');
+      console.error('Document insert returned no data');
+      throw new Error('Document created but no data returned from database');
     }
 
-    console.log('Document created successfully:', data);
+    // Verify the document was actually saved by fetching it back
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('id', data.id)
+      .eq('user_id', userId)
+      .single();
+
+    if (verifyError || !verifyData) {
+      console.error('Document verification failed:', verifyError);
+      throw new Error('Document was created but could not be verified. Please refresh and check.');
+    }
+
+    console.log('Document created and verified successfully:', {
+      id: data.id,
+      name: data.document_name,
+      userId: data.user_id,
+    });
     
     // Create notification reminders
     try {
@@ -79,6 +112,8 @@ export const documentService = {
    * Get all documents for the current user
    */
   async getDocuments(userId: string): Promise<Document[]> {
+    console.log('Fetching documents for user:', userId);
+    
     const { data, error } = await supabase
       .from('documents')
       .select('*')
@@ -87,9 +122,14 @@ export const documentService = {
       .order('expiration_date', { ascending: true });
 
     if (error) {
+      console.error('Error fetching documents:', error);
       throw new Error(`Failed to fetch documents: ${error.message}`);
     }
 
+    console.log(`Fetched ${data?.length || 0} documents for user ${userId}`);
+    if (data && data.length > 0) {
+      console.log('Sample document IDs:', data.slice(0, 3).map(d => d.id));
+    }
     return data || [];
   },
 
@@ -178,15 +218,26 @@ export const documentService = {
    * Delete a document (soft delete)
    */
   async deleteDocument(documentId: string, userId: string): Promise<void> {
-    const { error } = await supabase
+    console.log('Deleting document:', { documentId, userId });
+    
+    const { data, error } = await supabase
       .from('documents')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', documentId)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select();
 
     if (error) {
+      console.error('Error deleting document:', error);
       throw new Error(`Failed to delete document: ${error.message}`);
     }
+
+    if (!data || data.length === 0) {
+      console.warn('No document found to delete:', { documentId, userId });
+      throw new Error('Document not found or you do not have permission to delete it');
+    }
+
+    console.log('Document soft-deleted successfully:', { documentId, deletedAt: data[0].deleted_at });
 
     // Cancel pending notifications
     try {
@@ -240,6 +291,44 @@ export const documentService = {
     }
 
     return data || [];
+  },
+
+  /**
+   * Lock a document
+   */
+  async lockDocument(documentId: string, userId: string): Promise<Document> {
+    const { data, error } = await supabase
+      .from('documents')
+      .update({ is_locked: true })
+      .eq('id', documentId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to lock document: ${error.message}`);
+    }
+
+    return data;
+  },
+
+  /**
+   * Unlock a document
+   */
+  async unlockDocument(documentId: string, userId: string): Promise<Document> {
+    const { data, error } = await supabase
+      .from('documents')
+      .update({ is_locked: false })
+      .eq('id', documentId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to unlock document: ${error.message}`);
+    }
+
+    return data;
   },
 
   /**

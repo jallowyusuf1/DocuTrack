@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Cache - DocuTrack</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 32px;
+    }
+    p {
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .status {
+      background: #f0f0f0;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .status div {
+      margin: 5px 0;
+    }
+    .success {
+      color: #10b981;
+      font-weight: bold;
+    }
+    .error {
+      color: #ef4444;
+      font-weight: bold;
+    }
+    .warning {
+      color: #f59e0b;
+      font-weight: bold;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin: 10px 0;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    ol {
+      margin-left: 20px;
+      color: #555;
+      line-height: 2;
+    }
+    ol li {
+      margin: 10px 0;
+    }
+    .highlight {
+      background: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧹 Clear Cache & Service Workers</h1>
+    <p>Your browser has cached an old service worker that's causing errors. Follow these steps to fix it:</p>
+
+    <div class="status" id="status">
+      <div>Checking cache status...</div>
+    </div>
+
+    <button onclick="clearEverything()">🚀 Clear Everything Now</button>
+    <button onclick="window.location.href='/'" style="background: #10b981;">✅ Done - Go to App</button>
+
+    <h2 style="margin-top: 30px; color: #333;">Manual Steps (if needed):</h2>
+    <ol>
+      <li>Press <span class="highlight">F12</span> to open DevTools</li>
+      <li>Go to <span class="highlight">Application</span> tab</li>
+      <li>Click <span class="highlight">Service Workers</span> → Unregister all</li>
+      <li>Click <span class="highlight">Storage</span> → Clear site data</li>
+      <li>Close <span class="highlight">ALL</span> tabs with localhost</li>
+      <li>Close browser completely (Cmd+Q / Alt+F4)</li>
+      <li>Reopen and go to <span class="highlight">http://localhost:5174/</span></li>
+    </ol>
+  </div>
+
+  <script>
+    async function checkStatus() {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '';
+
+      // Check service workers
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          if (registrations.length > 0) {
+            statusDiv.innerHTML += `<div class="error">❌ Found ${registrations.length} service worker(s) - MUST be removed!</div>`;
+            registrations.forEach(reg => {
+              statusDiv.innerHTML += `<div class="warning">   - ${reg.scope}</div>`;
+            });
+          } else {
+            statusDiv.innerHTML += `<div class="success">✅ No service workers found</div>`;
+          }
+        } catch (e) {
+          statusDiv.innerHTML += `<div class="error">❌ Error checking service workers: ${e.message}</div>`;
+        }
+      }
+
+      // Check caches
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          if (cacheNames.length > 0) {
+            statusDiv.innerHTML += `<div class="error">❌ Found ${cacheNames.length} cache(s) - MUST be cleared!</div>`;
+            cacheNames.forEach(name => {
+              statusDiv.innerHTML += `<div class="warning">   - ${name}</div>`;
+            });
+          } else {
+            statusDiv.innerHTML += `<div class="success">✅ No caches found</div>`;
+          }
+        } catch (e) {
+          statusDiv.innerHTML += `<div class="error">❌ Error checking caches: ${e.message}</div>`;
+        }
+      }
+
+      // Check if we're clean
+      const isClean = statusDiv.innerHTML.includes('✅') && !statusDiv.innerHTML.includes('❌');
+      if (isClean) {
+        statusDiv.innerHTML += `<div class="success" style="margin-top: 15px; font-size: 16px;">🎉 ALL CLEAR! You can now use the app.</div>`;
+      }
+    }
+
+    async function clearEverything() {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '<div>🧹 Clearing everything...</div>';
+
+      let cleared = 0;
+      let errors = 0;
+
+      // Unregister service workers
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            try {
+              const success = await registration.unregister();
+              if (success) {
+                cleared++;
+                statusDiv.innerHTML += `<div class="success">✅ Unregistered: ${registration.scope}</div>`;
+              }
+            } catch (e) {
+              errors++;
+              statusDiv.innerHTML += `<div class="error">❌ Failed to unregister: ${e.message}</div>`;
+            }
+          }
+        } catch (e) {
+          errors++;
+          statusDiv.innerHTML += `<div class="error">❌ Error: ${e.message}</div>`;
+        }
+      }
+
+      // Clear caches
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          for (const cacheName of cacheNames) {
+            try {
+              const success = await caches.delete(cacheName);
+              if (success) {
+                cleared++;
+                statusDiv.innerHTML += `<div class="success">✅ Deleted cache: ${cacheName}</div>`;
+              }
+            } catch (e) {
+              errors++;
+              statusDiv.innerHTML += `<div class="error">❌ Failed to delete cache: ${e.message}</div>`;
+            }
+          }
+        } catch (e) {
+          errors++;
+          statusDiv.innerHTML += `<div class="error">❌ Error: ${e.message}</div>`;
+        }
+      }
+
+      // Clear localStorage
+      try {
+        localStorage.clear();
+        statusDiv.innerHTML += `<div class="success">✅ Cleared localStorage</div>`;
+      } catch (e) {
+        statusDiv.innerHTML += `<div class="warning">⚠️ Could not clear localStorage: ${e.message}</div>`;
+      }
+
+      // Clear sessionStorage
+      try {
+        sessionStorage.clear();
+        statusDiv.innerHTML += `<div class="success">✅ Cleared sessionStorage</div>`;
+      } catch (e) {
+        statusDiv.innerHTML += `<div class="warning">⚠️ Could not clear sessionStorage: ${e.message}</div>`;
+      }
+
+      if (errors === 0) {
+        statusDiv.innerHTML += `<div class="success" style="margin-top: 15px; font-size: 18px;">🎉 ALL CLEARED! Reload the page or go to the app.</div>`;
+      } else {
+        statusDiv.innerHTML += `<div class="warning" style="margin-top: 15px;">⚠️ Some items couldn't be cleared. Try manual steps.</div>`;
+      }
+
+      // Recheck after 1 second
+      setTimeout(checkStatus, 1000);
+    }
+
+    // Check status on load
+    checkStatus();
+
+    // Auto-refresh status every 3 seconds
+    setInterval(checkStatus, 3000);
+  </script>
+</body>
+</html>

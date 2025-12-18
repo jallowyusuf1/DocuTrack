@@ -2,12 +2,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import Button from '../ui/Button';
 import { getTransition, transitions } from '../../utils/animations';
+import { useImageUrl } from '../../hooks/useImageUrl';
+import type { Document } from '../../types';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   documentName?: string;
+  document?: Document;
   isLoading?: boolean;
 }
 
@@ -16,8 +19,10 @@ export default function DeleteConfirmationModal({
   onClose,
   onConfirm,
   documentName,
+  document,
   isLoading = false,
 }: DeleteConfirmationModalProps) {
+  const { signedUrl: imageUrl } = useImageUrl(document?.image_url || '');
   return (
     <AnimatePresence>
       {isOpen && (
@@ -37,33 +42,71 @@ export default function DeleteConfirmationModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div 
-              className="rounded-3xl shadow-xl w-full max-w-sm p-6"
+              className="rounded-[28px] shadow-xl w-full p-5 md:p-6"
               style={{
                 background: 'rgba(42, 38, 64, 0.85)',
                 backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(25px)',
                 border: '1px solid rgba(255, 255, 255, 0.15)',
                 boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+                maxWidth: '380px',
+                padding: '20px',
               }}
+              data-tablet-delete="true"
+              data-desktop-delete="true"
               onClick={(e) => e.stopPropagation()}
             >
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-delete="true"] {
+                    max-width: 460px !important;
+                    padding: 24px !important;
+                  }
+                }
+                @media (min-width: 1024px) {
+                  [data-desktop-delete="true"] {
+                    max-width: 500px !important;
+                    padding: 24px !important;
+                  }
+                }
+              `}</style>
               <div className="flex flex-col items-center text-center mb-6">
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                  className="rounded-full flex items-center justify-center mb-4"
                   style={{
                     background: 'rgba(239, 68, 68, 0.2)',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
+                    width: '64px',
+                    height: '64px',
                   }}
+                  data-tablet-delete-icon="true"
                 >
-                  <AlertTriangle className="w-8 h-8 text-red-400" />
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-delete-icon="true"] {
+                        width: 80px !important;
+                        height: 80px !important;
+                      }
+                    }
+                  `}</style>
+                  <AlertTriangle className="w-8 h-8 md:w-10 md:h-10 text-red-400" />
                 </motion.div>
-                <h2 className="text-xl font-bold text-white mb-2">Delete Document?</h2>
+                <h2 className="text-[17px] md:text-[20px] font-bold text-white mb-2">Delete Document?</h2>
                 {documentName && (
-                  <p className="text-sm text-glass-secondary mb-2">"{documentName}"</p>
+                  <p className="text-sm md:text-base text-glass-secondary mb-2">"{documentName}"</p>
                 )}
-                <p className="text-sm text-glass-secondary">This action cannot be undone.</p>
+                {document && imageUrl && (
+                  <div className="w-32 h-40 rounded-lg overflow-hidden mx-auto mb-3" style={{ background: '#F5F5F5' }}>
+                    <img
+                      src={imageUrl}
+                      alt={documentName || 'Document'}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <p className="text-sm md:text-base text-glass-secondary">This action cannot be undone.</p>
               </div>
 
               <div className="flex gap-3">
@@ -72,7 +115,16 @@ export default function DeleteConfirmationModal({
                   fullWidth
                   onClick={onClose}
                   disabled={isLoading}
+                  style={{ height: '50px' }}
+                  data-tablet-delete-btn="true"
                 >
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-delete-btn="true"] {
+                        height: 56px !important;
+                      }
+                    }
+                  `}</style>
                   Cancel
                 </Button>
                 <Button
@@ -80,7 +132,16 @@ export default function DeleteConfirmationModal({
                   fullWidth
                   onClick={onConfirm}
                   disabled={isLoading}
+                  style={{ height: '50px' }}
+                  data-tablet-delete-btn2="true"
                 >
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-delete-btn2="true"] {
+                        height: 56px !important;
+                      }
+                    }
+                  `}</style>
                   {isLoading ? 'Deleting...' : 'Delete'}
                 </Button>
               </div>

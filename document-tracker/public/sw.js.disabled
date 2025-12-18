@@ -1,0 +1,171 @@
+/* eslint-disable no-restricted-globals */
+/* Service Worker for DocuTrack PWA */
+
+const CACHE_NAME = 'doctrack-v2'; // Increment version
+const RUNTIME_CACHE = 'doctrack-runtime-v2';
+const CACHE_VERSION = 2;
+
+// Assets to cache on install
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+];
+
+// Install event - cache static assets
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing version', CACHE_VERSION);
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+          console.error('[SW] Cache failed:', err);
+          // Don't fail install if caching fails
+          return Promise.resolve();
+        });
+      })
+      .then(() => self.skipWaiting())
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating version', CACHE_VERSION);
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((cacheName) => {
+            return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
+          })
+          .map((cacheName) => {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+      );
+    })
+      .then(() => self.clients.claim())
+  );
+});
+
+// Network-first strategy with proper error handling
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request);
+
+    // Cache successful responses
+    if (networkResponse && networkResponse.status === 200) {
+      const cache = await caches.open(RUNTIME_CACHE);
+      cache.put(request, networkResponse.clone()).catch(() => {
+        // Ignore cache errors
+      });
+    }
+
+    return networkResponse;
+  } catch (error) {
+    // Network failed, try cache
+    console.log('[SW] Network failed, trying cache for:', request.url);
+    const cachedResponse = await caches.match(request);
+
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    // Both failed - return proper error response instead of throwing
+    console.error('[SW] Cache miss for:', request.url);
+    return new Response('Network error', {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: new Headers({
+        'Content-Type': 'text/plain',
+      }),
+    });
+  }
+}
+
+// Fetch event - serve from network first, fallback to cache
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  // Skip development resources (HMR, etc.)
+  if (url.search.includes('@vite') ||
+      url.search.includes('?t=') ||
+      url.pathname.includes('node_modules') ||
+      url.pathname.includes('@fs') ||
+      url.pathname.endsWith('.tsx') ||
+      url.pathname.endsWith('.ts') ||
+      url.pathname.endsWith('.jsx') ||
+      url.pathname.endsWith('.js.map')) {
+    return; // Let browser handle these
+  }
+
+  // Skip WebSocket connections
+  if (url.protocol === 'ws:' || url.protocol === 'wss:') {
+    return;
+  }
+
+  // Skip Supabase API calls (always use network)
+  if (url.hostname.includes('supabase.co') || url.hostname.includes('supabase.in')) {
+    return;
+  }
+
+  // Skip external resources
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Use network-first strategy with error handling
+  event.respondWith(networkFirst(request));
+});
+
+// Background sync for offline actions
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Sync event:', event.tag);
+  if (event.tag === 'sync-documents') {
+    event.waitUntil(syncDocuments());
+  }
+});
+
+async function syncDocuments() {
+  console.log('[SW] Syncing documents...');
+  // Implement document sync logic here
+}
+
+// Push notifications
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data ? event.data.text() : 'New notification',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    tag: 'doctrack-notification',
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('DocuTrack', options)
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('/')
+  );
+});
+
+// Handle errors globally
+self.addEventListener('error', (event) => {
+  console.error('[SW] Global error:', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  console.error('[SW] Unhandled rejection:', event.reason);
+  event.preventDefault(); // Prevent error from bubbling
+});

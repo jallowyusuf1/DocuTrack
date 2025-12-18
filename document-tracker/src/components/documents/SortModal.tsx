@@ -51,7 +51,7 @@ export default function SortModal({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={getTransition(transitions.spring)}
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[70vh] overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[70vh] overflow-hidden md:max-w-[600px] md:left-1/2 md:-translate-x-1/2 md:max-h-[70vh] md:rounded-t-[24px]"
             style={{
               background: 'rgba(42, 38, 64, 0.85)',
               backdropFilter: 'blur(25px)',

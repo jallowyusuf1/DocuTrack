@@ -28,17 +28,8 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Defensive check - ensure React hooks are available
-  if (typeof useState !== 'function' || typeof useEffect !== 'function') {
-    console.error('React hooks not available in ThemeProvider');
-    // Return a minimal provider without hooks as fallback
-    return (
-      <ThemeContext.Provider value={{ theme: 'dark', toggleTheme: () => {}, setTheme: () => {} }}>
-        {children}
-      </ThemeContext.Provider>
-    );
-  }
-
+  // Use hooks directly - React should always be ready in a proper component
+  // If this fails, it indicates a build/cache issue that needs fixing
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {

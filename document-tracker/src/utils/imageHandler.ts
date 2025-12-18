@@ -230,9 +230,17 @@ export async function uploadDocumentImage(
   userId: string,
   documentId?: string
 ): Promise<string> {
-  // Compress image first if it's an image (not PDF)
+  // Use file as-is if it's already been enhanced (8K quality)
+  // Check if file is already high quality (larger than typical compressed size)
   let fileToUpload: File | Blob = file;
+  
   if (file instanceof File && file.type !== 'application/pdf' && file.type.startsWith('image/')) {
+    // If file is already enhanced (likely 8K), use it directly
+    // Enhanced images are typically > 5MB for 8K quality
+    const isAlreadyEnhanced = file.size > 5 * 1024 * 1024;
+    
+    if (!isAlreadyEnhanced) {
+      // Only compress if not already enhanced
     try {
       const compressed = await compressImage(file, 1920, 1920, 0.85);
       // Convert blob to file
@@ -241,6 +249,13 @@ export async function uploadDocumentImage(
     } catch (err) {
       console.warn('Compression failed, using original:', err);
       // Continue with original if compression fails
+      }
+    } else {
+      // File is already enhanced, use as-is but ensure it's JPEG
+      if (!file.name.endsWith('.jpg') && !file.name.endsWith('.jpeg')) {
+        const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+        fileToUpload = new File([file], fileName, { type: 'image/jpeg', lastModified: file.lastModified });
+      }
     }
   }
 

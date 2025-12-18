@@ -96,22 +96,51 @@ export default function LanguagePickerModal({
               backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(30px)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
+              maxWidth: '100%',
             }}
+            data-tablet-lang-modal="true"
             onClick={(e) => e.stopPropagation()}
           >
+            <style>{`
+              @media (min-width: 768px) {
+                [data-tablet-lang-modal="true"] {
+                  max-width: 600px !important;
+                  left: 50% !important;
+                  transform: translateX(-50%) !important;
+                  right: auto !important;
+                }
+              }
+            `}</style>
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-2">
               <div 
-                className="w-10 h-1 rounded-full"
+                className="h-1 rounded-full"
                 style={{
                   background: 'rgba(255, 255, 255, 0.3)',
+                  width: '36px',
                 }}
+                data-tablet-lang-handle="true"
               />
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-lang-handle="true"] {
+                    width: 48px !important;
+                  }
+                }
+              `}</style>
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">{t('modals.selectLanguage')}</h2>
+            <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-lang-padding="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-lang-padding="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
+              <h2 className="text-[17px] md:text-[20px] font-bold text-white">{t('modals.selectLanguage')}</h2>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
@@ -125,7 +154,15 @@ export default function LanguagePickerModal({
             </div>
 
             {/* Language List */}
-            <div className="px-6 py-4 space-y-3">
+            <div className="px-5 md:px-6 py-4 space-y-3" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-lang-list="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-lang-list="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
               {languages.map((lang) => {
                 const isSelected = language === lang.code;
                 return (
@@ -135,41 +172,71 @@ export default function LanguagePickerModal({
                     whileHover={{ scale: 1.02 }}
                     onClick={() => handleLanguageSelect(lang.code)}
                     disabled={isChanging || language === lang.code}
-                    className="w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all duration-200 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={isSelected ? {
-                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
-                      border: '2px solid rgba(139, 92, 246, 0.6)',
-                      boxShadow: '0 0 24px rgba(139, 92, 246, 0.4)',
-                    } : {
-                      background: 'rgba(42, 38, 64, 0.6)',
-                      backdropFilter: 'blur(15px)',
-                      WebkitBackdropFilter: 'blur(15px)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                    className="w-full flex items-center justify-between px-4 rounded-2xl transition-all duration-200 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      height: '60px',
+                      ...(isSelected ? {
+                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
+                        border: '2px solid rgba(139, 92, 246, 0.6)',
+                        boxShadow: '0 0 24px rgba(139, 92, 246, 0.4)',
+                      } : {
+                        background: 'rgba(42, 38, 64, 0.6)',
+                        backdropFilter: 'blur(15px)',
+                        WebkitBackdropFilter: 'blur(15px)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                      })
                     }}
+                    data-tablet-lang-item="true"
                   >
+                    <style>{`
+                      @media (min-width: 768px) {
+                        [data-tablet-lang-item="true"] {
+                          height: 72px !important;
+                        }
+                      }
+                    `}</style>
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       {/* Flag Icon */}
                       <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+                        className="rounded-full flex items-center justify-center text-2xl flex-shrink-0"
                         style={{
                           background: 'rgba(35, 29, 51, 0.8)',
                           backdropFilter: 'blur(10px)',
                           border: '1px solid rgba(255, 255, 255, 0.15)',
+                          width: '32px',
+                          height: '32px',
                         }}
+                        data-tablet-lang-flag="true"
                       >
+                        <style>{`
+                          @media (min-width: 768px) {
+                            [data-tablet-lang-flag="true"] {
+                              width: 36px !important;
+                              height: 36px !important;
+                            }
+                          }
+                        `}</style>
                         {lang.flag}
                       </div>
 
                       {/* Language Info */}
                       <div className="flex flex-col items-start flex-1 min-w-0">
                         <span 
-                          className="text-base font-semibold truncate w-full"
+                          className="font-semibold truncate w-full text-[17px]"
                           style={{ color: isSelected ? '#FFFFFF' : '#FFFFFF' }}
+                          data-tablet-lang-text="true"
                         >
+                          <style>{`
+                            @media (min-width: 768px) {
+                              [data-tablet-lang-text="true"] {
+                                font-size: 19px !important;
+                              }
+                            }
+                          `}</style>
                           {lang.nativeName}
                         </span>
                         <span 
-                          className="text-sm mt-0.5 truncate w-full"
+                          className="mt-0.5 truncate w-full text-sm md:text-base"
                           style={{ color: '#A78BFA', opacity: 0.8 }}
                         >
                           {lang.name}

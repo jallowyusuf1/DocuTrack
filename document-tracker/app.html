@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#8B5CF6" />
+    <meta name="description" content="Never miss a document expiration deadline. Track passports, IDs, insurance, and more with smart reminders." />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <title>DocuTrack - Document Tracker</title>
+    <style>
+      /* Immediate loading screen styling - matches app theme */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%);
+        background-attachment: fixed;
+        color: #C7C3D9;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+      #root {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%);
+        background-attachment: fixed;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- CRITICAL: Port redirect - FORCE correct port -->
+    <script>
+      // IMMEDIATE: If on wrong port, redirect to 5174
+      (function() {
+        'use strict';
+        var currentPort = window.location.port;
+        var correctPort = '5174';
+
+        if (currentPort === '5173' || (currentPort !== correctPort && window.location.hostname === 'localhost')) {
+          console.error('❌ WRONG PORT DETECTED:', currentPort, '→ Redirecting to', correctPort);
+          var newUrl = window.location.protocol + '//' + window.location.hostname + ':' + correctPort + window.location.pathname + window.location.search;
+          window.location.replace(newUrl);
+          throw new Error('Redirecting to correct port...');
+        }
+      })();
+    </script>
+
+    <!-- CRITICAL: Unregister service workers IMMEDIATELY in development -->
+    <script>
+      // Run this BEFORE anything else loads - AGGRESSIVE CLEANUP
+      (function() {
+        'use strict';
+        
+        // Only run on localhost (development)
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          return;
+        }
+        
+        // Unregister ALL service workers immediately
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations()
+            .then(function(registrations) {
+              console.log('[Emergency] Found', registrations.length, 'service worker(s)');
+              return Promise.all(
+                registrations.map(function(registration) {
+                  return registration.unregister()
+                    .then(function(success) {
+                      if (success) {
+                        console.log('[Emergency] ✅ Service Worker unregistered:', registration.scope);
+                      }
+                      return success;
+                    })
+                    .catch(function(err) {
+                      console.error('[Emergency] ❌ SW unregister failed:', err);
+                      return false;
+                    });
+                })
+              );
+            })
+            .then(function() {
+              // Clear all caches after unregistering
+              if ('caches' in window) {
+                return caches.keys().then(function(names) {
+                  console.log('[Emergency] Found', names.length, 'cache(s)');
+                  return Promise.all(
+                    names.map(function(name) {
+                      return caches.delete(name)
+                        .then(function(success) {
+                          if (success) {
+                            console.log('[Emergency] ✅ Cache deleted:', name);
+                          }
+                          return success;
+                        });
+                    })
+                  );
+                });
+              }
+            })
+            .then(function() {
+              console.log('[Emergency] ✅ Complete cleanup finished');
+            })
+            .catch(function(err) {
+              console.error('[Emergency] ❌ Cleanup error:', err);
+            });
+        }
+      })();
+    </script>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

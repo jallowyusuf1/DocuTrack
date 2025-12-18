@@ -12,6 +12,7 @@ import {
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import Spinner from '../ui/Spinner';
+import DocumentScannerCamera from './DocumentScannerCamera';
 
 interface ImageUploaderProps {
   onImageSelected: (file: File) => void;
@@ -32,6 +33,7 @@ export default function ImageUploader({
   const [error, setError] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [processingStep, setProcessingStep] = useState<string>('');
   const [fileInfo, setFileInfo] = useState<{ size: number; dimensions?: { width: number; height: number } } | null>(null);
   const [rotation, setRotation] = useState(0);
@@ -353,17 +355,7 @@ export default function ImageUploader({
             onClick={handleTakePhoto}
             disabled={isProcessing}
             className="
-              w-full h-14 rounded-xl
-              bg-blue-50 border-2 border-blue-500
-              flex items-center gap-4 px-4
-              text-blue-700 font-medium
-              transition-all duration-200
-              active:scale-98
-              disabled:opacity-50 disabled:cursor-not-allowed
-            "
-          >
-            <Camera className="w-6 h-6" />
-            <span className="flex-1 text-left">Take Photo</span>
+            <span className="flex-1 text-left">Take Photo with Scanner</span>
           </button>
 
           <button
@@ -374,6 +366,24 @@ export default function ImageUploader({
               bg-gray-50 border-2 border-gray-300
               flex items-center gap-4 px-4
               text-gray-700 font-medium
+              transition-all duration-200
+              active:scale-98
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
+          >
+            <Upload className="w-6 h-6" />
+            <span className="flex-1 text-left">Choose from Gallery</span>
+          </button>
+        </div>
+      </Modal>
+
+      {/* Document Scanner Camera */}
+      <DocumentScannerCamera
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onImageCapture={handleScannerCapture}
+        captureMode="environment"
+      />
               transition-all duration-200
               active:scale-98
               disabled:opacity-50 disabled:cursor-not-allowed

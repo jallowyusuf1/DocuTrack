@@ -81,18 +81,49 @@ export default function Modal({
                 border: '1px solid rgba(255, 255, 255, 0.15)',
                 borderBottom: 'none',
                 boxShadow: '0 -16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+                maxWidth: '100%',
               }}
+              data-tablet-bottom-sheet="true"
               onClick={(e) => e.stopPropagation()}
             >
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-bottom-sheet="true"] {
+                    max-width: 600px !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    right: auto !important;
+                  }
+                }
+              `}</style>
           {/* Handle bar */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 bg-white/30 rounded-full" />
+            <div 
+              className="h-1 bg-white/30 rounded-full"
+              style={{ width: '36px' }}
+              data-tablet-handle="true"
+            />
+            <style>{`
+              @media (min-width: 768px) {
+                [data-tablet-handle="true"] {
+                  width: 48px !important;
+                }
+              }
+            `}</style>
           </div>
 
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">{title}</h2>
+            <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-padding="true">
+              <style>{`
+                @media (min-width: 768px) {
+                  [data-tablet-padding="true"] {
+                    padding-left: 24px !important;
+                    padding-right: 24px !important;
+                  }
+                }
+              `}</style>
+              <h2 className="text-[17px] md:text-[20px] font-bold text-white">{title}</h2>
               {showCloseButton && (
                 <motion.button
                   whileTap={{ scale: 0.9 }}
@@ -119,7 +150,17 @@ export default function Modal({
           )}
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto">{children}</div>
+              <div className="flex-1 overflow-y-auto px-5 md:px-6" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-content="true">
+                <style>{`
+                  @media (min-width: 768px) {
+                    [data-tablet-content="true"] {
+                      padding-left: 24px !important;
+                      padding-right: 24px !important;
+                    }
+                  }
+                `}</style>
+                {children}
+              </div>
             </motion.div>
           </>
         )}
@@ -163,8 +204,16 @@ export default function Modal({
             >
               {/* Header */}
               {title && (
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-                  <h2 className="text-xl font-bold text-white">{title}</h2>
+                <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-center-padding="true">
+                  <style>{`
+                    @media (min-width: 768px) {
+                      [data-tablet-center-padding="true"] {
+                        padding-left: 24px !important;
+                        padding-right: 24px !important;
+                      }
+                    }
+                  `}</style>
+                  <h2 className="text-[17px] md:text-[20px] font-bold text-white">{title}</h2>
                   {showCloseButton && (
                     <motion.button
                       whileTap={{ scale: 0.9 }}

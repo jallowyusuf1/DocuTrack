@@ -1,33 +1,49 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, XCircle } from 'lucide-react';
+import { RefreshCw, XCircle, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
-import { documentService } from '../../services/documents';
-import type { Document } from '../../types';
+import { dateService } from '../../services/dateService';
+import { useDebounce } from '../../hooks/useDebounce';
+import type { ImportantDate } from '../../types';
 import CalendarView from '../../components/dates/CalendarView';
 import ListView from '../../components/dates/ListView';
 import ViewToggle from '../../components/dates/ViewToggle';
-import MarkRenewedModal from '../../components/documents/MarkRenewedModal';
-import Button from '../../components/ui/Button';
+import Button from '../../components/ui/Skeleton';
 import Skeleton from '../../components/ui/Skeleton';
 
 export default function Dates() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [dates, setDates] = useState<ImportantDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
 
-  // Fetch all documents
-  const fetchDocuments = async (showRefreshing = false) => {
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Filter dates by search query
+  const filteredDates = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) {
+      return dates;
+    }
+
+    const query = debouncedSearchQuery.toLowerCase();
+    return dates.filter((date) => {
+      const titleMatch = date.title.toLowerCase().includes(query);
+      const descriptionMatch = date.description?.toLowerCase().includes(query);
+      const categoryMatch = date.category?.toLowerCase().includes(query);
+      return titleMatch || descriptionMatch || categoryMatch;
+    });
+  }, [dates, debouncedSearchQuery]);
+
+  // Fetch all important dates
+  const fetchDates = async (showRefreshing = false) => {
     if (!user?.id) return;
 
     try {
@@ -38,11 +54,21 @@ export default function Dates() {
       }
       setError(null);
 
-      const fetchedDocs = await documentService.getDocuments(user.id);
-      setDocuments(fetchedDocs);
+      const fetchedDates = await dateService.getDates(user.id);
+      setDates(fetchedDates);
+      // Clear error on successful fetch (even if empty)
+      setError(null);
     } catch (err: any) {
-      console.error('Failed to fetch documents:', err);
-      setError('Failed to load dates. Please try again.');
+      console.error('Failed to fetch important dates:', err);
+      // Only show error for non-table-not-found errors
+      // Table not found errors are handled gracefully by returning empty array
+      if (!err.message?.includes('not found') && !err.code?.includes('PGRST')) {
+        setError('Failed to load important dates. Please try again.');
+      } else {
+        // Table doesn't exist - show empty state instead of error
+        setDates([]);
+        setError(null);
+      }
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -50,16 +76,16 @@ export default function Dates() {
   };
 
   useEffect(() => {
-    fetchDocuments();
+    fetchDates();
   }, [user]);
 
-  // Listen for refresh events (when returning from detail page or adding new date)
+  // Listen for refresh events (when adding new important date)
   useEffect(() => {
     const handleFocus = () => {
-      fetchDocuments();
+      fetchDates();
     };
     const handleRefresh = () => {
-      fetchDocuments();
+      fetchDates();
     };
     window.addEventListener('focus', handleFocus);
     window.addEventListener('refreshDates', handleRefresh);
@@ -87,44 +113,20 @@ export default function Dates() {
 
   const handleTouchEnd = () => {
     if (pullDistance.current > 80) {
-      fetchDocuments(true);
+      fetchDates(true);
     }
     pullStartY.current = 0;
     pullDistance.current = 0;
   };
 
-  const handleDocumentClick = (documentId: string) => {
-    navigate(`/documents/${documentId}`);
-  };
-
-  const handleMarkRenewed = (document: Document) => {
-    setSelectedDocument(document);
-    setIsModalOpen(true);
-  };
-
-  const handleConfirmRenew = async (documentId: string, newExpirationDate: string) => {
-    if (!user?.id) return;
-    try {
-      await documentService.updateDocument(documentId, user.id, {
-        expiration_date: newExpirationDate,
-      } as any);
-      setIsModalOpen(false);
-      setSelectedDocument(null);
-      await fetchDocuments();
-    } catch (err) {
-      console.error('Failed to renew document:', err);
-      throw err;
-    }
-  };
-
   // Loading skeleton
-  if (loading && documents.length === 0) {
+  if (loading && dates.length === 0) {
     return (
       <div className="pb-[72px] min-h-screen">
         {/* Header */}
         <div className="px-5 py-4">
           <h1 className="text-2xl font-bold text-white mb-1">Important Dates</h1>
-          <p className="text-sm text-glass-secondary">All your document expiration dates</p>
+          <p className="text-sm text-glass-secondary">Track your important dates and reminders</p>
         </div>
 
         {/* View Toggle Skeleton */}
@@ -142,14 +144,14 @@ export default function Dates() {
   }
 
   // Error state
-  if (error && documents.length === 0) {
+  if (error && dates.length === 0) {
     return (
       <div className="pb-[72px] min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Dates</h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Button variant="primary" onClick={() => fetchDocuments()}>
+          <Button variant="primary" onClick={() => fetchDates()}>
             Retry
           </Button>
         </div>
@@ -162,7 +164,69 @@ export default function Dates() {
       {/* Header */}
       <div className="px-5 py-4">
         <h1 className="text-2xl font-bold text-white mb-1">Important Dates</h1>
-        <p className="text-sm text-glass-secondary">All your document expiration dates</p>
+        <p className="text-sm text-glass-secondary">Track your important dates and reminders</p>
+      </div>
+
+      {/* Search Bar */}
+      <div className="px-4 pt-2 pb-4">
+        <div className="relative">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 z-10"
+            style={{
+              color: '#A78BFA',
+              filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))',
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Search important dates..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-[50px] pl-12 pr-12 rounded-2xl text-white transition-all duration-200"
+            style={{
+              background: 'rgba(35, 29, 51, 0.6)',
+              backdropFilter: 'blur(15px)',
+              WebkitBackdropFilter: 'blur(15px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              fontSize: '15px',
+            }}
+            onFocus={(e) => {
+              if (e.currentTarget) {
+                e.currentTarget.style.border = '1px solid rgba(139, 92, 246, 0.5)';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
+              }
+            }}
+            onBlur={(e) => {
+              if (e.currentTarget) {
+                e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          />
+          <style>{`
+            input::placeholder {
+              color: #A78BFA;
+              opacity: 0.7;
+            }
+          `}</style>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all z-10"
+              style={{
+                background: 'rgba(35, 29, 51, 0.5)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          )}
+        </div>
+        {debouncedSearchQuery && filteredDates.length > 0 && (
+          <p className="text-xs mt-2 px-1" style={{ color: '#A78BFA' }}>
+            {filteredDates.length} result{filteredDates.length !== 1 ? 's' : ''}
+          </p>
+        )}
       </div>
 
       {/* View Toggle */}
@@ -200,9 +264,7 @@ export default function Dates() {
               }}
             >
               <CalendarView
-                documents={documents}
-                onDocumentClick={handleDocumentClick}
-                onMarkRenewed={handleMarkRenewed}
+                dates={filteredDates}
               />
             </motion.div>
           ) : (
@@ -218,16 +280,15 @@ export default function Dates() {
               }}
             >
               <ListView
-                documents={documents}
-                onDocumentClick={handleDocumentClick}
+                dates={filteredDates}
               />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Mark Renewed Modal */}
-      {isModalOpen && selectedDocument && (
+      {/* Note: Mark Renewed Modal removed - not needed for important dates */}
+      {/* {isModalOpen && selectedDocument && (
         <MarkRenewedModal
           document={selectedDocument}
           onClose={() => {
@@ -236,7 +297,7 @@ export default function Dates() {
           }}
           onSave={handleConfirmRenew}
         />
-      )}
+      )} */}
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Header from '../components/layout/Header';
+import DesktopNav from '../components/layout/DesktopNav';
 import BottomNav from '../components/layout/BottomNav';
 import FABContainer from '../components/layout/FABContainer';
 import OfflineIndicator from '../components/shared/OfflineIndicator';
@@ -19,6 +20,20 @@ export default function MainLayout() {
 
   const location = useLocation();
   const navigationType = useNavigationType();
+  
+  // Check if desktop
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth >= 1024;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Scroll to top on page change (but not on back/forward)
   useEffect(() => {
@@ -63,7 +78,7 @@ export default function MainLayout() {
     <div className="flex flex-col h-screen relative">
       <GradientOrbs />
       <OfflineIndicator />
-      <Header />
+      {isDesktop ? <DesktopNav /> : <Header />}
       <main ref={mainRef} className="flex-1 overflow-y-auto pb-[72px] relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
@@ -78,7 +93,7 @@ export default function MainLayout() {
           </motion.div>
         </AnimatePresence>
       </main>
-      <BottomNav />
+      {!isDesktop && <BottomNav />}
       <FABContainer />
     </div>
   );

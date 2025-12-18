@@ -20,7 +20,7 @@ export default function Toggle({ checked, onChange, disabled = false, className 
       type="button"
       onClick={handleToggle}
       disabled={disabled}
-      className={`relative w-[52px] h-[32px] rounded-full transition-all duration-300 flex items-center ${
+      className={`relative w-[48px] md:w-[52px] h-[30px] md:h-[32px] rounded-full transition-all duration-300 flex items-center ${
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
       } ${className}`}
       style={{
@@ -37,19 +37,31 @@ export default function Toggle({ checked, onChange, disabled = false, className 
       aria-checked={checked}
     >
       <motion.div
-        className="w-[28px] h-[28px] rounded-full bg-white flex items-center justify-center"
+        className="rounded-full bg-white flex items-center justify-center"
+        style={{
+          width: '22px',
+          height: '22px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+        }}
+        data-tablet-toggle="true"
         animate={{
-          x: checked ? 20 : 2,
+          x: checked ? 18 : 2,
         }}
         transition={{
           type: 'spring',
           stiffness: 500,
           damping: 30,
         }}
-        style={{
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-        }}
-      />
+      >
+        <style>{`
+          @media (min-width: 768px) {
+            [data-tablet-toggle="true"] {
+              width: 26px !important;
+              height: 26px !important;
+            }
+          }
+        `}</style>
+      </motion.div>
     </motion.button>
   );
 }

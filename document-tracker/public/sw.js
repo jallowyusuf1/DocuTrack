@@ -1,141 +1,104 @@
 /* eslint-disable no-restricted-globals */
-/* Service Worker for DocuTrack PWA */
+/* Service Worker - COMPLETELY DISABLED IN DEVELOPMENT */
 
-const CACHE_NAME = 'doctrack-v1';
-const RUNTIME_CACHE = 'doctrack-runtime-v1';
+// CRITICAL FIX: This Service Worker does ABSOLUTELY NOTHING in development
+// It immediately unregisters itself and NEVER intercepts requests
 
-// Assets to cache on install
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-];
+(function() {
+  'use strict';
+  
+  // Check if we're in development IMMEDIATELY
+  const isDevelopment = 
+    self.location.hostname === 'localhost' || 
+    self.location.hostname === '127.0.0.1' ||
+    self.location.port === '5174' ||
+    self.location.port === '5173';
 
-// Install event - cache static assets
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Caching static assets');
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .then(() => self.skipWaiting())
-  );
-});
-
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((cacheName) => {
-            return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
-          })
-          .map((cacheName) => {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          })
-      );
-    })
-      .then(() => self.clients.claim())
-  );
-});
-
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // Skip Supabase API calls (always use network)
-  if (url.hostname.includes('supabase.co')) {
-    return;
-  }
-
-  // Skip external resources
-  if (url.origin !== location.origin) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        // Return cached version if available
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // Fetch from network
-        return fetch(request)
-          .then((response) => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response
-            const responseToCache = response.clone();
-
-            // Cache the response
-            caches.open(RUNTIME_CACHE)
-              .then((cache) => {
-                cache.put(request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch(() => {
-            // If offline and request is for a page, return offline page
-            if (request.mode === 'navigate') {
-              return caches.match('/offline.html') || new Response('Offline', {
-                status: 503,
-                statusText: 'Service Unavailable',
-              });
-            }
+  if (isDevelopment) {
+    // In development, immediately unregister and do NOTHING
+    console.log('[SW] Development mode detected - disabling completely');
+    
+    // Unregister immediately
+    self.addEventListener('install', function(event) {
+      console.log('[SW] Install in dev - unregistering');
+      event.waitUntil(
+        self.skipWaiting().then(function() {
+          return self.registration.unregister().then(function() {
+            console.log('[SW] ✅ Unregistered in development');
           });
-      })
-  );
-});
+        })
+      );
+    });
 
-// Background sync for offline actions (if needed)
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-documents') {
-    event.waitUntil(syncDocuments());
+    self.addEventListener('activate', function(event) {
+      console.log('[SW] Activate in dev - unregistering');
+      event.waitUntil(
+        self.clients.claim().then(function() {
+          return self.registration.unregister().then(function() {
+            console.log('[SW] ✅ Unregistered in development');
+          });
+        })
+      );
+    });
+
+    // CRITICAL: Do NOT intercept ANY requests in development
+    self.addEventListener('fetch', function(event) {
+      // Return immediately - don't intercept ANYTHING
+      console.log('[SW] Dev request - NOT intercepting:', event.request.url);
+      return; // Let browser handle it - DO NOT call event.respondWith()
+    });
+
+    return; // Exit early - don't register any production handlers
   }
+
+  // PRODUCTION CODE (only runs if not development)
+  const CACHE_NAME = 'doctrack-v3';
+  const RUNTIME_CACHE = 'doctrack-runtime-v3';
+
+  self.addEventListener('install', function(event) {
+    console.log('[SW] Installing version 3');
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(function(cache) {
+        return cache.addAll(['/', '/index.html']);
+      }).then(function() {
+        return self.skipWaiting();
+      })
+    );
+  });
+
+  self.addEventListener('activate', function(event) {
+    console.log('[SW] Activating version 3');
+    event.waitUntil(
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }).then(function() {
+        return self.clients.claim();
+      })
+    );
+  });
+
+  self.addEventListener('fetch', function(event) {
+    // Production: network-first
+    event.respondWith(
+      fetch(event.request).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+  });
+})();
+
+// Error handlers
+self.addEventListener('error', function(event) {
+  console.error('[SW] Error:', event.error);
 });
 
-async function syncDocuments() {
-  // Implement document sync logic here
-  console.log('[SW] Syncing documents...');
-}
-
-// Push notifications (if needed)
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data ? event.data.text() : 'New notification',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    tag: 'doctrack-notification',
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('DocuTrack', options)
-  );
+self.addEventListener('unhandledrejection', function(event) {
+  console.error('[SW] Unhandled rejection:', event.reason);
+  event.preventDefault();
 });
-
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    clients.openWindow('/')
-  );
-});
-

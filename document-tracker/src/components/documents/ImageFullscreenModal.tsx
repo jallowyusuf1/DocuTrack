@@ -18,10 +18,10 @@ export default function ImageFullscreenModal({ isOpen, onClose, imageUrl, alt }:
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-[201] p-3 bg-red-500 hover:bg-red-600 rounded-full transition-colors shadow-lg"
+        className="absolute top-4 right-4 md:top-6 md:right-6 z-[201] p-3 md:p-4 bg-red-500 hover:bg-red-600 rounded-full transition-colors shadow-lg"
         aria-label="Close"
       >
-        <X className="w-6 h-6 text-white" />
+        <X className="w-6 h-6 md:w-8 md:h-8 text-white" />
       </button>
 
       {/* Image Container */}

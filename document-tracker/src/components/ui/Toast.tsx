@@ -54,8 +54,9 @@ export default function Toast({
         ${positionStyles}
         ${typeStyles[type]}
         rounded-lg shadow-2xl
-        px-4 py-3 min-w-[280px] max-w-[90vw]
-        flex items-center gap-3
+        px-4 py-3 md:px-6 md:py-4 min-w-[280px] max-w-[90vw]
+        flex items-center gap-3 md:gap-4
+        ${type === 'success' ? 'md:flex-col md:min-w-[400px] md:py-8' : ''}
       `}
       role="alert"
       aria-live="assertive"
@@ -67,8 +68,8 @@ export default function Toast({
         }
       }}
     >
-      <Icon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-      <p className="flex-1 text-sm font-medium">{message}</p>
+      <Icon className={`w-5 h-5 flex-shrink-0 ${type === 'success' ? 'md:w-[100px] md:h-[100px]' : 'md:w-6 md:h-6'}`} aria-hidden="true" />
+      <p className={`flex-1 text-sm font-medium ${type === 'success' ? 'md:text-[24px]' : 'md:text-base'}`}>{message}</p>
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={onClose}

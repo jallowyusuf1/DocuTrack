@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, FolderOpen, FolderClosed, Calendar, User, DoorOpen, LogOut } from 'lucide-react';
+import { Clock, FolderOpen, FolderClosed, Calendar, Users, User, DoorOpen, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useState, useEffect } from 'react';
@@ -21,6 +21,20 @@ export default function BottomNav() {
   const [expiringCount, setExpiringCount] = useState(0);
   const [clockClicked, setClockClicked] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  
+  // Responsive desktop check - must be before early returns
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth >= 1024;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Check if we're on an auth page
   const isAuthPage = location.pathname.startsWith('/login') || 
@@ -38,6 +52,11 @@ export default function BottomNav() {
 
   // Hide on auth pages
   if (isAuthPage) {
+    return null;
+  }
+
+  // Hide on desktop (1024px and above)
+  if (isDesktop) {
     return null;
   }
 
@@ -63,13 +82,18 @@ export default function BottomNav() {
     {
       path: '/dashboard',
       icon: Clock,
-      label: 'Expiring',
+      label: 'Expiring Soon',
       badge: expiringCount,
     },
     {
       path: '/documents',
       icon: FolderClosed, // Will be animated separately
       label: 'Documents',
+    },
+    {
+      path: '/family',
+      icon: Users,
+      label: 'Family',
     },
     {
       path: '/dates',

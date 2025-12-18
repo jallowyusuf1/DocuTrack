@@ -26,7 +26,9 @@ export const getDaysUntil = (date: string | Date): number => {
   const targetDate = new Date(date);
   targetDate.setHours(0, 0, 0, 0);
   const diffTime = targetDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // Use Math.floor instead of Math.ceil for accurate day count
+  // This ensures days decrease correctly each day
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
 };
 

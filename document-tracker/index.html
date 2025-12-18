@@ -2,15 +2,103 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#8B5CF6" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="description" content="Never miss a document expiration deadline. Track passports, IDs, insurance, and more with smart reminders." />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>DocuTrack - Document Tracker</title>
+    
+    <!-- CRITICAL: Kill Service Workers IMMEDIATELY - runs in HEAD before body -->
+    <script>
+      // This MUST run in <head> before Service Worker can intercept
+      (function() {
+        'use strict';
+        
+        // Step 1: Force redirect to port 5174 if on wrong port
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          var currentPort = window.location.port;
+          var correctPort = '5174';
+          
+          if (currentPort === '5173' || (currentPort !== correctPort && currentPort !== '')) {
+            console.error('❌ WRONG PORT:', currentPort, '→ Redirecting to', correctPort);
+            window.location.replace('http://' + window.location.hostname + ':' + correctPort + window.location.pathname + window.location.search);
+            return; // Stop execution
+          }
+        }
+        
+        // Step 2: IMMEDIATELY unregister ALL service workers
+        // This runs synchronously in head, before Service Worker can intercept
+        if ('serviceWorker' in navigator) {
+          // Use immediate execution - don't wait
+          (function unregisterSWs() {
+            try {
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                if (registrations.length > 0) {
+                  console.log('[CRITICAL] Found', registrations.length, 'service worker(s) - unregistering NOW');
+                  
+                  var unregisterPromises = registrations.map(function(registration) {
+                    return registration.unregister().then(function(success) {
+                      if (success) {
+                        console.log('[CRITICAL] ✅ Unregistered:', registration.scope);
+                      } else {
+                        console.warn('[CRITICAL] ⚠️ Could not unregister:', registration.scope);
+                      }
+                      return success;
+                    }).catch(function(err) {
+                      console.error('[CRITICAL] ❌ Unregister failed:', err);
+                      return false;
+                    });
+                  });
+                  
+                  return Promise.all(unregisterPromises);
+                } else {
+                  console.log('[CRITICAL] No service workers found');
+                  return Promise.resolve();
+                }
+              }).then(function() {
+                // Step 3: Clear all caches
+                if ('caches' in window) {
+                  return caches.keys().then(function(names) {
+                    if (names.length > 0) {
+                      console.log('[CRITICAL] Found', names.length, 'cache(s) - deleting NOW');
+                      return Promise.all(
+                        names.map(function(name) {
+                          return caches.delete(name).then(function(success) {
+                            if (success) {
+                              console.log('[CRITICAL] ✅ Deleted cache:', name);
+                            }
+                            return success;
+                          }).catch(function(err) {
+                            console.error('[CRITICAL] ❌ Cache delete failed:', name, err);
+                            return false;
+                          });
+                        })
+                      );
+                    } else {
+                      console.log('[CRITICAL] No caches found');
+                      return Promise.resolve();
+                    }
+                  });
+                }
+                return Promise.resolve();
+              }).then(function() {
+                console.log('[CRITICAL] ✅ Complete cleanup finished - app can now load');
+              }).catch(function(err) {
+                console.error('[CRITICAL] ❌ Cleanup error:', err);
+              });
+            } catch (err) {
+              console.error('[CRITICAL] ❌ Fatal cleanup error:', err);
+            }
+          })();
+        }
+      })();
+    </script>
+    
     <style>
-      /* Immediate loading screen styling - matches app theme */
       html, body {
         margin: 0;
         padding: 0;
@@ -34,6 +122,44 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Backup cleanup script in body -->
+    <script>
+      // Backup cleanup - runs after head script
+      if ('serviceWorker' in navigator && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        // Run immediately and also on load
+        (function() {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            if (registrations.length > 0) {
+              console.warn('[BACKUP] Still found', registrations.length, 'service worker(s) - forcing unregister');
+              registrations.forEach(function(registration) {
+                registration.unregister().then(function(success) {
+                  if (success) {
+                    console.log('[BACKUP] ✅ Forced unregister:', registration.scope);
+                  }
+                });
+              });
+            }
+          });
+        })();
+        
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            if (registrations.length > 0) {
+              console.warn('[BACKUP-LOAD] Still found', registrations.length, 'service worker(s) - forcing unregister');
+              registrations.forEach(function(registration) {
+                registration.unregister().then(function(success) {
+                  if (success) {
+                    console.log('[BACKUP-LOAD] ✅ Forced unregister:', registration.scope);
+                  }
+                });
+              });
+            }
+          });
+        });
+      }
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

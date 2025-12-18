@@ -35,6 +35,16 @@ export default defineConfig([
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_'
       }],
+      // Prevent using variables before declaration
+      '@typescript-eslint/no-use-before-define': ['error', {
+        functions: false,
+        classes: true,
+        variables: true,
+        typedefs: true
+      }],
+      // Ensure refs are used correctly
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
 ])
