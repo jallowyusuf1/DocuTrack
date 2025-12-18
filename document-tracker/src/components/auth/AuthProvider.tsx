@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { supabase } from '../../config/supabase';
+import { ensureBucketExists } from '../../utils/storageSetup';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -22,6 +23,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     // Check for existing session on app load for session persistence
     const initializeSession = async () => {
       try {
+        // Ensure storage bucket exists
+        await ensureBucketExists();
+        
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           // Session exists - restore user state

@@ -24,8 +24,24 @@ export const documentService = {
     
     if (formData.image) {
       try {
+        console.log('Starting image upload...', { 
+          fileName: formData.image instanceof File ? formData.image.name : 'blob',
+          size: formData.image instanceof File ? formData.image.size : 'unknown'
+        });
+        
         imageUrl = await this.uploadDocumentImage(formData.image, userId);
+        
+        if (!imageUrl) {
+          throw new Error('Image upload returned empty URL');
+        }
+        
         console.log('Image uploaded successfully:', imageUrl);
+        
+        // Verify the image path is valid (for private bucket, we store the path)
+        if (!imageUrl || imageUrl.trim() === '') {
+          throw new Error('Image upload returned empty path');
+        }
+        console.log('Image path stored successfully:', imageUrl);
       } catch (uploadError: any) {
         console.error('Image upload failed:', uploadError);
         throw new Error(`Failed to upload image: ${uploadError.message}`);

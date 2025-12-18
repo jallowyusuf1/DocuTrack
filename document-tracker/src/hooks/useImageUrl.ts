@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../config/supabase';
+import { getCachedImage } from '../utils/imageCache';
 
 const BUCKET_NAME = 'document-images';
 
@@ -66,18 +67,42 @@ export function useImageUrl(imageUrl: string | null | undefined) {
           }
         }
 
-        // Check cache first
-        const cached = urlCache.get(imagePath);
-        if (cached && cached.expiresAt > Date.now()) {
-          setSignedUrl(cached.url);
-          setLoading(false);
-          return;
+        // Check local IndexedDB cache first for immediate display
+        let cachedBlob: Blob | null = null;
+        try {
+          cachedBlob = await getCachedImage(imagePath);
+          if (cachedBlob) {
+            const cachedUrl = URL.createObjectURL(cachedBlob);
+            setSignedUrl(cachedUrl);
+            setLoading(false);
+            console.log('Image loaded from local cache');
+            // Still fetch from Supabase in background to update cache
+            // (don't await - let it happen in background)
+          }
+        } catch (cacheError) {
+          console.warn('Failed to check local cache:', cacheError);
         }
 
-        // Get signed URL (works for both public and private buckets)
+        // If we have cached blob, still fetch fresh URL in background
+        if (cachedBlob) {
+          // Continue to fetch from Supabase but don't block
+        }
+
+        // Check URL cache
+        const cached = urlCache.get(imagePath);
+        if (cached && cached.expiresAt > Date.now()) {
+          if (!cachedBlob) {
+            // Only use URL cache if we don't have local cache
+            setSignedUrl(cached.url);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Get signed URL for private bucket (REQUIRED for security)
         const { data, error: urlError } = await supabase.storage
           .from(BUCKET_NAME)
-          .createSignedUrl(imagePath, 3600); // 1 hour expiry
+          .createSignedUrl(imagePath, 3600); // 1 hour expiry for security
 
         if (abortControllerRef.current?.signal.aborted) {
           return;
@@ -85,17 +110,9 @@ export function useImageUrl(imageUrl: string | null | undefined) {
 
         if (urlError) {
           console.error('Failed to get signed URL:', urlError);
-          // Fallback to public URL
-          const { data: publicData } = supabase.storage
-            .from(BUCKET_NAME)
-            .getPublicUrl(imagePath);
-          const publicUrl = publicData.publicUrl;
-          setSignedUrl(publicUrl);
-          // Cache the public URL
-          urlCache.set(imagePath, {
-            url: publicUrl,
-            expiresAt: Date.now() + CACHE_DURATION,
-          });
+          setError('Failed to load image. Please try again.');
+          // Don't fallback - security requires signed URLs
+          setSignedUrl(null);
         } else if (data?.signedUrl) {
           setSignedUrl(data.signedUrl);
           // Cache the signed URL
@@ -104,8 +121,8 @@ export function useImageUrl(imageUrl: string | null | undefined) {
             expiresAt: Date.now() + CACHE_DURATION,
           });
         } else {
-          // Fallback to original URL
-          setSignedUrl(imageUrl);
+          setError('Failed to generate secure image URL');
+          setSignedUrl(null);
         }
       } catch (err: any) {
         if (abortControllerRef.current?.signal.aborted) {

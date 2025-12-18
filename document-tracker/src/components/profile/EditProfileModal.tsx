@@ -74,12 +74,16 @@ export default function EditProfileModal({
     
     if (error) throw error;
     
-    // Get public URL
-    const { data: urlData } = supabase.storage
+    // Get signed URL for private bucket (secure access)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('avatars')
-      .getPublicUrl(data.path);
+      .createSignedUrl(data.path, 31536000); // 1 year expiry
     
-    return urlData.publicUrl;
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      throw new Error('Failed to generate secure avatar URL');
+    }
+    
+    return signedUrlData.signedUrl;
   };
 
   const handleAvatarSelect = async (source: 'camera' | 'gallery') => {

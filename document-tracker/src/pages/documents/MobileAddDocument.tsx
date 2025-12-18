@@ -237,8 +237,24 @@ export default function AddDocument() {
         category: data.category || data.document_type,
       };
 
-      await documentService.createDocument(formData, user.id);
+      console.log('Creating document with image...', {
+        documentName: formData.document_name,
+        imageType: selectedImage instanceof File ? selectedImage.type : 'blob',
+        imageSize: selectedImage instanceof File ? selectedImage.size : 'unknown',
+      });
+
+      const document = await documentService.createDocument(formData, user.id);
+      
+      console.log('Document created successfully:', {
+        id: document.id,
+        imageUrl: document.image_url,
+      });
+
       showToast('Document added successfully!', 'success');
+      
+      // Trigger refresh event for dashboard
+      window.dispatchEvent(new CustomEvent('refreshDashboard'));
+      
       setTimeout(() => {
         navigate('/documents');
       }, 1500);

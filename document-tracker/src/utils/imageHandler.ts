@@ -224,6 +224,7 @@ export function revokeImagePreview(url: string): void {
 /**
  * Upload document image to Supabase Storage
  * Compresses image first, then uploads
+ * Also caches locally for immediate display
  */
 export async function uploadDocumentImage(
   file: File | Blob,
@@ -267,7 +268,20 @@ export async function uploadDocumentImage(
     ? `${userId}/${documentId}-${timestamp}.${fileExt}`
     : `${userId}/${timestamp}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
+  // Cache image locally first for immediate display
+  try {
+    const { cacheImage } = await import('./imageCache');
+    const blobToCache = fileToUpload instanceof Blob ? fileToUpload : new Blob([fileToUpload]);
+    await cacheImage(fileName, blobToCache);
+    console.log('Image cached locally for immediate display');
+  } catch (cacheError) {
+    console.warn('Failed to cache image locally:', cacheError);
+    // Continue with upload even if caching fails
+  }
+
   // Upload to Supabase Storage
+  console.log('Uploading image to Supabase Storage...', { fileName, size: fileToUpload instanceof File ? fileToUpload.size : 'blob' });
+  
   const { data, error } = await supabase.storage
     .from(BUCKET_NAME)
     .upload(fileName, fileToUpload, {
@@ -277,42 +291,87 @@ export async function uploadDocumentImage(
     });
 
   if (error) {
+    console.error('Supabase upload error:', error);
     throw new Error(`Failed to upload image: ${error.message}`);
   }
 
-  // Get public URL
-  const { data: urlData } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(data.path);
+  if (!data) {
+    throw new Error('Upload succeeded but no data returned');
+  }
 
-  return urlData.publicUrl;
+  console.log('Image uploaded successfully:', data.path);
+
+  // Verify upload by checking if file exists
+  const { data: verifyData, error: verifyError } = await supabase.storage
+    .from(BUCKET_NAME)
+    .list(userId, {
+      search: fileName.split('/')[1], // Search for filename
+    });
+
+  if (verifyError) {
+    console.warn('Could not verify upload:', verifyError);
+  } else if (!verifyData || verifyData.length === 0) {
+    console.warn('Upload verification: file not found in listing');
+  } else {
+    console.log('Upload verified: file exists in storage');
+  }
+
+  // Get signed URL for private bucket (secure access)
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from(BUCKET_NAME)
+    .createSignedUrl(data.path, 31536000); // 1 year expiry for stored images
+
+  if (signedUrlError) {
+    console.error('Failed to create signed URL:', signedUrlError);
+    throw new Error(`Failed to generate secure image URL: ${signedUrlError.message}`);
+  }
+
+  if (!signedUrlData?.signedUrl) {
+    throw new Error('Failed to generate secure image URL');
+  }
+
+  console.log('Secure signed URL generated for image');
+
+  // Store the path (not the signed URL) in database - we'll generate signed URLs on demand
+  // This is more secure as URLs expire and can't be shared
+  const imagePath = data.path;
+
+  // Update cache with final URL
+  try {
+    const { cacheImage } = await import('./imageCache');
+    const blobToCache = fileToUpload instanceof Blob ? fileToUpload : new Blob([fileToUpload]);
+    await cacheImage(imagePath, blobToCache, signedUrlData.signedUrl);
+  } catch (cacheError) {
+    console.warn('Failed to update cache with URL:', cacheError);
+  }
+
+  // Return the path, not the signed URL - we'll generate signed URLs when needed
+  return imagePath;
 }
 
 /**
  * Get image URL from Supabase Storage path
- * Returns signed URL for private buckets, public URL for public buckets
+ * Returns signed URL for private bucket (REQUIRED for security)
  */
-export async function getImageUrl(imagePath: string, useSignedUrl: boolean = true): Promise<string> {
-  if (useSignedUrl) {
-    try {
-      const { data, error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .createSignedUrl(imagePath, 3600); // 1 hour expiry
-      
-      if (!error && data?.signedUrl) {
-        return data.signedUrl;
-      }
-    } catch (err) {
-      console.warn('Failed to get signed URL, falling back to public URL:', err);
+export async function getImageUrl(imagePath: string): Promise<string> {
+  try {
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .createSignedUrl(imagePath, 3600); // 1 hour expiry
+    
+    if (error) {
+      throw new Error(`Failed to generate signed URL: ${error.message}`);
     }
+    
+    if (!data?.signedUrl) {
+      throw new Error('Signed URL generation returned no URL');
+    }
+    
+    return data.signedUrl;
+  } catch (err: any) {
+    console.error('Failed to get signed URL:', err);
+    throw new Error(`Failed to generate secure signed URL for image: ${err.message}`);
   }
-  
-  // Fallback to public URL
-  const { data } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(imagePath);
-
-  return data.publicUrl;
 }
 
 /**
