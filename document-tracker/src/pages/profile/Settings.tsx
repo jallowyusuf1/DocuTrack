@@ -38,6 +38,7 @@ import LanguagePickerModal from '../../components/profile/LanguagePickerModal';
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
 import ExportDataModal from '../../components/profile/ExportDataModal';
 import OnboardingTutorial from '../../components/onboarding/OnboardingTutorial';
+import SetProfileLockModal from '../../components/profile/SetProfileLockModal';
 import { triggerHaptic } from '../../utils/animations';
 import Skeleton from '../../components/ui/Skeleton';
 import type { NotificationPreferences } from '../../services/notifications';
@@ -96,6 +97,8 @@ export default function Settings() {
   const [isExportDataOpen, setIsExportDataOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isClearCacheConfirmOpen, setIsClearCacheConfirmOpen] = useState(false);
+  const [isSetProfileLockOpen, setIsSetProfileLockOpen] = useState(false);
+  const [profileLockEnabled, setProfileLockEnabled] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const getLanguageDisplayName = () => {
@@ -125,6 +128,15 @@ export default function Settings() {
       try {
         setLoading(true);
         const preferences = await getNotificationPreferences(user.id);
+
+        // Check profile lock status
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('profile_lock_enabled')
+          .eq('user_id', user.id)
+          .single();
+
+        setProfileLockEnabled(profile?.profile_lock_enabled ?? false);
 
         setSettings({
           pushNotifications: preferences.push_enabled ?? true,
@@ -451,6 +463,20 @@ export default function Settings() {
                   triggerHaptic('light');
                   navigate('/profile/change-password');
                 }}
+              />
+              <SettingsRow
+                icon={Shield}
+                label="Profile Lock"
+                description={profileLockEnabled ? 'Profile is password protected' : 'Protect your profile with a password'}
+                rightElement={
+                  <Toggle
+                    checked={profileLockEnabled}
+                    onChange={(checked) => {
+                      triggerHaptic('light');
+                      setIsSetProfileLockOpen(true);
+                    }}
+                  />
+                }
               />
               <SettingsRow
                 icon={Mail}
@@ -838,6 +864,26 @@ export default function Settings() {
       <ExportDataModal
         isOpen={isExportDataOpen}
         onClose={() => setIsExportDataOpen(false)}
+      />
+
+      <SetProfileLockModal
+        isOpen={isSetProfileLockOpen}
+        onClose={() => setIsSetProfileLockOpen(false)}
+        onSuccess={() => {
+          // Reload profile lock status
+          if (user?.id) {
+            supabase
+              .from('user_profiles')
+              .select('profile_lock_enabled')
+              .eq('user_id', user.id)
+              .single()
+              .then(({ data }) => {
+                setProfileLockEnabled(data?.profile_lock_enabled ?? false);
+              });
+          }
+          showToast(profileLockEnabled ? 'Profile lock disabled' : 'Profile lock enabled', 'success');
+        }}
+        isEnabled={profileLockEnabled}
       />
 
       {/* Clear Cache Confirmation Modal */}

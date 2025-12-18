@@ -45,58 +45,87 @@ export default function DashboardDocumentCard({ document }: DashboardDocumentCar
       }}
     >
       <div
-        className="w-full rounded-xl p-3 md:p-4 flex items-center gap-3 md:gap-4 transition-all active:opacity-80"
+        className="w-full rounded-2xl overflow-hidden flex items-center transition-all active:opacity-80 relative"
         style={{
-          background: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'saturate(180%) blur(60px)',
-          WebkitBackdropFilter: 'saturate(180%) blur(60px)',
-          border: `1px solid ${urgencyColor}20`,
-          borderLeft: `3px solid ${urgencyColor}`,
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+          background: 'rgba(42, 38, 64, 0.4)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.2)',
         }}
       >
-        {/* Purple Document Thumbnail */}
+        {/* Tiled Glass Pattern Overlay */}
         <div
-          className="flex-shrink-0 w-[72px] h-[96px] md:w-[80px] md:h-[107px] rounded bg-gradient-to-br from-purple-500 to-purple-700"
+          className="absolute inset-0 opacity-10"
           style={{
-            boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+            backgroundImage: `
+              linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '20px 20px',
+          }}
+        />
+
+        {/* Purple Gradient Indicator on Left */}
+        <div
+          className="flex-shrink-0 w-2 md:w-3 h-full"
+          style={{
+            background: `linear-gradient(180deg, ${urgencyColor} 0%, ${urgencyColor}CC 100%)`,
+            boxShadow: `0 0 20px ${urgencyColor}40`,
           }}
         />
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Document Name */}
-          <h3
-            className="text-base md:text-lg font-semibold text-black truncate mb-1 md:mb-1.5"
-            style={{
-              fontFamily: 'SF Pro Display, -apple-system, sans-serif',
-              letterSpacing: '-0.24px',
-            }}
-          >
-            {document.document_name}
-          </h3>
-
-          {/* Days Left - Color Coded */}
+        <div className="flex-1 min-w-0 p-4 md:p-5 relative z-10 flex items-center gap-4">
+          {/* Purple Document Thumbnail */}
           <div
-            className="text-xs md:text-sm font-semibold"
+            className="flex-shrink-0 w-[72px] h-[96px] md:w-[80px] md:h-[107px] rounded-lg overflow-hidden"
             style={{
-              color: urgencyColor,
-              fontFamily: 'SF Pro Text, -apple-system, sans-serif',
-              letterSpacing: '-0.08px',
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              boxShadow: '0 4px 16px rgba(139, 92, 246, 0.4)',
             }}
-          >
-            {daysText}
-          </div>
-        </div>
+          />
 
-        {/* Urgency Dot Indicator */}
-        <div
-          className="flex-shrink-0 w-2 h-2 rounded-full"
-          style={{
-            background: urgencyColor,
-            boxShadow: `0 0 8px ${urgencyColor}80`,
-          }}
-        />
+          {/* Text Content */}
+          <div className="flex-1 min-w-0">
+            {/* Document Name */}
+            <h3
+              className="text-base md:text-lg font-bold text-white truncate mb-1 md:mb-1.5"
+              style={{
+                fontFamily: 'SF Pro Display, -apple-system, sans-serif',
+                letterSpacing: '-0.24px',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+              }}
+            >
+              {document.document_name}
+            </h3>
+
+            {/* Days Left - Color Coded */}
+            <div
+              className="text-sm md:text-base font-semibold"
+              style={{
+                color: urgencyColor,
+                fontFamily: 'SF Pro Text, -apple-system, sans-serif',
+                letterSpacing: '-0.08px',
+                textShadow: `0 0 12px ${urgencyColor}60`,
+              }}
+            >
+              {daysText}
+            </div>
+          </div>
+
+          {/* Urgency Dot Indicator */}
+          <div
+            className="flex-shrink-0 w-2.5 h-2.5 md:w-3 md:h-3 rounded-full"
+            style={{
+              background: urgencyColor,
+              boxShadow: `0 0 12px ${urgencyColor}80, 0 0 24px ${urgencyColor}40`,
+            }}
+          />
+        </div>
       </div>
     </motion.button>
   );

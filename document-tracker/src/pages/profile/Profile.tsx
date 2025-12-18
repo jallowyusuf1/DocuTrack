@@ -35,6 +35,7 @@ import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
 import LogoutConfirmationModal from '../../components/profile/LogoutConfirmationModal';
 import ExportDataModal from '../../components/profile/ExportDataModal';
 import NotificationPreferencesModal from '../../components/profile/NotificationPreferencesModal';
+import ProfileLockModal from '../../components/profile/ProfileLockModal';
 import Skeleton from '../../components/ui/Skeleton';
 import { useToast } from '../../hooks/useToast';
 import Toast from '../../components/ui/Toast';
@@ -84,6 +85,9 @@ export default function Profile() {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isExportDataOpen, setIsExportDataOpen] = useState(false);
   const [isNotificationPreferencesOpen, setIsNotificationPreferencesOpen] = useState(false);
+  const [isProfileLocked, setIsProfileLocked] = useState(false);
+  const [isProfileLockModalOpen, setIsProfileLockModalOpen] = useState(false);
+  const [profileUnlocked, setProfileUnlocked] = useState(false);
 
   // Get user initials
   const getUserInitials = () => {
@@ -159,6 +163,27 @@ export default function Profile() {
       Promise.all([fetchStatistics(), calculateStorageUsed()]).finally(() => {
         setLoading(false);
       });
+
+      // Check if profile is locked
+      supabase
+        .from('user_profiles')
+        .select('profile_lock_enabled')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.profile_lock_enabled) {
+            setIsProfileLocked(true);
+            setProfileUnlocked(false);
+            setIsProfileLockModalOpen(true);
+          } else {
+            setIsProfileLocked(false);
+            setProfileUnlocked(true);
+          }
+        })
+        .catch(() => {
+          setIsProfileLocked(false);
+          setProfileUnlocked(true);
+        });
     }
   }, [user]);
 
@@ -207,6 +232,25 @@ export default function Profile() {
     await logout();
     navigate('/login');
   };
+
+  // Show lock modal if profile is locked and not unlocked
+  if (isProfileLocked && !profileUnlocked && isProfileLockModalOpen) {
+    return (
+      <div className="min-h-screen">
+        <ProfileLockModal
+          isOpen={true}
+          onClose={() => {
+            // Don't allow closing - must unlock
+            navigate('/dashboard');
+          }}
+          onUnlock={() => {
+            setProfileUnlocked(true);
+            setIsProfileLockModalOpen(false);
+          }}
+        />
+      </div>
+    );
+  }
 
   if (loading && statistics.totalDocuments === 0) {
     return (
@@ -860,6 +904,18 @@ export default function Profile() {
       <NotificationPreferencesModal
         isOpen={isNotificationPreferencesOpen}
         onClose={() => setIsNotificationPreferencesOpen(false)}
+      />
+
+      <ProfileLockModal
+        isOpen={isProfileLockModalOpen && isProfileLocked && !profileUnlocked}
+        onClose={() => {
+          // Navigate away if user tries to close
+          navigate('/dashboard');
+        }}
+        onUnlock={() => {
+          setProfileUnlocked(true);
+          setIsProfileLockModalOpen(false);
+        }}
       />
 
       {/* Toast Notifications */}
