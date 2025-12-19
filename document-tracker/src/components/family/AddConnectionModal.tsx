@@ -61,27 +61,24 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
           />
 
           {/* Modal - Glass morphism with app theme visible */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed z-[101] overflow-hidden flex flex-col"
-            style={{
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 'calc(100% - 3rem)',
-              maxWidth: '600px',
-              maxHeight: 'calc(100vh - 3rem)',
-              background: 'rgba(35, 29, 51, 0.95)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              borderRadius: '24px',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(139, 92, 246, 0.2)',
-            }}
-          >
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full overflow-hidden flex flex-col"
+              style={{
+                maxWidth: '600px',
+                maxHeight: 'calc(100vh - 3rem)',
+                background: 'rgba(35, 29, 51, 0.95)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+                borderRadius: '24px',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(139, 92, 246, 0.2)',
+              }}
+            >
             <div className="p-6 md:p-8 overflow-y-auto flex-1" style={{ overscrollBehavior: 'contain' }}>
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
@@ -274,7 +271,8 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                 </motion.button>
               </form>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
