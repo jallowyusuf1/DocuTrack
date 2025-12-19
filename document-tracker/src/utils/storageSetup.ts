@@ -12,23 +12,7 @@ export async function ensureBucketExists(): Promise<boolean> {
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     
     if (listError) {
-      // If we can't list buckets, it might be a permissions issue
-      // Try to access the bucket directly instead
-      console.warn('Could not list buckets, trying direct access:', listError.message);
-      
-      // Try to list files in the bucket (this will fail if bucket doesn't exist)
-      const { error: accessError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .list('', { limit: 1 });
-      
-      if (!accessError) {
-        // Bucket exists and is accessible
-        console.log(`Bucket "${BUCKET_NAME}" exists and is accessible`);
-        return true;
-      }
-      
-      // Bucket doesn't exist or we don't have access
-      console.error('Bucket access error:', accessError);
+      console.error('Error listing buckets:', listError);
       return false;
     }
 
@@ -50,16 +34,8 @@ export async function ensureBucketExists(): Promise<boolean> {
     if (error) {
       console.error('Error creating bucket:', error);
       // If bucket already exists (race condition), that's okay
-      if (error.message.includes('already exists') || 
-          error.message.includes('duplicate') ||
-          error.code === '23505') {
+      if (error.message.includes('already exists') || error.message.includes('duplicate')) {
         console.log(`Bucket "${BUCKET_NAME}" already exists (race condition)`);
-        return true;
-      }
-      // If permission denied, bucket might exist but we can't create it
-      if (error.message.includes('permission') || error.message.includes('denied')) {
-        console.warn('Permission denied - bucket may exist but we cannot create it');
-        // Assume it exists and continue
         return true;
       }
       return false;
@@ -67,10 +43,9 @@ export async function ensureBucketExists(): Promise<boolean> {
 
     console.log(`Bucket "${BUCKET_NAME}" created successfully`);
     return true;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Unexpected error ensuring bucket exists:', error);
-    // Don't fail completely - bucket might exist but we can't verify
-    return true; // Assume bucket exists to prevent blocking app
+    return false;
   }
 }
 

@@ -4,6 +4,7 @@ import { Users, UserPlus, Share2, Home, Clock, ChevronRight, AlertCircle } from 
 import { useTranslation } from 'react-i18next';
 import { getConnections, getPendingConnections, getSharedDocuments, getHouseholds } from '../../services/social';
 import type { Connection, SharedDocument } from '../../types';
+import BottomNav from '../../components/layout/BottomNav';
 import AddConnectionModal from '../../components/family/AddConnectionModal';
 import ShareDocumentModal from '../../components/family/ShareDocumentModal';
 import ConnectionRequestCard from '../../components/family/ConnectionRequestCard';
