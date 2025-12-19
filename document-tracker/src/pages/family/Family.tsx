@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, UserPlus, Share2, Home, Clock, ChevronRight, AlertCircle } from 'lucide-react';
+import { Users, UserPlus, Share2, Home, Clock, ChevronRight, AlertCircle, Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getConnections, getPendingConnections, getSharedDocuments, getHouseholds } from '../../services/social';
 import type { Connection, SharedDocument } from '../../types';
@@ -100,18 +100,18 @@ export default function Family() {
             })}
           </div>
 
-          {/* Action Button */}
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={() => activeTab === 'connections' ? setShowAddConnection(true) : setShowShareDocument(true)}
-            className="glass-btn-primary w-full py-4 rounded-xl mb-6 flex items-center justify-center gap-2"
-          >
-            <UserPlus className="w-5 h-5" />
-            <span>
-              {activeTab === 'connections' ? 'Add Member' : t('family.shareDocument')}
-            </span>
-          </motion.button>
+          {/* Action Button - Only show for connections tab */}
+          {activeTab === 'connections' && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onClick={() => setShowAddConnection(true)}
+              className="glass-btn-primary w-full py-4 rounded-xl mb-6 flex items-center justify-center gap-2"
+            >
+              <UserPlus className="w-5 h-5" />
+              <span>Add Member</span>
+            </motion.button>
+          )}
 
           {/* Content */}
           <AnimatePresence mode="wait">
@@ -230,26 +230,179 @@ function ConnectionsTab({ connections, pendingRequests, onRefresh }: any) {
   );
 }
 
-// Shared Documents Tab Component
+// Shared Documents Tab Component with Search and Filters
 function SharedTab({ documents, onRefresh }: any) {
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterBy, setFilterBy] = useState<'all' | 'view' | 'edit'>('all');
+  const [sortBy, setSortBy] = useState<'recent' | 'name' | 'person'>('recent');
 
-  if (documents.length === 0) {
-    return <EmptyState message={t('family.noShared')} />;
-  }
+  const filteredDocuments = documents.filter((doc: SharedDocument) => {
+    const matchesSearch = doc.document?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.shared_by?.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterBy === 'all' || doc.permission === filterBy;
+    return matchesSearch && matchesFilter;
+  });
+
+  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+    if (sortBy === 'recent') {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    } else if (sortBy === 'name') {
+      return (a.document?.title || '').localeCompare(b.document?.title || '');
+    } else {
+      return (a.shared_by?.full_name || '').localeCompare(b.shared_by?.full_name || '');
+    }
+  });
 
   return (
-    <div className="space-y-3 md:space-y-4">
-      {documents.map((doc: SharedDocument, index: number) => (
+    <div className="space-y-4 md:space-y-5">
+      {/* Frosted Glass Search and Filter Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl md:rounded-3xl p-4 md:p-5 space-y-3 md:space-y-4 relative overflow-hidden"
+        style={{
+          background: 'rgba(42, 38, 64, 0.4)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 8px 30px rgba(0, 0, 0, 0.4)',
+        }}
+      >
+        {/* Liquid Glass Orb Effect */}
         <motion.div
-          key={doc.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.05 }}
-        >
-          <SharedDocumentCard sharedDoc={doc} onUpdate={onRefresh} />
-        </motion.div>
-      ))}
+          className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 blur-[60px]"
+          style={{
+            background: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
+          }}
+          animate={{
+            x: [0, 20, 0],
+            y: [0, -15, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+
+        {/* Search Input */}
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-white/40" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search documents or people..."
+            className="w-full h-11 md:h-12 pl-11 md:pl-12 pr-4 rounded-xl md:rounded-2xl text-white placeholder:text-white/30 transition-all text-sm md:text-base focus:outline-none relative z-10"
+            style={{
+              background: 'rgba(26, 22, 37, 0.6)',
+              backdropFilter: 'blur(15px)',
+              WebkitBackdropFilter: 'blur(15px)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.4)',
+            }}
+            onFocus={(e) => {
+              e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
+              e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1), inset 0 2px 6px rgba(0, 0, 0, 0.4)';
+            }}
+            onBlur={(e) => {
+              e.target.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+              e.target.style.boxShadow = 'inset 0 2px 6px rgba(0, 0, 0, 0.4)';
+            }}
+          />
+          <motion.div
+            className="absolute inset-0 rounded-xl md:rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+            style={{
+              boxShadow: '0 0 25px rgba(139, 92, 246, 0.3)',
+            }}
+          />
+        </div>
+
+        {/* Filters Row */}
+        <div className="flex flex-col sm:flex-row gap-2 md:gap-3 relative z-10">
+          {/* Permission Filter */}
+          <div className="flex-1">
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value as any)}
+              className="w-full h-10 md:h-11 px-3 md:px-4 rounded-lg md:rounded-xl text-white text-sm md:text-base transition-all appearance-none cursor-pointer"
+              style={{
+                background: 'rgba(26, 22, 37, 0.6)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.3)',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23A78BFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
+                paddingRight: '36px',
+              }}
+            >
+              <option value="all">All Permissions</option>
+              <option value="view">View Only</option>
+              <option value="edit">Can Edit</option>
+            </select>
+          </div>
+
+          {/* Sort Filter */}
+          <div className="flex-1">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="w-full h-10 md:h-11 px-3 md:px-4 rounded-lg md:rounded-xl text-white text-sm md:text-base transition-all appearance-none cursor-pointer"
+              style={{
+                background: 'rgba(26, 22, 37, 0.6)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.3)',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23A78BFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
+                paddingRight: '36px',
+              }}
+            >
+              <option value="recent">Most Recent</option>
+              <option value="name">Document Name</option>
+              <option value="person">Shared By</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Active Filter Indicator */}
+        {(searchQuery || filterBy !== 'all' || sortBy !== 'recent') && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-2 text-xs md:text-sm text-purple-300 relative z-10"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span>
+              {sortedDocuments.length} result{sortedDocuments.length !== 1 ? 's' : ''} found
+            </span>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Documents Grid */}
+      {sortedDocuments.length === 0 ? (
+        <EmptyState message={searchQuery ? 'No documents found' : t('family.noShared')} />
+      ) : (
+        <div className="space-y-3 md:space-y-4">
+          {sortedDocuments.map((doc: SharedDocument, index: number) => (
+            <motion.div
+              key={doc.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <SharedDocumentCard sharedDoc={doc} onUpdate={onRefresh} />
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
