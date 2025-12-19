@@ -26,7 +26,6 @@ const EditDocument = lazy(() => import('./pages/documents/EditDocument'));
 const Dates = lazy(() => import('./pages/dates/Dates'));
 const DesktopCalendar = lazy(() => import('./pages/calendar/DesktopCalendar'));
 const Family = lazy(() => import('./pages/family/Family'));
-const DesktopFamily = lazy(() => import('./pages/family/DesktopFamily'));
 const Notifications = lazy(() => import('./pages/notifications/Notifications'));
 const Profile = lazy(() => import('./pages/profile/Profile'));
 const ChangePassword = lazy(() => import('./pages/profile/ChangePassword'));
@@ -404,21 +403,13 @@ function AppRoutes() {
                 </Suspense>
               }
             />
-            <Route
-              path="family"
+            <Route 
+              path="family" 
               element={
                 <Suspense fallback={<PageLoader />}>
                   <Family />
                 </Suspense>
-              }
-            />
-            <Route
-              path="desktop-family"
-              element={
-                <Suspense fallback={<PageLoader />}>
-                  <DesktopFamily />
-                </Suspense>
-              }
+              } 
             />
             <Route 
               path="notifications" 

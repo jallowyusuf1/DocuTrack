@@ -316,28 +316,33 @@ export async function uploadDocumentImage(
     console.log('Upload verified: file exists in storage');
   }
 
-  // Store the path in database - we'll generate signed URLs on demand
+  // Get signed URL for private bucket (secure access)
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from(BUCKET_NAME)
+    .createSignedUrl(data.path, 31536000); // 1 year expiry for stored images
+
+  if (signedUrlError) {
+    console.error('Failed to create signed URL:', signedUrlError);
+    throw new Error(`Failed to generate secure image URL: ${signedUrlError.message}`);
+  }
+
+  if (!signedUrlData?.signedUrl) {
+    throw new Error('Failed to generate secure image URL');
+  }
+
+  console.log('Secure signed URL generated for image');
+
+  // Store the path (not the signed URL) in database - we'll generate signed URLs on demand
   // This is more secure as URLs expire and can't be shared
   const imagePath = data.path;
-  
-  console.log('Image path stored:', imagePath);
-  
-  // Get signed URL for immediate display (cache it)
+
+  // Update cache with final URL
   try {
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from(BUCKET_NAME)
-      .createSignedUrl(imagePath, 3600); // 1 hour expiry
-    
-    if (!signedUrlError && signedUrlData?.signedUrl) {
-      // Cache the signed URL locally for immediate display
-      const { cacheImage } = await import('./imageCache');
-      const blobToCache = fileToUpload instanceof Blob ? fileToUpload : new Blob([fileToUpload]);
-      await cacheImage(imagePath, blobToCache, signedUrlData.signedUrl);
-      console.log('Image cached with signed URL for immediate display');
-    }
+    const { cacheImage } = await import('./imageCache');
+    const blobToCache = fileToUpload instanceof Blob ? fileToUpload : new Blob([fileToUpload]);
+    await cacheImage(imagePath, blobToCache, signedUrlData.signedUrl);
   } catch (cacheError) {
-    console.warn('Failed to cache image:', cacheError);
-    // Continue - caching is optional
+    console.warn('Failed to update cache with URL:', cacheError);
   }
 
   // Return the path, not the signed URL - we'll generate signed URLs when needed
