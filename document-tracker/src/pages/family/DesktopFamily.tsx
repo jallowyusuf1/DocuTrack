@@ -1,17 +1,8 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Users, UserPlus, Share2, Clock, Search, Eye, Edit,
-  Trash2, X, Send, Check, AlertCircle, FileText, Activity
-} from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { getConnections, getPendingConnections, getSharedDocuments } from '../../services/social';
-import type { Connection, SharedDocument } from '../../types';
-import DesktopNav from '../../components/layout/DesktopNav';
-import BottomNav from '../../components/layout/BottomNav';
-import BackButton from '../../components/ui/BackButton';
+import ComprehensiveFamily from './ComprehensiveFamily';
 
-type TabType = 'connections' | 'shared' | 'pending';
+export default function DesktopFamily() {
+  return <ComprehensiveFamily />;
+}
 
 export default function DesktopFamily() {
   const { t } = useTranslation();

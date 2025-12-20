@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,37 +9,6 @@ import { getDaysUntil } from '../../../utils/dateUtils';
 interface RelatedDocumentsProps {
   documents: Document[];
   currentDocumentId: string;
-}
-
-export default function RelatedDocuments({ documents, currentDocumentId }: RelatedDocumentsProps) {
-  const navigate = useNavigate();
-
-  const getUrgencyColor = (days: number) => {
-    if (days < 0) return 'text-red-400';
-    if (days <= 7) return 'text-red-400';
-    if (days <= 30) return 'text-orange-400';
-    return 'text-green-400';
-  };
-
-  if (documents.length === 0) {
-    return (
-      <div className="text-center py-8 text-white/60">
-        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-        <p>No related documents</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {documents.map((doc) => {
-        const days = getDaysUntil(doc.expiration_date);
-        return (
-          <RelatedDocumentItem key={doc.id} document={doc} days={days} navigate={navigate} />
-        );
-      })}
-    </div>
-  );
 }
 
 function RelatedDocumentItem({
@@ -85,5 +55,29 @@ function RelatedDocumentItem({
       </div>
       <ChevronRight className="w-5 h-5 text-white/40" />
     </motion.button>
+  );
+}
+
+export default function RelatedDocuments({ documents, currentDocumentId }: RelatedDocumentsProps) {
+  const navigate = useNavigate();
+
+  if (documents.length === 0) {
+    return (
+      <div className="text-center py-8 text-white/60">
+        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+        <p>No related documents</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {documents.map((doc) => {
+        const days = getDaysUntil(doc.expiration_date);
+        return (
+          <RelatedDocumentItem key={doc.id} document={doc} days={days} navigate={navigate} />
+        );
+      })}
+    </div>
   );
 }

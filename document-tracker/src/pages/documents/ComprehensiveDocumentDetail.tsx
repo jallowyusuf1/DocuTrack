@@ -29,11 +29,14 @@ import ImageViewer from '../../components/documents/detail/ImageViewer';
 import ActivityLog from '../../components/documents/detail/ActivityLog';
 import RelatedDocuments from '../../components/documents/detail/RelatedDocuments';
 import ShareSheetModal from '../../components/modals/ShareSheetModal';
+import ShareDocumentModalV2 from '../../components/family/ShareDocumentModalV2';
 import RenewalModal from '../../components/documents/RenewalModal';
 import DeleteConfirmationModal from '../../components/documents/DeleteConfirmationModal';
 import ReminderCustomizationModal from '../../components/documents/detail/ReminderCustomizationModal';
 import Skeleton from '../../components/ui/Skeleton';
 import { isDesktopDevice } from '../../utils/deviceDetection';
+import { getDocumentPermission } from '../../services/familySharing';
+import { supabase } from '../../config/supabase';
 
 export default function ComprehensiveDocumentDetail() {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +51,7 @@ export default function ComprehensiveDocumentDetail() {
   const [error, setError] = useState<string | null>(null);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isFamilyShareModalOpen, setIsFamilyShareModalOpen] = useState(false);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
@@ -55,6 +59,7 @@ export default function ComprehensiveDocumentDetail() {
   const [notesValue, setNotesValue] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [sharedCount, setSharedCount] = useState(0);
+  const [documentPermission, setDocumentPermission] = useState<'owner' | 'view' | 'edit' | null>(null);
 
   const { signedUrl: imageUrl, loading: imageUrlLoading } = useImageUrl(document?.image_url);
 
@@ -67,10 +72,27 @@ export default function ComprehensiveDocumentDetail() {
       setError(null);
 
       try {
-        const [doc, allDocs] = await Promise.all([
-          documentService.getDocumentById(id, user.id),
-          documentService.getAllDocuments(user.id),
-        ]);
+        // Try to get document as owner first
+        let doc = await documentService.getDocumentById(id, user.id);
+        
+        // If not found as owner, check if it's shared with user
+        if (!doc) {
+          const { data: sharedDoc } = await supabase
+            .from('shared_documents')
+            .select(`
+              *,
+              document:document_id (*)
+            `)
+            .eq('document_id', id)
+            .eq('shared_with_id', user.id)
+            .single();
+          
+          if (sharedDoc?.document) {
+            doc = sharedDoc.document as Document;
+          }
+        }
+        
+        const allDocs = await documentService.getAllDocuments(user.id);
 
         if (!doc) {
           setError('Document not found');
@@ -78,8 +100,20 @@ export default function ComprehensiveDocumentDetail() {
           setDocument(doc);
           setNotesValue(doc.notes || '');
           setAllDocuments(allDocs);
-          // Fetch shared count
-          // TODO: Implement shared count fetch
+          
+          // Check document permission
+          const permission = await getDocumentPermission(doc.id);
+          setDocumentPermission(permission);
+          
+          // Fetch shared count (only if user is owner)
+          if (permission === 'owner') {
+            const { count } = await supabase
+              .from('shared_documents')
+              .select('*', { count: 'exact', head: true })
+              .eq('owner_id', user.id)
+              .eq('document_id', doc.id);
+            setSharedCount(count || 0);
+          }
         }
       } catch (err: any) {
         console.error('Failed to fetch document:', err);
@@ -327,7 +361,13 @@ export default function ComprehensiveDocumentDetail() {
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={isDesktop ? () => setIsShareModalOpen(true) : handleNativeShare}
+              onClick={() => {
+                if (isDesktop) {
+                  setIsFamilyShareModalOpen(true);
+                } else {
+                  handleNativeShare();
+                }
+              }}
               className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors flex items-center gap-2"
             >
               <Share2 className="w-4 h-4" />
@@ -464,7 +504,7 @@ export default function ComprehensiveDocumentDetail() {
               <div className="p-4 rounded-xl bg-white/5 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white">Notes</h3>
-                  {!isEditingNotes && (
+                  {!isEditingNotes && (documentPermission === 'owner' || documentPermission === 'edit') && (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsEditingNotes(true)}
@@ -531,25 +571,29 @@ export default function ComprehensiveDocumentDetail() {
                   <Download className="w-5 h-5" />
                   Download
                 </motion.button>
+                {(documentPermission === 'owner' || documentPermission === 'edit') && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setIsRenewalModalOpen(true)}
+                    className="p-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                    Mark as Renewed
+                  </motion.button>
+                )}
+              </div>
+              {documentPermission === 'owner' && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setIsRenewalModalOpen(true)}
-                  className="p-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors flex items-center justify-center gap-2"
+                  onClick={() => setIsReminderModalOpen(true)}
+                  className="w-full p-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors flex items-center justify-center gap-2"
                 >
-                  <RefreshCw className="w-5 h-5" />
-                  Mark as Renewed
+                  <Bell className="w-5 h-5" />
+                  Customize Reminders
                 </motion.button>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsReminderModalOpen(true)}
-                className="w-full p-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Bell className="w-5 h-5" />
-                Customize Reminders
-              </motion.button>
+              )}
             </motion.div>
           </div>
 
@@ -587,6 +631,15 @@ export default function ComprehensiveDocumentDetail() {
         onShare={handleShare}
         documentName={document.document_name}
         documentImage={imageUrl || undefined}
+      />
+
+      <ShareDocumentModalV2
+        isOpen={isFamilyShareModalOpen}
+        onClose={() => setIsFamilyShareModalOpen(false)}
+        onSuccess={() => {
+          // Document shared successfully
+        }}
+        document={document}
       />
 
       <RenewalModal

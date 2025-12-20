@@ -20,6 +20,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
+    "ci": "npm run lint && npm run type-check && npm run build",
     "preview": "vite preview",
     "lighthouse": "node scripts/lighthouse-audit.js"
   },

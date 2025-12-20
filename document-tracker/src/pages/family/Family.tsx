@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, UserPlus, Share2, Home, Clock, ChevronRight, AlertCircle, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Users, Share2, Home, UserPlus, Clock, Search, SlidersHorizontal, AlertCircle, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getConnections, getPendingConnections, getSharedDocuments, getHouseholds } from '../../services/social';
 import type { Connection, SharedDocument } from '../../types';
