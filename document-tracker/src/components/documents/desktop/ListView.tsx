@@ -196,17 +196,23 @@ export default function ListView({
 
                     {/* Thumbnail */}
                     <td className="px-6 py-4">
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-purple-900/20 to-blue-900/20">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-purple-900/20 to-blue-900/20 flex items-center justify-center relative">
                         {document.image_url ? (
-                          <img
-                            src={document.image_url}
-                            alt={document.document_name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
+                          <>
+                            <img
+                              src={document.image_url}
+                              alt={document.document_name}
+                              className="w-full h-full object-cover absolute inset-0"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            {/* Fallback text - always present but behind the image */}
                             <span className="text-white/20 text-xs">Doc</span>
-                          </div>
+                          </>
+                        ) : (
+                          <span className="text-white/20 text-xs">Doc</span>
                         )}
                       </div>
                     </td>

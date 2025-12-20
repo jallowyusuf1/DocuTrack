@@ -74,3 +74,4 @@ Your images will be:
 
 **START HERE:** Open `QUICK_SETUP.md` for detailed instructions!
 
+

@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import KeyboardShortcutsDropdown from '../ui/KeyboardShortcutsDropdown';
 
 interface FilterSidebarProps {
   categories: { name: string; count: number; icon: string }[];
@@ -17,7 +16,7 @@ export interface FilterState {
   urgencyFilter: 'all' | 'urgent' | 'soon' | 'valid' | 'expired';
   dateRange: 'all' | 'this_week' | 'this_month' | 'next_30' | 'next_60' | 'custom';
   customDateRange?: { start: Date; end: Date };
-  sortBy: 'name' | 'date_added' | 'category';
+  sortBy: 'name' | 'date_added' | 'expiry_date' | 'category';
   sortOrder: 'asc' | 'desc';
 }
 
@@ -39,8 +38,9 @@ const dateRangeOptions = [
 ] as const;
 
 const sortOptions = [
-  { value: 'name', label: 'Document Name' },
+  { value: 'name', label: 'Document Name (A-Z)' },
   { value: 'date_added', label: 'Date Added' },
+  { value: 'expiry_date', label: 'Expiry Date (Nearest First)' },
   { value: 'category', label: 'Category' },
 ] as const;
 
@@ -51,59 +51,6 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
     dateRange: false,
     sort: false,
   });
-  const [showShortcuts, setShowShortcuts] = useState(false);
-  const shortcutsRef = useRef<HTMLDivElement>(null);
-
-  // Close shortcuts when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showShortcuts && shortcutsRef.current && !shortcutsRef.current.contains(event.target as Node)) {
-        const searchInput = document.querySelector('input[placeholder="Search documents..."]') as HTMLInputElement;
-        if (searchInput && !searchInput.contains(event.target as Node)) {
-          setShowShortcuts(false);
-        }
-      }
-    };
-
-    if (showShortcuts) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showShortcuts]);
-
-  // Global keyboard shortcut handler - Show shortcuts with ? or Cmd+/
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if typing in input/textarea
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        // Allow ? to show shortcuts even when typing
-        if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
-          e.preventDefault();
-          setShowShortcuts(true);
-        }
-        return;
-      }
-
-      // Cmd+/ or Ctrl+/ to show shortcuts
-      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-        e.preventDefault();
-        setShowShortcuts(true);
-      }
-      // ? key to show shortcuts
-      else if (e.key === '?') {
-        e.preventDefault();
-        setShowShortcuts(true);
-      }
-      // Esc to close shortcuts
-      else if (e.key === 'Escape' && showShortcuts) {
-        e.preventDefault();
-        setShowShortcuts(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showShortcuts]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -152,15 +99,6 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
             placeholder="Search documents..."
             value={currentFilters.searchQuery}
             onChange={(e) => updateFilter({ searchQuery: e.target.value })}
-            onFocus={() => setShowShortcuts(true)}
-            onBlur={(e) => {
-              // Delay closing to allow clicking shortcuts
-              setTimeout(() => {
-                if (!e.currentTarget.contains(document.activeElement)) {
-                  setShowShortcuts(false);
-                }
-              }, 200);
-            }}
             className="w-full h-12 pl-12 pr-10 rounded-xl text-white focus:outline-none transition-all cursor-pointer"
             style={{
               fontSize: '15px',
@@ -179,16 +117,6 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
               <X className="w-4 h-4 text-white" />
             </button>
           )}
-        </div>
-        
-        {/* Keyboard Shortcuts Dropdown */}
-        <div ref={shortcutsRef} className="absolute top-full left-0 right-0 z-50 mt-2 px-4 md:px-6">
-          <KeyboardShortcutsDropdown
-            isOpen={showShortcuts}
-            onClose={() => setShowShortcuts(false)}
-            onToggleView={onToggleView}
-            onFocusSearch={onFocusSearch}
-          />
         </div>
       </div>
 

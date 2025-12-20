@@ -108,3 +108,164 @@ export function formatFileSize(bytes: number): string {
 
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
+
+/**
+ * Rotates an image by specified degrees
+ * @param file - Image file to rotate
+ * @param degrees - Rotation angle (90, 180, 270)
+ * @returns Rotated image file
+ */
+export async function rotateImage(file: File, degrees: number): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = new Image();
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        // Swap dimensions for 90 and 270 degree rotations
+        if (degrees === 90 || degrees === 270) {
+          canvas.width = img.height;
+          canvas.height = img.width;
+        } else {
+          canvas.width = img.width;
+          canvas.height = img.height;
+        }
+
+        // Apply rotation
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((degrees * Math.PI) / 180);
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to rotate image'));
+              return;
+            }
+
+            const rotatedFile = new File(
+              [blob],
+              file.name,
+              {
+                type: file.type || 'image/jpeg',
+                lastModified: Date.now(),
+              }
+            );
+
+            resolve(rotatedFile);
+          },
+          file.type || 'image/jpeg',
+          0.95
+        );
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      img.src = e.target?.result as string;
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Crops an image to specified dimensions
+ * @param file - Image file to crop
+ * @param cropArea - Crop area coordinates and dimensions
+ * @returns Cropped image file
+ */
+export async function cropImage(
+  file: File,
+  cropArea: { x: number; y: number; width: number; height: number }
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = new Image();
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = cropArea.width;
+        canvas.height = cropArea.height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        // Draw cropped portion
+        ctx.drawImage(
+          img,
+          cropArea.x,
+          cropArea.y,
+          cropArea.width,
+          cropArea.height,
+          0,
+          0,
+          cropArea.width,
+          cropArea.height
+        );
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to crop image'));
+              return;
+            }
+
+            const croppedFile = new File(
+              [blob],
+              file.name,
+              {
+                type: file.type || 'image/jpeg',
+                lastModified: Date.now(),
+              }
+            );
+
+            resolve(croppedFile);
+          },
+          file.type || 'image/jpeg',
+          0.95
+        );
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      img.src = e.target?.result as string;
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Validates if a file is an image
+ * @param file - File to validate
+ * @returns true if file is an image
+ */
+export function isImageFile(file: File): boolean {
+  return file.type.startsWith('image/');
+}

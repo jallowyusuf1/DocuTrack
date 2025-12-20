@@ -63,3 +63,4 @@ Check these files:
 - `SUPABASE_STORAGE_SETUP.md` - Storage guide
 - `CLEANUP_UNUSED_TABLES.md` - Cleanup guide
 
+

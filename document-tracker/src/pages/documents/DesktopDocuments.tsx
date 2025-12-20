@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useToast } from '../../hooks/useToast';
@@ -13,9 +13,12 @@ import BulkActionsBar from '../../components/documents/desktop/BulkActionsBar';
 import QuickViewModal from '../../components/documents/desktop/QuickViewModal';
 import Toast from '../../components/ui/Toast';
 import DesktopNav from '../../components/layout/DesktopNav';
+import BackButton from '../../components/ui/BackButton';
 import { mockDocuments } from '../../data/mockDocuments';
 
 type ViewMode = 'grid' | 'list';
+
+const ITEMS_PER_PAGE = 20;
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Passport': '🛂',
@@ -33,29 +36,63 @@ export default function DesktopDocuments() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toasts, removeToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // State
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // View & Selection State
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  // View & Selection State - Load from localStorage
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('documentViewMode');
+    return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+  });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Filter State
-  const [filters, setFilters] = useState<FilterState>({
-    searchQuery: '',
-    selectedCategories: [],
-    urgencyFilter: 'all',
-    dateRange: 'all',
-    sortBy: 'name',
-    sortOrder: 'asc',
+  // Filter State - Initialize from URL params
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const category = searchParams.get('category');
+    const urgency = searchParams.get('urgency');
+    const search = searchParams.get('search');
+    const sortBy = searchParams.get('sortBy');
+    const sortOrder = searchParams.get('sortOrder');
+
+    return {
+      searchQuery: search || '',
+      selectedCategories: category ? [category] : [],
+      urgencyFilter: (urgency as any) || 'all',
+      dateRange: 'all',
+      sortBy: (sortBy as any) || 'name',
+      sortOrder: (sortOrder as any) || 'asc',
+    };
   });
 
   // Quick View State
   const [quickViewDocument, setQuickViewDocument] = useState<Document | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+
+  // Save view mode to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('documentViewMode', viewMode);
+  }, [viewMode]);
+
+  // Update URL params when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (filters.searchQuery) params.set('search', filters.searchQuery);
+    if (filters.selectedCategories.length > 0) params.set('category', filters.selectedCategories[0]);
+    if (filters.urgencyFilter !== 'all') params.set('urgency', filters.urgencyFilter);
+    if (filters.sortBy !== 'name') params.set('sortBy', filters.sortBy);
+    if (filters.sortOrder !== 'asc') params.set('sortOrder', filters.sortOrder);
+
+    setSearchParams(params, { replace: true });
+  }, [filters, setSearchParams]);
 
   // Fetch documents - Use mock data for instant loading
   const fetchDocuments = useCallback(async () => {
@@ -183,6 +220,10 @@ export default function DesktopDocuments() {
         case 'date_added':
           comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
+        case 'expiry_date':
+          // Sort by expiry date - nearest first
+          comparison = new Date(a.expiration_date).getTime() - new Date(b.expiration_date).getTime();
+          break;
         case 'category':
           comparison = a.document_type.localeCompare(b.document_type);
           break;
@@ -193,6 +234,21 @@ export default function DesktopDocuments() {
 
     return filtered;
   }, [documents, filters]);
+
+  // Paginated documents
+  const paginatedDocuments = useMemo(() => {
+    const startIndex = 0;
+    const endIndex = currentPage * ITEMS_PER_PAGE;
+    const paginated = filteredAndSortedDocuments.slice(startIndex, endIndex);
+    setHasMore(endIndex < filteredAndSortedDocuments.length);
+    return paginated;
+  }, [filteredAndSortedDocuments, currentPage]);
+
+  const handleLoadMore = () => {
+    if (hasMore) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
 
   // Selection handlers
   const handleSelectDocument = (id: string) => {
@@ -292,22 +348,27 @@ export default function DesktopDocuments() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Toolbar */}
-          <DocumentsToolbar
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            selectedCount={selectedIds.length}
-            onBulkAction={(action) => {
-              if (action === 'share') handleBulkShare();
-              else if (action === 'export') handleBulkExport();
-              else if (action === 'delete') handleBulkDelete();
-            }}
-            sortBy={filters.sortBy}
-            sortOrder={filters.sortOrder}
-            onSortChange={(sortBy, sortOrder) => {
-              setFilters((prev) => ({ ...prev, sortBy, sortOrder }));
-            }}
-          />
+          {/* Back Button + Toolbar */}
+          <div className="flex items-center gap-4 px-6 py-4">
+            <BackButton to="/dashboard" />
+            <div className="flex-1">
+              <DocumentsToolbar
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                selectedCount={selectedIds.length}
+                onBulkAction={(action) => {
+                  if (action === 'share') handleBulkShare();
+                  else if (action === 'export') handleBulkExport();
+                  else if (action === 'delete') handleBulkDelete();
+                }}
+                sortBy={filters.sortBy}
+                sortOrder={filters.sortOrder}
+                onSortChange={(sortBy, sortOrder) => {
+                  setFilters((prev) => ({ ...prev, sortBy, sortOrder }));
+                }}
+              />
+            </div>
+          </div>
 
           {/* Document Views */}
           <div className="flex-1 overflow-y-auto">
@@ -340,10 +401,10 @@ export default function DesktopDocuments() {
                 </div>
               </div>
             ) : (
-              <>
+              <div className="space-y-6">
                 {viewMode === 'grid' && (
                   <GridView
-                    documents={filteredAndSortedDocuments}
+                    documents={paginatedDocuments}
                     selectedIds={selectedIds}
                     onSelectDocument={handleSelectDocument}
                     onQuickView={handleQuickView}
@@ -354,7 +415,7 @@ export default function DesktopDocuments() {
                 )}
                 {viewMode === 'list' && (
                   <ListView
-                    documents={filteredAndSortedDocuments}
+                    documents={paginatedDocuments}
                     selectedIds={selectedIds}
                     onSelectDocument={handleSelectDocument}
                     onQuickView={handleQuickView}
@@ -365,7 +426,26 @@ export default function DesktopDocuments() {
                     selectionMode={selectionMode}
                   />
                 )}
-              </>
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="flex justify-center py-8">
+                    <button
+                      onClick={handleLoadMore}
+                      className="px-8 py-3 rounded-xl bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-all transform hover:scale-105 font-medium"
+                    >
+                      Load More ({filteredAndSortedDocuments.length - paginatedDocuments.length} remaining)
+                    </button>
+                  </div>
+                )}
+
+                {/* Showing count */}
+                {paginatedDocuments.length > 0 && (
+                  <div className="flex justify-center py-4 text-white/40 text-sm">
+                    Showing {paginatedDocuments.length} of {filteredAndSortedDocuments.length} documents
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

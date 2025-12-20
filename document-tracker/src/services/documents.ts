@@ -115,7 +115,9 @@ export const documentService = {
     
     // Create notification reminders
     try {
-      await createNotifications(data.id, userId, data.expiration_date);
+      // Get reminder days from formData if provided
+      const reminderDays = (formData as any).reminder_days || [30, 7, 1];
+      await createNotifications(data.id, userId, data.expiration_date, reminderDays);
     } catch (notifError) {
       console.error('Failed to create notifications:', notifError);
       // Don't fail document creation if notifications fail
@@ -345,6 +347,106 @@ export const documentService = {
     }
 
     return data;
+  },
+
+  /**
+   * Get all documents for a user
+   */
+  async getAllDocuments(userId: string): Promise<Document[]> {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch documents: ${error.message}`);
+    }
+
+    return data || [];
+  },
+
+  /**
+   * Get recent documents (sorted by date added DESC, limited)
+   */
+  async getRecentDocuments(userId: string, limit: number = 4): Promise<Document[]> {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      throw new Error(`Failed to fetch recent documents: ${error.message}`);
+    }
+
+    return data || [];
+  },
+
+  /**
+   * Get documents by urgency level
+   */
+  async getDocumentsByUrgency(userId: string, minDays: number, maxDays: number): Promise<Document[]> {
+    const today = new Date();
+    const minDate = new Date();
+    minDate.setDate(today.getDate() + minDays);
+    const maxDate = new Date();
+    maxDate.setDate(today.getDate() + maxDays);
+
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .gte('expiration_date', minDate.toISOString().split('T')[0])
+      .lte('expiration_date', maxDate.toISOString().split('T')[0])
+      .order('expiration_date', { ascending: true });
+
+    if (error) {
+      throw new Error(`Failed to fetch documents by urgency: ${error.message}`);
+    }
+
+    return data || [];
+  },
+
+  /**
+   * Get document statistics
+   */
+  async getDocumentStats(userId: string): Promise<{
+    total: number;
+    onTimeRate: number;
+    urgent: number;
+    soon: number;
+    upcoming: number;
+  }> {
+    const allDocs = await this.getAllDocuments(userId);
+    const today = new Date();
+    
+    const total = allDocs.length;
+    const urgent = allDocs.filter(doc => {
+      const days = Math.ceil((new Date(doc.expiration_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return days >= 0 && days <= 7;
+    }).length;
+    const soon = allDocs.filter(doc => {
+      const days = Math.ceil((new Date(doc.expiration_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return days > 7 && days <= 30;
+    }).length;
+    const upcoming = allDocs.filter(doc => {
+      const days = Math.ceil((new Date(doc.expiration_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return days > 30 && days <= 60;
+    }).length;
+
+    // Calculate on-time rate (documents that haven't expired)
+    const notExpired = allDocs.filter(doc => {
+      const days = Math.ceil((new Date(doc.expiration_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return days >= 0;
+    }).length;
+    const onTimeRate = total > 0 ? Math.round((notExpired / total) * 100) : 100;
+
+    return { total, onTimeRate, urgent, soon, upcoming };
   },
 
   /**

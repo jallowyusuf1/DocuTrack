@@ -40,3 +40,4 @@ DROP TABLE IF EXISTS categories CASCADE;
 -- - shared_documents
 -- - document_history (if exists)
 
+

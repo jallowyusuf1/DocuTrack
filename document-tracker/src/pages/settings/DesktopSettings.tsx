@@ -35,6 +35,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import DesktopNav from '../../components/layout/DesktopNav';
+import BackButton from '../../components/ui/BackButton';
 
 type SettingsSection =
   | 'email-password'
@@ -233,6 +234,10 @@ export default function DesktopSettings() {
         {/* Content Panel */}
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-[1000px] mx-auto p-8">
+            {/* Back Button */}
+            <div className="mb-6">
+              <BackButton to="/dashboard" />
+            </div>
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSection}

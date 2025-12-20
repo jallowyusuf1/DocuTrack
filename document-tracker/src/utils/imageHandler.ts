@@ -12,31 +12,86 @@ export interface ValidationResult {
 }
 
 /**
- * Open camera to capture photo
+ * Open camera using MediaStream Image Capture API
+ * Only works on mobile/tablet devices with camera support
  */
 export async function openCamera(): Promise<File | null> {
-  return new Promise((resolve) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/jpeg,image/png';
-    input.capture = 'environment'; // Use back camera on mobile
-    
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        resolve(file);
-      } else {
+  // Check if MediaStream Image Capture API is supported
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof ImageCapture === 'undefined') {
+    // Fallback to HTML5 input capture
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/png';
+      input.capture = 'environment'; // Use back camera on mobile
+      
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          resolve(file);
+        } else {
+          resolve(null);
+        }
+      };
+
+      input.oncancel = () => {
         resolve(null);
-      }
-    };
+      };
 
-    input.oncancel = () => {
-      resolve(null);
-    };
+      input.click();
+    });
+  }
 
-    // Trigger click
-    input.click();
-  });
+  // Use MediaStream Image Capture API
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'environment', // Back camera
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
+    });
+
+    const track = stream.getVideoTracks()[0];
+    if (!track) {
+      stream.getTracks().forEach((t) => t.stop());
+      throw new Error('No video track available');
+    }
+
+    const imageCapture = new ImageCapture(track);
+    const blob = await imageCapture.takePhoto();
+
+    // Stop the stream
+    stream.getTracks().forEach((t) => t.stop());
+
+    // Convert blob to File
+    const file = new File([blob], `camera-${Date.now()}.jpg`, {
+      type: 'image/jpeg',
+      lastModified: Date.now(),
+    });
+
+    return file;
+  } catch (error: any) {
+    console.error('Error using Image Capture API:', error);
+    // Fallback to HTML5 input
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/png';
+      input.capture = 'environment';
+      
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        resolve(file || null);
+      };
+
+      input.oncancel = () => {
+        resolve(null);
+      };
+
+      input.click();
+    });
+  }
 }
 
 /**

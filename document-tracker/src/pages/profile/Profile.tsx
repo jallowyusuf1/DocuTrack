@@ -41,6 +41,7 @@ import { useToast } from '../../hooks/useToast';
 import Toast from '../../components/ui/Toast';
 import { getDaysUntil } from '../../utils/dateUtils';
 import { triggerHaptic } from '../../utils/animations';
+import BackButton from '../../components/ui/BackButton';
 
 interface Statistics {
   totalDocuments: number;
@@ -365,6 +366,11 @@ export default function Profile() {
             Logout
           </motion.button>
         </header>
+
+        {/* Back Button */}
+        <div className="px-4 pt-4 mb-2">
+          <BackButton to="/dashboard" />
+        </div>
 
         {/* User Profile Card */}
         <motion.div

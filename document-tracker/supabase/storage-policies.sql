@@ -79,3 +79,4 @@ WITH CHECK (false);
 -- Verify bucket exists and is private
 -- SELECT name, public FROM storage.buckets WHERE name = 'document-images';
 
+

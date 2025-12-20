@@ -9,6 +9,7 @@ import { getConnections, getPendingConnections, getSharedDocuments } from '../..
 import type { Connection, SharedDocument } from '../../types';
 import DesktopNav from '../../components/layout/DesktopNav';
 import BottomNav from '../../components/layout/BottomNav';
+import BackButton from '../../components/ui/BackButton';
 
 type TabType = 'connections' | 'shared' | 'pending';
 
@@ -115,6 +116,11 @@ export default function DesktopFamily() {
       </div>
 
       <main className="pt-4 md:pt-20 px-4 md:px-8 pb-24 md:pb-8">
+        {/* Back Button */}
+        <div className="max-w-[1920px] mx-auto mb-4">
+          <BackButton to="/dashboard" />
+        </div>
+
         {/* Tabs - Horizontal Scroll on Mobile */}
         <div className="max-w-[1920px] mx-auto mb-6 md:mb-8">
           <div className="flex gap-4 md:gap-8 border-b border-white/10 overflow-x-auto scrollbar-hide">

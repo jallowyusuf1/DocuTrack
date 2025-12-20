@@ -210,22 +210,23 @@ export default function GridView({
             </AnimatePresence>
 
             {/* Document Image */}
-            <div className="relative w-full h-[160px] sm:h-[180px] lg:h-[200px] overflow-hidden bg-gradient-to-br from-purple-900/20 to-blue-900/20">
+            <div className="relative w-full h-[160px] sm:h-[180px] lg:h-[200px] overflow-hidden bg-gradient-to-br from-purple-900/20 to-blue-900/20 flex items-center justify-center">
               {document.image_url ? (
-                <img
-                  src={document.image_url}
-                  alt={document.document_name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
+                <>
+                  <img
+                    src={document.image_url}
+                    alt={document.document_name}
+                    className="w-full h-full object-cover absolute inset-0"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  {/* Fallback icon - always present but behind the image */}
                   <Calendar className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-white/20" />
-                </div>
+                </>
+              ) : (
+                <Calendar className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-white/20" />
               )}
             </div>
 

@@ -148,7 +148,8 @@ export function getNotificationMessage(
 export async function createNotifications(
   documentId: string,
   userId: string,
-  expirationDate: string
+  expirationDate: string,
+  customReminderDays?: number[]
 ): Promise<void> {
   const expiration = new Date(expirationDate);
   const today = new Date();
@@ -159,6 +160,64 @@ export async function createNotifications(
 
   const notifications: Omit<Notification, 'id' | 'created_at' | 'sent_at'>[] = [];
 
+  // Use custom reminder days if provided
+  if (customReminderDays && customReminderDays.length > 0) {
+    // Create notifications for each custom reminder day
+    for (const days of customReminderDays) {
+      const reminderDate = new Date(expiration);
+      reminderDate.setDate(reminderDate.getDate() - days);
+      reminderDate.setHours(9, 0, 0, 0); // 9 AM
+
+      if (reminderDate > today) {
+        let notificationType: NotificationType = '30_days';
+        if (days <= 1) {
+          notificationType = '1_day';
+        } else if (days <= 7) {
+          notificationType = '7_days';
+        } else {
+          notificationType = '30_days';
+        }
+
+        notifications.push({
+          user_id: userId,
+          document_id: documentId,
+          notification_type: notificationType,
+          scheduled_for: reminderDate.toISOString(),
+          is_read: false,
+        });
+      }
+    }
+
+    // Also create expired notification if enabled
+    if (preferences.notify_expired) {
+      const expiredDate = new Date(expiration);
+      expiredDate.setHours(9, 0, 0, 0);
+      if (expiredDate > today) {
+        notifications.push({
+          user_id: userId,
+          document_id: documentId,
+          notification_type: 'expired',
+          scheduled_for: expiredDate.toISOString(),
+          is_read: false,
+        });
+      }
+    }
+
+    // Insert notifications
+    if (notifications.length > 0) {
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (error) {
+        console.error('Error creating notifications:', error);
+        throw new Error(`Failed to create notifications: ${error.message}`);
+      }
+    }
+    return; // Exit early when using custom reminder days
+  }
+
+  // Legacy code below (keeping for backward compatibility when no custom days provided)
   // 30 days before
   if (preferences.notify_30_days) {
     const thirtyDays = new Date(expiration);

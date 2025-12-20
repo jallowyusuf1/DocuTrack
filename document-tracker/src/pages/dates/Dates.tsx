@@ -11,6 +11,7 @@ import ListView from '../../components/dates/ListView';
 import ViewToggle from '../../components/dates/ViewToggle';
 import Button from '../../components/ui/Skeleton';
 import Skeleton from '../../components/ui/Skeleton';
+import BackButton from '../../components/ui/BackButton';
 
 export default function Dates() {
   const navigate = useNavigate();
@@ -163,6 +164,9 @@ export default function Dates() {
     <div className="pb-[72px] min-h-screen">
       {/* Header */}
       <div className="px-5 py-4">
+        <div className="mb-4">
+          <BackButton to="/dashboard" />
+        </div>
         <h1 className="text-2xl font-bold text-white mb-1">Important Dates</h1>
         <p className="text-sm text-glass-secondary">Track your important dates and reminders</p>
       </div>
