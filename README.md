@@ -1,4 +1,4 @@
-# DocuTrack - Smart Document Management System
+# DocuTrack - Smart Document Management System.
 
 A modern, feature-rich document tracking and management application built with React 19, TypeScript, and Supabase.
 
