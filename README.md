@@ -178,7 +178,7 @@ This project is configured for easy deployment on Vercel.
    - Framework Preset: `Other`
    - Build Command: `bash build.sh`
    - Output Directory: `document-tracker/dist`
-   - Install Command: `cd document-tracker && npm ci`
+   - Install Command: `npm ci`
 
 3. **Add environment variables:**
    - `VITE_SUPABASE_URL`
