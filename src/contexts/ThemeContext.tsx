@@ -28,8 +28,6 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Use hooks directly - React should always be ready in a proper component
-  // If this fails, it indicates a build/cache issue that needs fixing
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {

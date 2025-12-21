@@ -211,7 +211,7 @@ export default function DesktopNotifications({ onNotificationClick }: DesktopNot
       {/* Only show DesktopNav if not in modal */}
       {!onNotificationClick && <DesktopNav />}
 
-      <main className={`px-8 pb-8 max-w-[1920px] mx-auto ${onNotificationClick ? 'pt-4' : 'pt-20'}`}>
+      <main className={`px-8 pb-8 max-w-[1920px] mx-auto ${onNotificationClick ? 'pt-4' : 'pt-[104px]'}`}>
         <div className="grid grid-cols-[320px_1fr] gap-8">
           {/* Sidebar */}
           <div className="space-y-6">

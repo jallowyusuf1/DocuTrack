@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
   Lock,
+  Fingerprint,
   Shield,
   Smartphone,
   Bell,
@@ -44,11 +45,19 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { userService, type UserProfile, type UserSettings, type ConnectedDevice } from '../../services/userService';
+import { mfaService } from '../../services/mfaService';
+import { documentLockService, type DocumentLockSettings } from '../../services/documentLockService';
+import { idleSecurityService, type IdleSecuritySettings } from '../../services/idleSecurityService';
+import { webauthnService, type WebAuthnCredentialRow } from '../../services/webauthnService';
 import { supabase } from '../../config/supabase';
 import DesktopNav from '../../components/layout/DesktopNav';
 import BackButton from '../../components/ui/BackButton';
 import EditProfileModal from '../../components/profile/EditProfileModal';
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
+import MFASetupModal from '../../components/auth/MFASetupModal';
+import BackupCodesModal from '../../components/auth/BackupCodesModal';
+import SetDocumentLockModal from '../../components/documents/SetDocumentLockModal';
+import SetIdleLockPasswordModal from '../../components/security/SetIdleLockPasswordModal';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { useToast } from '../../hooks/useToast';
@@ -62,6 +71,8 @@ type SettingsSection =
   | 'two-factor'
   | 'connected-devices'
   | 'delete-account'
+  | 'document-lock'
+  | 'idle-timeout'
   | 'notifications'
   | 'appearance'
   | 'language'
@@ -143,6 +154,8 @@ export default function DesktopSettings() {
       items: [
         { id: 'email-password', label: 'Email & Password', icon: Mail, hasChevron: true },
         { id: 'two-factor', label: 'Two-Factor Authentication', icon: Shield, hasChevron: true },
+        { id: 'document-lock', label: 'Document Lock', icon: Lock, hasChevron: true },
+        { id: 'idle-timeout', label: 'Idle Timeout', icon: Clock, hasChevron: true },
         { id: 'connected-devices', label: 'Connected Devices', icon: Smartphone, hasChevron: true },
         { id: 'delete-account', label: 'Delete Account', icon: Trash2, hasChevron: true },
       ],
@@ -196,6 +209,10 @@ export default function DesktopSettings() {
         return <EmailPasswordContent />;
       case 'two-factor':
         return <TwoFactorContent />;
+      case 'document-lock':
+        return <DocumentLockContent />;
+      case 'idle-timeout':
+        return <IdleTimeoutContent />;
       case 'connected-devices':
         return <ConnectedDevicesContent userSettings={userSettings} />;
       case 'delete-account':
@@ -225,7 +242,7 @@ export default function DesktopSettings() {
       <DesktopNav />
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden pt-[104px]">
         {/* Sidebar */}
         <aside className="w-[280px] flex-shrink-0 overflow-y-auto" style={{
           background: 'rgba(26, 22, 37, 0.6)',
@@ -490,7 +507,74 @@ function EmailPasswordContent() {
 }
 
 function TwoFactorContent() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [isEnabled, setIsEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [factors, setFactors] = useState<any[]>([]);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [showBackupCodesModal, setShowBackupCodesModal] = useState(false);
+
+  useEffect(() => {
+    const checkMFAStatus = async () => {
+      if (!user?.id) return;
+
+      setLoading(true);
+      try {
+        const enabled = await mfaService.hasMFAEnabled();
+        setIsEnabled(enabled);
+        
+        if (enabled) {
+          const userFactors = await mfaService.getFactors();
+          setFactors(userFactors);
+        }
+      } catch (error) {
+        console.error('Error checking MFA status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkMFAStatus();
+  }, [user]);
+
+  const handleDisable = async () => {
+    if (!user?.id || !confirm('Are you sure you want to disable two-factor authentication? This will make your account less secure.')) {
+      return;
+    }
+
+    try {
+      for (const factor of factors) {
+        await mfaService.unenroll(factor.id);
+      }
+      setIsEnabled(false);
+      setFactors([]);
+      showToast('Two-factor authentication disabled', 'success');
+    } catch (error) {
+      showToast('Failed to disable 2FA', 'error');
+    }
+  };
+
+  const handleRegenerateBackupCodes = async () => {
+    if (!user?.id) return;
+
+    try {
+      const codes = mfaService.generateBackupCodes(10);
+      await mfaService.saveBackupCodes(user.id, codes);
+      setShowBackupCodesModal(true);
+      showToast('Backup codes regenerated', 'success');
+    } catch (error) {
+      showToast('Failed to regenerate backup codes', 'error');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -509,8 +593,10 @@ function TwoFactorContent() {
             <h3 className="text-white font-semibold text-lg">
               {isEnabled ? 'Enabled' : 'Disabled'}
             </h3>
-            {isEnabled && (
-              <p className="text-gray-400 text-sm">Enabled since December 1, 2025</p>
+            {isEnabled && factors.length > 0 && (
+              <p className="text-gray-400 text-sm">
+                Enabled since {new Date(factors[0].created_at).toLocaleDateString()}
+              </p>
             )}
           </div>
         </div>
@@ -527,23 +613,55 @@ function TwoFactorContent() {
           <p className="text-gray-400 mb-6">
             Secure your account with two-factor authentication. You'll need to enter a code from your authenticator app every time you sign in.
           </p>
-          <button className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-all">
+          <Button
+            variant="primary"
+            fullWidth
+            onClick={() => setShowSetupModal(true)}
+          >
             Enable Two-Factor Auth
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <button className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={handleDisable}
+            className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+          >
             Disable Two-Factor Auth
-          </button>
-          <button className="w-full p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 transition-all">
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={handleRegenerateBackupCodes}
+          >
             Regenerate Backup Codes
-          </button>
-          <button className="w-full p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 hover:bg-purple-500/20 transition-all">
-            Change Authenticator App
-          </button>
+          </Button>
         </div>
       )}
+
+      {/* Setup Modal */}
+      <MFASetupModal
+        isOpen={showSetupModal}
+        onClose={() => setShowSetupModal(false)}
+        onSuccess={async () => {
+          setShowSetupModal(false);
+          const enabled = await mfaService.hasMFAEnabled();
+          setIsEnabled(enabled);
+          if (enabled) {
+            const userFactors = await mfaService.getFactors();
+            setFactors(userFactors);
+          }
+        }}
+      />
+
+      {/* Backup Codes Modal */}
+      <BackupCodesModal
+        isOpen={showBackupCodesModal}
+        onClose={() => setShowBackupCodesModal(false)}
+        userId={user?.id || ''}
+      />
     </div>
   );
 }
@@ -1562,6 +1680,691 @@ function FamilySharingContent() {
           Open Family Sharing
         </Button>
       </div>
+    </div>
+  );
+}
+
+function IdleTimeoutContent() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
+
+  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<IdleSecuritySettings | null>(null);
+  const [passkeys, setPasskeys] = useState<WebAuthnCredentialRow[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+
+  const refresh = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const s = await idleSecurityService.getSettings(user.id);
+      setSettings(s);
+      const keys = await webauthnService.listPasskeys(user.id);
+      setPasskeys(keys);
+    } catch (e) {
+      console.error('Failed to load idle security settings:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const save = async (updates: Partial<IdleSecuritySettings>) => {
+    if (!user?.id) return;
+    setSaving(true);
+    try {
+      await idleSecurityService.saveSettings(user.id, updates);
+      await refresh();
+      showToast('Security settings updated', 'success');
+    } catch (e) {
+      console.error('Failed to save idle security settings:', e);
+      showToast('Failed to update settings', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleEnabled = async () => {
+    if (!settings) return;
+    if (!settings.idleTimeoutEnabled) {
+      if (!settings.idleLockPasswordHash) {
+        setShowSetPasswordModal(true);
+        return;
+      }
+      await save({ idleTimeoutEnabled: true });
+    } else {
+      await save({ idleTimeoutEnabled: false });
+    }
+  };
+
+  const handleEnrollPasskey = async () => {
+    if (!user?.id) return;
+    setSaving(true);
+    try {
+      await webauthnService.enrollPasskey();
+      await save({ biometricUnlockEnabled: true });
+      showToast('Passkey enrolled', 'success');
+    } catch (e) {
+      console.error('Passkey enrollment failed:', e);
+      showToast('Passkey enrollment failed', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleBiometric = async () => {
+    if (!settings) return;
+    if (!settings.biometricUnlockEnabled) {
+      await handleEnrollPasskey();
+    } else {
+      await save({ biometricUnlockEnabled: false });
+    }
+  };
+
+  const handleRemovePasskey = async (id: string) => {
+    if (!user?.id) return;
+    if (!confirm('Remove this passkey from your account?')) return;
+    setSaving(true);
+    try {
+      await webauthnService.removePasskey(user.id, id);
+      await refresh();
+      showToast('Passkey removed', 'success');
+    } catch (e) {
+      console.error('Failed to remove passkey:', e);
+      showToast('Failed to remove passkey', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+      </div>
+    );
+  }
+
+  const enabled = settings?.idleTimeoutEnabled ?? false;
+  const hasPassword = !!settings?.idleLockPasswordHash;
+  const biometricSupported = webauthnService.isSupported();
+
+  return (
+    <div>
+      <h1 className="text-white text-3xl font-bold mb-2">Idle Timeout</h1>
+      <p className="text-gray-400 mb-8">Automatically lock the app after inactivity</p>
+
+      <SetIdleLockPasswordModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        userId={user?.id ?? ''}
+        onSaved={() => {
+          showToast('Idle lock password saved', 'success');
+          refresh();
+        }}
+      />
+
+      {/* Enable */}
+      <div
+        className="mb-6 p-6 rounded-2xl"
+        style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-white font-semibold text-lg">Enable Idle Timeout</h3>
+            <p className="text-gray-400 text-sm mt-1">
+              {hasPassword ? 'Lock the app after inactivity' : 'Set an idle lock password first'}
+            </p>
+          </div>
+          <button
+            onClick={handleToggleEnabled}
+            disabled={!hasPassword && !enabled}
+            className={`w-14 h-8 rounded-full transition-all ${
+              enabled ? 'bg-purple-600' : 'bg-gray-600'
+            } ${!hasPassword && !enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <div
+              className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                enabled ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className={`w-4 h-4 rounded-full ${enabled ? 'bg-green-500' : 'bg-gray-500'}`} />
+          <Button variant="secondary" onClick={() => setShowSetPasswordModal(true)} disabled={saving}>
+            {hasPassword ? 'Change Password' : 'Set Password'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Timeout Minutes */}
+      <div
+        className="mb-6 p-6 rounded-2xl"
+        style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}
+      >
+        <h3 className="text-white font-semibold text-lg mb-4">Lock After</h3>
+        <div className="grid grid-cols-5 gap-2">
+          {[1, 2, 5, 10, 15].map((m) => (
+            <button
+              key={m}
+              onClick={() => save({ idleTimeoutMinutes: m as any })}
+              disabled={saving}
+              className={`py-3 rounded-xl text-sm font-medium transition-all ${
+                settings?.idleTimeoutMinutes === m
+                  ? 'bg-purple-500/25 border border-purple-400 text-white'
+                  : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/10'
+              }`}
+            >
+              {m}m
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Max attempts + wipe */}
+      <div
+        className="mb-6 p-6 rounded-2xl"
+        style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}
+      >
+        <h3 className="text-white font-semibold text-lg mb-4">Unlock Protection</h3>
+
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-white font-medium">Max unlock attempts</div>
+            <div className="text-gray-400 text-sm">After this, we lock out for 15 minutes (or wipe if enabled).</div>
+          </div>
+          <div className="flex gap-2">
+            {[1, 3, 5, 10].map((n) => (
+              <button
+                key={n}
+                onClick={() => save({ maxUnlockAttempts: n as any })}
+                disabled={saving}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  settings?.maxUnlockAttempts === n
+                    ? 'bg-red-500/20 border border-red-400 text-white'
+                    : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/10'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-white font-medium">Wipe local data on max attempts</div>
+            <div className="text-gray-400 text-sm">Clears local device data and signs you out.</div>
+          </div>
+          <button
+            onClick={async () => {
+              const next = !(settings?.wipeDataOnMaxAttempts ?? false);
+              if (next) {
+                const ok = confirm(
+                  'This will clear local storage, session storage, caches and sign you out on this device if too many unlock attempts occur. Enable?'
+                );
+                if (!ok) return;
+              }
+              await save({ wipeDataOnMaxAttempts: next });
+            }}
+            disabled={saving}
+            className={`w-14 h-8 rounded-full transition-all ${
+              settings?.wipeDataOnMaxAttempts ? 'bg-red-600' : 'bg-gray-600'
+            }`}
+          >
+            <div
+              className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                settings?.wipeDataOnMaxAttempts ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Optional sound */}
+      <div
+        className="mb-6 p-6 rounded-2xl"
+        style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-white font-medium">Sound alerts</div>
+            <div className="text-gray-400 text-sm">Play a subtle beep during the countdown warning.</div>
+          </div>
+          <button
+            onClick={() => save({ idleSoundAlertsEnabled: !(settings?.idleSoundAlertsEnabled ?? false) })}
+            disabled={saving}
+            className={`w-14 h-8 rounded-full transition-all ${
+              settings?.idleSoundAlertsEnabled ? 'bg-purple-600' : 'bg-gray-600'
+            }`}
+          >
+            <div
+              className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                settings?.idleSoundAlertsEnabled ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Face ID / Passkeys */}
+      <div
+        className="mb-6 p-6 rounded-2xl"
+        style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-white font-semibold text-lg">Face ID / Passkeys</h3>
+            <p className="text-gray-400 text-sm mt-1">
+              {biometricSupported ? 'Use device biometrics to unlock (where supported).' : 'Not supported on this device/browser.'}
+            </p>
+          </div>
+          <button
+            onClick={handleToggleBiometric}
+            disabled={!biometricSupported || saving}
+            className={`w-14 h-8 rounded-full transition-all ${
+              settings?.biometricUnlockEnabled ? 'bg-purple-600' : 'bg-gray-600'
+            } ${!biometricSupported ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <div
+              className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                settings?.biometricUnlockEnabled ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-white/80 text-sm">
+            Enrolled passkeys: <span className="text-white font-semibold">{passkeys.length}</span>
+          </div>
+          <Button variant="secondary" onClick={handleEnrollPasskey} disabled={!biometricSupported || saving}>
+            <Fingerprint className="w-4 h-4 mr-2" />
+            Add Passkey
+          </Button>
+        </div>
+
+        {passkeys.length > 0 ? (
+          <div className="space-y-2">
+            {passkeys.map((k) => (
+              <div
+                key={k.id}
+                className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10"
+              >
+                <div>
+                  <div className="text-white font-medium">{k.device_label || 'Passkey'}</div>
+                  <div className="text-gray-400 text-xs">{new Date(k.created_at).toLocaleString()}</div>
+                </div>
+                <Button variant="danger" onClick={() => handleRemovePasskey(k.id)} disabled={saving}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-400 text-sm">No passkeys enrolled yet.</div>
+        )}
+      </div>
+
+      {saving ? <div className="text-white/55 text-xs">Saving…</div> : null}
+    </div>
+  );
+}
+
+function DocumentLockContent() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [lockSettings, setLockSettings] = useState<DocumentLockSettings | null>(null);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+
+  useEffect(() => {
+    const fetchLockSettings = async () => {
+      if (!user?.id) return;
+
+      setLoading(true);
+      try {
+        const settings = await documentLockService.getLockSettings(user.id);
+        setLockSettings(settings);
+      } catch (error) {
+        console.error('Error fetching lock settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLockSettings();
+  }, [user]);
+
+  const handleEnableLock = async () => {
+    if (!user?.id) return;
+
+    if (!lockSettings?.lockPasswordHash) {
+      // No password set, show modal to set password
+      setShowSetPasswordModal(true);
+    } else {
+      // Password already set, just enable
+      try {
+        await documentLockService.enableLock(user.id);
+        const updated = await documentLockService.getLockSettings(user.id);
+        setLockSettings(updated);
+        showToast('Document lock enabled', 'success');
+      } catch (error) {
+        console.error('Error enabling lock:', error);
+        showToast('Failed to enable lock', 'error');
+      }
+    }
+  };
+
+  const handleDisableLock = async () => {
+    if (!user?.id) return;
+
+    if (!confirm('Are you sure you want to disable document lock?')) {
+      return;
+    }
+
+    try {
+      await documentLockService.disableLock(user.id);
+      const updated = await documentLockService.getLockSettings(user.id);
+      setLockSettings(updated);
+      showToast('Document lock disabled', 'success');
+    } catch (error) {
+      console.error('Error disabling lock:', error);
+      showToast('Failed to disable lock', 'error');
+    }
+  };
+
+  const handleUpdateTrigger = async (trigger: 'always' | 'idle' | 'manual') => {
+    if (!user?.id) return;
+
+    try {
+      await documentLockService.saveLockSettings({
+        userId: user.id,
+        lockTrigger: trigger,
+      });
+      const updated = await documentLockService.getLockSettings(user.id);
+      setLockSettings(updated);
+      showToast('Lock trigger updated', 'success');
+    } catch (error) {
+      console.error('Error updating trigger:', error);
+      showToast('Failed to update trigger', 'error');
+    }
+  };
+
+  const handleUpdateMaxAttempts = async (attempts: number) => {
+    if (!user?.id) return;
+
+    try {
+      await documentLockService.saveLockSettings({
+        userId: user.id,
+        maxAttempts: attempts,
+      });
+      const updated = await documentLockService.getLockSettings(user.id);
+      setLockSettings(updated);
+      showToast('Max attempts updated', 'success');
+    } catch (error) {
+      console.error('Error updating max attempts:', error);
+      showToast('Failed to update settings', 'error');
+    }
+  };
+
+  const handleUpdateLockoutDuration = async (minutes: number) => {
+    if (!user?.id) return;
+
+    try {
+      await documentLockService.saveLockSettings({
+        userId: user.id,
+        lockoutDurationMinutes: minutes,
+      });
+      const updated = await documentLockService.getLockSettings(user.id);
+      setLockSettings(updated);
+      showToast('Lockout duration updated', 'success');
+    } catch (error) {
+      console.error('Error updating lockout duration:', error);
+      showToast('Failed to update settings', 'error');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+      </div>
+    );
+  }
+
+  const hasPassword = !!lockSettings?.lockPasswordHash;
+  const isEnabled = lockSettings?.lockEnabled ?? false;
+
+  return (
+    <div>
+      <h1 className="text-white text-3xl font-bold mb-2">Document Lock</h1>
+      <p className="text-gray-400 mb-8">Secure your documents page with a password</p>
+
+      {/* Status Card */}
+      <div className="mb-6 p-6 rounded-2xl" style={{
+        background: 'rgba(26, 22, 37, 0.6)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(139, 92, 246, 0.2)',
+      }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-white font-semibold text-lg">Enable Document Lock</h3>
+            <p className="text-gray-400 text-sm mt-1">
+              {hasPassword ? 'Protect your documents with a password' : 'Set a password first'}
+            </p>
+          </div>
+          <button
+            onClick={isEnabled ? handleDisableLock : handleEnableLock}
+            disabled={!hasPassword && !isEnabled}
+            className={`w-14 h-8 rounded-full transition-all ${
+              isEnabled ? 'bg-purple-600' : 'bg-gray-600'
+            } ${!hasPassword && !isEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <div
+              className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                isEnabled ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className={`w-4 h-4 rounded-full ${isEnabled ? 'bg-green-500' : 'bg-gray-500'}`} />
+      </div>
+
+      {/* Password Management */}
+      <div className="mb-6 p-6 rounded-2xl" style={{
+        background: 'rgba(26, 22, 37, 0.6)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(139, 92, 246, 0.2)',
+      }}>
+        <h3 className="text-white font-semibold text-lg mb-4">Lock Password</h3>
+        <p className="text-gray-400 text-sm mb-4">
+          {hasPassword ? 'Password is set and protected' : 'No password set'}
+        </p>
+        <div className="flex gap-3">
+          {!hasPassword ? (
+            <Button
+              variant="primary"
+              onClick={() => setShowSetPasswordModal(true)}
+            >
+              Set Password
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              onClick={() => setShowChangePasswordModal(true)}
+            >
+              Change Password
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Lock Trigger */}
+      {hasPassword && (
+        <div className="mb-6 p-6 rounded-2xl" style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}>
+          <h3 className="text-white font-semibold text-lg mb-4">Lock Trigger</h3>
+          <p className="text-gray-400 text-sm mb-4">Choose when to lock the documents page</p>
+          <div className="space-y-3">
+            {[
+              { value: 'always', label: 'Always Locked', desc: 'Lock every time you visit the documents page' },
+              { value: 'idle', label: 'After Idle Time', desc: 'Lock after period of inactivity' },
+              { value: 'manual', label: 'Manual Only', desc: 'Lock only when you manually lock it' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleUpdateTrigger(option.value as any)}
+                className={`w-full p-4 rounded-xl text-left transition-all ${
+                  lockSettings?.lockTrigger === option.value
+                    ? 'bg-purple-500/20 border-2 border-purple-500'
+                    : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-medium">{option.label}</h4>
+                    <p className="text-gray-400 text-sm mt-1">{option.desc}</p>
+                  </div>
+                  {lockSettings?.lockTrigger === option.value && (
+                    <Check className="w-5 h-5 text-purple-400" />
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Security Settings */}
+      {hasPassword && (
+        <div className="mb-6 p-6 rounded-2xl" style={{
+          background: 'rgba(26, 22, 37, 0.6)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(139, 92, 246, 0.2)',
+        }}>
+          <h3 className="text-white font-semibold text-lg mb-4">Security Settings</h3>
+
+          {/* Max Attempts */}
+          <div className="mb-6">
+            <label className="text-white text-sm font-medium mb-2 block">
+              Maximum Attempts
+            </label>
+            <select
+              value={lockSettings?.maxAttempts ?? 3}
+              onChange={(e) => handleUpdateMaxAttempts(Number(e.target.value))}
+              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+            >
+              <option value="1">1 attempt</option>
+              <option value="3">3 attempts</option>
+              <option value="5">5 attempts</option>
+              <option value="10">10 attempts</option>
+            </select>
+            <p className="text-gray-400 text-xs mt-2">
+              Number of failed attempts before lockout
+            </p>
+          </div>
+
+          {/* Lockout Duration */}
+          <div>
+            <label className="text-white text-sm font-medium mb-2 block">
+              Lockout Duration
+            </label>
+            <select
+              value={lockSettings?.lockoutDurationMinutes ?? 15}
+              onChange={(e) => handleUpdateLockoutDuration(Number(e.target.value))}
+              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+            >
+              <option value="5">5 minutes</option>
+              <option value="15">15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+            </select>
+            <p className="text-gray-400 text-xs mt-2">
+              How long to lock out after max failed attempts
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Info Card */}
+      <div className="p-6 rounded-2xl" style={{
+        background: 'rgba(139, 92, 246, 0.1)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(139, 92, 246, 0.3)',
+      }}>
+        <div className="flex gap-3">
+          <AlertCircle className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-white font-semibold mb-2">About Document Lock</h4>
+            <ul className="text-gray-400 text-sm space-y-1">
+              <li>• Document lock only applies to the Documents page</li>
+              <li>• Navigation remains accessible while locked</li>
+              <li>• Lock state persists across browser sessions</li>
+              <li>• Signing out automatically clears the lock</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <SetDocumentLockModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSuccess={async () => {
+          if (user?.id) {
+            const updated = await documentLockService.getLockSettings(user.id);
+            setLockSettings(updated);
+          }
+          showToast('Lock password set successfully', 'success');
+        }}
+        mode="set"
+      />
+
+      <SetDocumentLockModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={async () => {
+          if (user?.id) {
+            const updated = await documentLockService.getLockSettings(user.id);
+            setLockSettings(updated);
+          }
+          showToast('Lock password changed successfully', 'success');
+        }}
+        mode="change"
+      />
     </div>
   );
 }

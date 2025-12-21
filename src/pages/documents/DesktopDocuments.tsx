@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
+import { documentLockService } from '../../services/documentLockService';
 import { useToast } from '../../hooks/useToast';
 import type { Document } from '../../types';
 import { getDaysUntil } from '../../utils/dateUtils';
@@ -14,6 +15,8 @@ import QuickViewModal from '../../components/documents/desktop/QuickViewModal';
 import Toast from '../../components/ui/Toast';
 import DesktopNav from '../../components/layout/DesktopNav';
 import BackButton from '../../components/ui/BackButton';
+import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
+import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
 import { mockDocuments } from '../../data/mockDocuments';
 
 type ViewMode = 'grid' | 'list';
@@ -76,6 +79,11 @@ export default function DesktopDocuments() {
   const [quickViewDocument, setQuickViewDocument] = useState<Document | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
+  // Document Lock State
+  const [isLocked, setIsLocked] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [lockCheckComplete, setLockCheckComplete] = useState(false);
+
   // Save view mode to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('documentViewMode', viewMode);
@@ -127,6 +135,70 @@ export default function DesktopDocuments() {
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  // Check if documents should be locked on mount
+  useEffect(() => {
+    const checkLockStatus = async () => {
+      if (!user?.id) {
+        setLockCheckComplete(true);
+        return;
+      }
+
+      try {
+        // Check if lock is enabled in settings
+        const settings = await documentLockService.getLockSettings(user.id);
+
+        if (!settings?.lockEnabled || !settings?.lockPasswordHash) {
+          // Lock not enabled or no password set
+          setIsLocked(false);
+          setLockCheckComplete(true);
+          return;
+        }
+
+        // Check if already unlocked in this session
+        const isAlreadyUnlocked = !documentLockService.isDocumentsLocked();
+
+        if (isAlreadyUnlocked) {
+          setIsLocked(false);
+          setLockCheckComplete(true);
+          return;
+        }
+
+        // Lock based on trigger setting
+        if (settings.lockTrigger === 'always') {
+          // Always lock on page load
+          documentLockService.setDocumentsLocked(true);
+          setIsLocked(true);
+        } else if (settings.lockTrigger === 'manual') {
+          // Only lock if manually locked
+          const isManuallyLocked = documentLockService.isDocumentsLocked();
+          setIsLocked(isManuallyLocked);
+        } else if (settings.lockTrigger === 'idle') {
+          // TODO: Implement idle timeout logic
+          const isManuallyLocked = documentLockService.isDocumentsLocked();
+          setIsLocked(isManuallyLocked);
+        }
+
+        setLockCheckComplete(true);
+      } catch (error) {
+        console.error('Error checking lock status:', error);
+        setIsLocked(false);
+        setLockCheckComplete(true);
+      }
+    };
+
+    checkLockStatus();
+  }, [user]);
+
+  // Handle unlock
+  const handleUnlock = () => {
+    setIsUnlocking(true);
+  };
+
+  const handleUnlockComplete = () => {
+    setIsUnlocking(false);
+    setIsLocked(false);
+  };
 
   // Calculate categories with counts
   const categories = useMemo(() => {
@@ -326,13 +398,35 @@ export default function DesktopDocuments() {
 
   const selectionMode = selectedIds.length > 0;
 
+  // Show nothing until lock check is complete
+  if (!lockCheckComplete) {
+    return (
+      <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
+        <DesktopNav />
+        <div className="flex-1 flex items-center justify-center pt-[104px]">
+          <div className="text-white text-lg">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
-      {/* Desktop Navigation */}
+      {/* Desktop Navigation - Always visible */}
       <DesktopNav />
 
+      {/* Document Lock Overlay */}
+      {isLocked && !isUnlocking && (
+        <DocumentLockOverlay onUnlock={handleUnlock} />
+      )}
+
+      {/* Unlock Animation */}
+      {isUnlocking && (
+        <UnlockAnimation onComplete={handleUnlockComplete} />
+      )}
+
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden mt-16">
+      <div className="flex-1 flex overflow-hidden mt-[104px]">
         {/* Sidebar */}
         <FilterSidebar
           categories={categories}

@@ -1,13 +1,10 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import type { ComponentType } from 'react';
-import type { LucideProps } from 'lucide-react';
 import { animateCount } from '../../utils/animations';
 
 interface UrgencySummaryCardProps {
   count: number;
   label: string;
-  icon: ComponentType<LucideProps>;
   bgColor: string;
   textColor: string;
   iconColor: string;
@@ -16,10 +13,9 @@ interface UrgencySummaryCardProps {
 export default function UrgencySummaryCard({
   count,
   label,
-  icon: Icon,
   bgColor: _bgColor,
   textColor,
-  iconColor,
+  iconColor: _iconColor,
 }: UrgencySummaryCardProps) {
   const [displayCount, setDisplayCount] = useState(0);
 
@@ -86,13 +82,15 @@ export default function UrgencySummaryCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       whileHover={{ y: -2, scale: 1.02 }}
-      className="rounded-2xl p-4 md:p-6 min-h-[100px] md:min-h-[140px] flex flex-col justify-center relative overflow-hidden"
+      className="rounded-2xl p-4 md:p-6 min-h-[100px] md:min-h-[140px] flex flex-col justify-center relative overflow-hidden cursor-pointer"
       style={{
         background: `linear-gradient(135deg, ${gradientColors.from}, ${gradientColors.to})`,
         backdropFilter: 'blur(30px)',
         WebkitBackdropFilter: 'blur(30px)',
         border: `1px solid ${gradientColors.border}`,
         boxShadow: `0 8px 32px rgba(0, 0, 0, 0.3), 0 0 40px ${gradientColors.glow}`,
+        outline: `2px solid ${gradientColors.border}`,
+        outlineOffset: '2px',
       }}
     >
       {/* Tiled Glass Pattern Overlay */}
@@ -108,7 +106,7 @@ export default function UrgencySummaryCard({
       />
 
       {/* Content */}
-      <div className="relative z-10 pr-14 md:pr-16">
+      <div className="relative z-10">
         <p
           className={`text-[32px] md:text-[40px] font-bold ${textColor} leading-none mb-1 md:mb-1.5`}
           style={{
@@ -130,14 +128,6 @@ export default function UrgencySummaryCard({
           {label}
         </p>
       </div>
-
-      {/* Icon */}
-      <Icon 
-        className={`w-[44px] h-[44px] md:w-[52px] md:h-[52px] ${iconColor} absolute top-4 right-4 opacity-80`}
-        style={{
-          filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))',
-        }}
-      />
     </motion.div>
   );
 }

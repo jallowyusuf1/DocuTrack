@@ -117,17 +117,20 @@ if (!rootElement) {
 }
 
 // Verify React is loaded before rendering
-if (typeof React === 'undefined' || !React.useState) {
+if (typeof React === 'undefined' || typeof React.useState === 'undefined') {
   console.error('❌ React is not properly loaded!');
-  console.error('Run: npm run emergency-fix');
+  console.error('React:', React);
+  console.error('ReactDOM:', ReactDOM);
   rootElement.innerHTML = `
-    <div style="padding: 40px; text-align: center; color: white; font-family: system-ui;">
+    <div style="padding: 40px; text-align: center; color: white; font-family: system-ui; background: #1A1625;">
       <h1>React Initialization Error</h1>
-      <p>React is not properly loaded. Please run:</p>
-      <code style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; display: inline-block; margin: 20px;">
-        npm run emergency-fix
-      </code>
-      <p style="margin-top: 20px; opacity: 0.7;">Then refresh this page.</p>
+      <p>React is not properly loaded. Please:</p>
+      <ol style="text-align: left; display: inline-block; margin: 20px;">
+        <li>Stop the dev server (Ctrl+C)</li>
+        <li>Run: <code style="background: rgba(0,0,0,0.3); padding: 5px; border-radius: 4px;">rm -rf node_modules/.vite</code></li>
+        <li>Run: <code style="background: rgba(0,0,0,0.3); padding: 5px; border-radius: 4px;">npm install</code></li>
+        <li>Restart the dev server</li>
+      </ol>
     </div>
   `;
 } else {
@@ -137,12 +140,25 @@ if (typeof React === 'undefined' || !React.useState) {
       reactVersion: React.version,
       reactDOMVersion: ReactDOM.version,
       strictMode: true,
+      reactType: typeof React,
+      reactUseStateType: typeof React.useState,
     });
   }
 
+  try {
   createRoot(rootElement).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+      </StrictMode>
   );
+  } catch (error) {
+    console.error('❌ Error rendering app:', error);
+    rootElement.innerHTML = `
+      <div style="padding: 40px; text-align: center; color: white; font-family: system-ui; background: #1A1625;">
+        <h1>Rendering Error</h1>
+        <p>${error instanceof Error ? error.message : 'Unknown error'}</p>
+        <p style="margin-top: 20px; opacity: 0.7;">Please check the console for details.</p>
+      </div>
+    `;
+  }
 }

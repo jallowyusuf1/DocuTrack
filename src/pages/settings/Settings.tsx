@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Lock,
+  Fingerprint,
   Mail,
   Trash2,
   Bell,
@@ -30,9 +31,12 @@ import LanguagePickerModal from '../../components/profile/LanguagePickerModal';
 import QuietHoursModal from '../../components/settings/QuietHoursModal';
 import ExportDataModal from '../../components/profile/ExportDataModal';
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
+import MobileIdleLockPasswordModal from '../../components/security/MobileIdleLockPasswordModal';
 import { triggerHaptic } from '../../utils/animations';
 import { useTranslation } from 'react-i18next';
 import Skeleton from '../../components/ui/Skeleton';
+import { idleSecurityService, type IdleSecuritySettings } from '../../services/idleSecurityService';
+import { webauthnService, type WebAuthnCredentialRow } from '../../services/webauthnService';
 
 interface NotificationIntervals {
   thirtyDays: boolean;
@@ -93,6 +97,12 @@ export default function Settings() {
   const [storageUsed, setStorageUsed] = useState({ used: 0, total: 100 * 1024 * 1024 }); // 100 MB default
   const [cacheSize, setCacheSize] = useState(0);
 
+  const [idleSecurity, setIdleSecurity] = useState<IdleSecuritySettings | null>(null);
+  const [idlePasskeys, setIdlePasskeys] = useState<WebAuthnCredentialRow[]>([]);
+  const [isIdleSecurityExpanded, setIsIdleSecurityExpanded] = useState(false);
+  const [isIdlePasswordModalOpen, setIsIdlePasswordModalOpen] = useState(false);
+  const [idleSaving, setIdleSaving] = useState(false);
+
   // Load settings from database
   useEffect(() => {
     const loadSettings = async () => {
@@ -150,10 +160,64 @@ export default function Settings() {
       }
     };
 
+    const loadIdleSecurity = async () => {
+      if (!user?.id) return;
+      try {
+        const s = await idleSecurityService.getSettings(user.id);
+        setIdleSecurity(s);
+        const keys = await webauthnService.listPasskeys(user.id);
+        setIdlePasskeys(keys);
+      } catch (e) {
+        console.warn('Failed to load idle security settings:', e);
+      }
+    };
+
     loadSettings();
+    loadIdleSecurity();
     calculateStorage();
     calculateCacheSize();
   }, [user?.id, language]);
+
+  const refreshIdleSecurity = async () => {
+    if (!user?.id) return;
+    try {
+      const s = await idleSecurityService.getSettings(user.id);
+      setIdleSecurity(s);
+      const keys = await webauthnService.listPasskeys(user.id);
+      setIdlePasskeys(keys);
+    } catch (e) {
+      console.warn('Failed to refresh idle security settings:', e);
+    }
+  };
+
+  const saveIdleSecurity = async (updates: Partial<IdleSecuritySettings>) => {
+    if (!user?.id) return;
+    setIdleSaving(true);
+    try {
+      await idleSecurityService.saveSettings(user.id, updates);
+      await refreshIdleSecurity();
+    } catch (e) {
+      console.warn('Failed to save idle security settings:', e);
+      showToast('Failed to update security settings', 'error');
+    } finally {
+      setIdleSaving(false);
+    }
+  };
+
+  const enrollPasskey = async () => {
+    if (!user?.id) return;
+    setIdleSaving(true);
+    try {
+      await webauthnService.enrollPasskey();
+      await saveIdleSecurity({ biometricUnlockEnabled: true });
+      showToast('Passkey enrolled', 'success');
+    } catch (e) {
+      console.warn('Passkey enrollment failed:', e);
+      showToast('Passkey enrollment failed', 'error');
+    } finally {
+      setIdleSaving(false);
+    }
+  };
 
   // Calculate storage used
   const calculateStorage = async () => {
@@ -459,6 +523,202 @@ export default function Settings() {
           />
         </GlassCard>
 
+        {/* SECTION 2: SECURITY */}
+        <SectionHeader title="Security" />
+        <GlassCard>
+          <div>
+            <SettingsRow
+              icon={Shield}
+              label="Idle Lock"
+              description="Lock the app after inactivity"
+              rightElement={
+                <motion.div animate={{ rotate: isIdleSecurityExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                  <ChevronDown className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                </motion.div>
+              }
+              onPress={() => {
+                triggerHaptic('light');
+                setIsIdleSecurityExpanded(!isIdleSecurityExpanded);
+              }}
+            />
+
+            <SettingsRow
+              icon={Clock}
+              label="Enable Idle Timeout"
+              description={idleSecurity?.idleLockPasswordHash ? 'Auto-lock after inactivity' : 'Set password first'}
+              rightElement={
+                <ToggleSwitch
+                  enabled={!!idleSecurity?.idleTimeoutEnabled}
+                  onToggle={async (enabled) => {
+                    triggerHaptic('light');
+                    if (enabled && !idleSecurity?.idleLockPasswordHash) {
+                      setIsIdlePasswordModalOpen(true);
+                      return;
+                    }
+                    await saveIdleSecurity({ idleTimeoutEnabled: enabled });
+                    showToast(enabled ? 'Idle timeout enabled' : 'Idle timeout disabled', 'success');
+                  }}
+                />
+              }
+            />
+
+            <SettingsRow
+              icon={Lock}
+              label="Idle lock password"
+              value={idleSecurity?.idleLockPasswordHash ? 'Set' : 'Not set'}
+              onPress={() => setIsIdlePasswordModalOpen(true)}
+            />
+
+            <SettingsRow
+              icon={Fingerprint}
+              label="Face ID / Passkey"
+              description={webauthnService.isSupported() ? 'Unlock with biometrics where supported' : 'Not supported'}
+              rightElement={
+                <ToggleSwitch
+                  enabled={!!idleSecurity?.biometricUnlockEnabled}
+                  onToggle={async (enabled) => {
+                    triggerHaptic('light');
+                    if (enabled) {
+                      await enrollPasskey();
+                    } else {
+                      await saveIdleSecurity({ biometricUnlockEnabled: false });
+                      showToast('Passkey unlock disabled', 'success');
+                    }
+                  }}
+                />
+              }
+            />
+
+            {isIdleSecurityExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="px-4 py-3"
+                style={{
+                  background: 'rgba(35, 29, 51, 0.4)',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                }}
+              >
+                <div className="text-white/70 text-xs mb-2">Lock after</div>
+                <div className="grid grid-cols-5 gap-2 mb-4">
+                  {[1, 2, 5, 10, 15].map((m) => (
+                    <motion.button
+                      key={m}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => saveIdleSecurity({ idleTimeoutMinutes: m as any })}
+                      className="py-2 rounded-lg text-sm"
+                      style={{
+                        background:
+                          idleSecurity?.idleTimeoutMinutes === m
+                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(109, 40, 217, 0.35))'
+                            : 'rgba(35, 29, 51, 0.5)',
+                        border:
+                          idleSecurity?.idleTimeoutMinutes === m
+                            ? '1px solid rgba(139, 92, 246, 0.5)'
+                            : '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255,255,255,0.9)',
+                      }}
+                      disabled={idleSaving}
+                    >
+                      {m}m
+                    </motion.button>
+                  ))}
+                </div>
+
+                <div className="text-white/70 text-xs mb-2">Max unlock attempts</div>
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  {[1, 3, 5, 10].map((n) => (
+                    <motion.button
+                      key={n}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => saveIdleSecurity({ maxUnlockAttempts: n as any })}
+                      className="py-2 rounded-lg text-sm"
+                      style={{
+                        background:
+                          idleSecurity?.maxUnlockAttempts === n
+                            ? 'linear-gradient(135deg, rgba(248, 113, 113, 0.28), rgba(139, 92, 246, 0.22))'
+                            : 'rgba(35, 29, 51, 0.5)',
+                        border:
+                          idleSecurity?.maxUnlockAttempts === n
+                            ? '1px solid rgba(248, 113, 113, 0.45)'
+                            : '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255,255,255,0.9)',
+                      }}
+                      disabled={idleSaving}
+                    >
+                      {n}
+                    </motion.button>
+                  ))}
+                </div>
+
+                <SettingsRow
+                  icon={Trash2}
+                  label="Wipe on max attempts"
+                  description="Clear local data and sign out on this device"
+                  rightElement={
+                    <ToggleSwitch
+                      enabled={!!idleSecurity?.wipeDataOnMaxAttempts}
+                      onToggle={async (enabled) => {
+                        triggerHaptic('light');
+                        if (enabled) {
+                          const ok = confirm(
+                            'Enable device-only wipe on max unlock attempts? This will clear local storage/caches and sign you out on this device.'
+                          );
+                          if (!ok) return;
+                        }
+                        await saveIdleSecurity({ wipeDataOnMaxAttempts: enabled });
+                      }}
+                    />
+                  }
+                />
+
+                {idlePasskeys.length > 0 ? (
+                  <div className="mt-2">
+                    <div className="text-white/70 text-xs mb-2">Passkeys</div>
+                    {idlePasskeys.map((k) => (
+                      <div
+                        key={k.id}
+                        className="flex items-center justify-between py-2 border-b border-white/5 last:border-b-0"
+                      >
+                        <div>
+                          <div className="text-white text-sm">{k.device_label || 'Passkey'}</div>
+                          <div className="text-white/50 text-xs">
+                            {new Date(k.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={async () => {
+                            if (!user?.id) return;
+                            const ok = confirm('Remove this passkey?');
+                            if (!ok) return;
+                            setIdleSaving(true);
+                            try {
+                              await webauthnService.removePasskey(user.id, k.id);
+                              await refreshIdleSecurity();
+                              showToast('Passkey removed', 'success');
+                            } catch {
+                              showToast('Failed to remove passkey', 'error');
+                            } finally {
+                              setIdleSaving(false);
+                            }
+                          }}
+                          className="text-sm"
+                          style={{ color: 'rgba(248, 113, 113, 0.9)' }}
+                          disabled={idleSaving}
+                        >
+                          Remove
+                        </motion.button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </motion.div>
+            )}
+          </div>
+        </GlassCard>
+
         {/* SECTION 2: NOTIFICATIONS */}
         <SectionHeader title="Notifications" />
         <GlassCard>
@@ -696,6 +956,16 @@ export default function Settings() {
           />
         </GlassCard>
       </div>
+
+      <MobileIdleLockPasswordModal
+        isOpen={isIdlePasswordModalOpen}
+        onClose={() => setIsIdlePasswordModalOpen(false)}
+        userId={user?.id ?? ''}
+        onSaved={() => {
+          showToast('Idle lock password saved', 'success');
+          refreshIdleSecurity();
+        }}
+      />
 
       {/* Modals */}
       {isLanguagePickerOpen && (

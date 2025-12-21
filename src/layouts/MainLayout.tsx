@@ -10,6 +10,35 @@ import { GradientOrbs } from '../components/ui/GradientOrbs';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAutoSync } from '../hooks/useAutoSync';
 import { fadeIn, getTransition, transitions, prefersReducedMotion } from '../utils/animations';
+import { IdleTimeoutProvider, useIdleTimeout } from '../contexts/IdleTimeoutContext';
+import IdleCountdownModal from '../components/security/IdleCountdownModal';
+import AppLockOverlay from '../components/security/AppLockOverlay';
+
+function IdleCountdownMount() {
+  const { warningOpen, countdownSeconds, acknowledgeWarning, lockNow, settings } = useIdleTimeout();
+  return (
+    <IdleCountdownModal
+      open={warningOpen}
+      seconds={countdownSeconds}
+      onImHere={acknowledgeWarning}
+      onLockNow={lockNow}
+      soundEnabled={!!settings?.idleSoundAlertsEnabled}
+    />
+  );
+}
+
+function AppLockMount() {
+  const { locked, setLocked, markActive } = useIdleTimeout();
+  return (
+    <AppLockOverlay
+      open={locked}
+      onUnlocked={() => {
+        setLocked(false);
+        markActive();
+      }}
+    />
+  );
+}
 
 export default function MainLayout() {
   // Initialize notifications
@@ -75,26 +104,33 @@ export default function MainLayout() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen relative">
-      <GradientOrbs />
-      <OfflineIndicator />
-      {isDesktop ? <DesktopNav /> : <Header />}
-      <main ref={mainRef} className="flex-1 overflow-y-auto pb-[72px] relative z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={prefersReducedMotion() ? { initial: {}, animate: {}, exit: {} } : fadeIn}
-            transition={getTransition(transitions.normal)}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
-      </main>
-      {!isDesktop && <BottomNav />}
-      <FABContainer />
-    </div>
+    <IdleTimeoutProvider>
+      <div className="flex flex-col h-screen relative">
+        <GradientOrbs />
+        <OfflineIndicator />
+        <IdleCountdownMount />
+        <AppLockMount />
+        {isDesktop ? <DesktopNav /> : <Header />}
+        <main
+          ref={mainRef}
+          className={`flex-1 overflow-y-auto pb-[72px] relative z-10 ${isDesktop ? 'pt-[104px]' : ''}`}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={prefersReducedMotion() ? { initial: {}, animate: {}, exit: {} } : fadeIn}
+              transition={getTransition(transitions.normal)}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </main>
+        {!isDesktop && <BottomNav />}
+        <FABContainer />
+      </div>
+    </IdleTimeoutProvider>
   );
 }

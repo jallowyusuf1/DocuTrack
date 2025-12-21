@@ -106,7 +106,7 @@ export default function DesktopFamily() {
         <DesktopNav />
       </div>
 
-      <main className="pt-4 md:pt-20 px-4 md:px-8 pb-24 md:pb-8">
+      <main className="pt-4 md:pt-[104px] px-4 md:px-8 pb-24 md:pb-8">
         {/* Back Button */}
         <div className="max-w-[1920px] mx-auto mb-4">
           <BackButton to="/dashboard" />

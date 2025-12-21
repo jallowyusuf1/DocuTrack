@@ -14,9 +14,6 @@ import {
   Plus, 
   Search, 
   Bell, 
-  User, 
-  Settings, 
-  LogOut,
   Share2,
   Trash2,
   ChevronRight
@@ -52,7 +49,6 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [swipedDocumentId, setSwipedDocumentId] = useState<string | null>(null);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -421,7 +417,7 @@ export default function Dashboard() {
 
         {/* Header with Greeting and Actions */}
         <div className="mb-6 md:mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center mb-4">
             <div>
               <h2 className="text-xl md:text-2xl font-semibold text-white mb-1">
                 {getGreeting()}, {getUserName()}!
@@ -432,56 +428,9 @@ export default function Dashboard() {
                   : `${stats.total} document${stats.total !== 1 ? 's' : ''} tracked`}
               </p>
             </div>
-            
-            {/* Desktop: Profile Dropdown */}
-            <div className="hidden md:block relative z-50">
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors relative z-50"
-              >
-                <User className="w-5 h-5 text-white" />
-              </button>
-              
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-12 mt-2 w-48 glass-card-primary rounded-xl overflow-hidden z-[60]"
-                    style={{
-                      position: 'absolute',
-                      zIndex: 9999,
-                    }}
-                  >
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        navigate('/settings');
-                      }}
-                      className="w-full px-4 py-3 text-left text-white hover:bg-white/10 flex items-center gap-3"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Settings
-                    </button>
-                    <button
-                      onClick={async () => {
-                        setShowProfileMenu(false);
-                        await logout();
-                        navigate('/');
-                      }}
-                      className="w-full px-4 py-3 text-left text-red-400 hover:bg-white/10 flex items-center gap-3"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
             {/* Mobile: Action Icons */}
-            <div className="md:hidden flex items-center gap-3">
+            <div className="md:hidden flex items-center gap-3 ml-auto">
               <button
                 onClick={() => navigate('/search')}
                 className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center border border-white/20"
@@ -520,7 +469,6 @@ export default function Dashboard() {
                   <UrgencySummaryCard
                     count={urgentCount}
                     label="URGENT"
-                    icon={AlertCircle}
                     bgColor=""
                     textColor="text-red-500"
                     iconColor="text-red-400"
@@ -535,7 +483,6 @@ export default function Dashboard() {
                   <UrgencySummaryCard
                     count={soonCount}
                     label="SOON"
-                    icon={AlertCircle}
                     bgColor=""
                     textColor="text-orange-500"
                     iconColor="text-orange-400"
@@ -550,7 +497,6 @@ export default function Dashboard() {
                   <UrgencySummaryCard
                     count={upcomingCount}
                     label="UPCOMING"
-                    icon={AlertCircle}
                     bgColor=""
                     textColor="text-yellow-500"
                     iconColor="text-yellow-400"
@@ -640,7 +586,7 @@ export default function Dashboard() {
                 className="flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add Document
+                Add Expiring Item
               </Button>
             </motion.div>
           ) : (
@@ -702,18 +648,6 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-
-      {/* Click outside to close profile menu */}
-      {showProfileMenu && (
-        <div
-          className="fixed inset-0 z-[55]"
-          onClick={() => setShowProfileMenu(false)}
-          style={{
-            position: 'fixed',
-            zIndex: 9998,
-          }}
-        />
-      )}
     </div>
   );
 }

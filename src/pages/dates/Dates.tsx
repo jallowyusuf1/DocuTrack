@@ -314,9 +314,9 @@ export default function Dates() {
           setIsAddModalOpen(false);
           fetchDates();
           window.dispatchEvent(new CustomEvent('refreshDates'));
-        }}
+          }}
         initialDate={searchParams.get('date') || undefined}
-      />
+        />
     </div>
   );
 }

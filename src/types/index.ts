@@ -27,7 +27,6 @@ export interface Document {
   category: string;
   notes?: string;
   image_url: string;
-  is_locked?: boolean;
   created_at: string;
   updated_at: string;
   deleted_at?: string;

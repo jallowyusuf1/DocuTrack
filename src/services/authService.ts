@@ -1,4 +1,7 @@
 import { supabase } from '../config/supabase';
+import { withRetry, isNetworkError, getNetworkErrorMessage, isOnline } from '../utils/networkUtils';
+import { documentLockService } from './documentLockService';
+import { idleSecurityService } from './idleSecurityService';
 
 export interface SignupData {
   email: string;
@@ -29,17 +32,43 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessa
   ]);
 }
 
+// Check if user is online before making requests
+function ensureOnline(): void {
+  if (!isOnline()) {
+    throw new Error('You are offline. Please check your internet connection and try again.');
+  }
+}
+
 export const authService = {
   // Sign up new user
   async signup({ email, password, fullName }: SignupData) {
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    // Check online status first
+    ensureOnline();
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('Failed to create user');
+    try {
+      // Create auth user with retry logic for network errors
+      const { data: authData, error: authError } = await withRetry(
+        () => supabase.auth.signUp({
+          email,
+          password,
+        }),
+        {
+          maxRetries: 2,
+          initialDelay: 1000,
+          onRetry: (error, attempt) => {
+            console.log(`Signup attempt ${attempt} failed, retrying...`, error);
+          },
+        }
+      );
+
+      if (authError) {
+        // If it's a network error, provide helpful message
+        if (isNetworkError(authError)) {
+          throw new Error(getNetworkErrorMessage(authError));
+        }
+        throw authError;
+      }
+      if (!authData.user) throw new Error('Failed to create user');
 
     // The trigger will automatically create the profile
     // Wait a moment for the trigger to execute
@@ -92,30 +121,51 @@ export const authService = {
       };
     }
 
-    return {
-      user: authData.user,
-      session: authData.session,
-      profile: profileData,
-    };
+      return {
+        user: authData.user,
+        session: authData.session,
+        profile: profileData,
+      };
+    } catch (error) {
+      // If it's a network error, provide user-friendly message
+      if (isNetworkError(error)) {
+        throw new Error(getNetworkErrorMessage(error));
+      }
+      throw error;
+    }
   },
 
   // Sign in existing user
   async login({ email, password }: LoginData) {
+    // Check online status first
+    ensureOnline();
+
     try {
-      // Add 15 second timeout for login
-      const { data, error } = await withTimeout(
-        supabase.auth.signInWithPassword({
-          email,
-          password,
-        }, {
-          // Persist session across browser sessions
-          persistSession: true,
-        }),
-        15000,
-        'Login request timed out. Please check your internet connection and try again.'
+      // Add retry logic with timeout for login
+      const { data, error } = await withRetry(
+        () => withTimeout(
+          supabase.auth.signInWithPassword({
+            email,
+            password,
+          }),
+          15000,
+          'Login request timed out. Please check your internet connection and try again.'
+        ),
+        {
+          maxRetries: 2,
+          initialDelay: 1000,
+          onRetry: (error, attempt) => {
+            console.log(`Login attempt ${attempt} failed, retrying...`, error);
+          },
+        }
       );
 
       if (error) {
+        // Check if it's a network error first
+        if (isNetworkError(error)) {
+          throw new Error(getNetworkErrorMessage(error));
+        }
+
         // Handle specific error cases
         if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
           throw new Error('Please check your email and confirm your account before signing in. If you did not receive an email, please try signing up again.');
@@ -179,6 +229,10 @@ export const authService = {
         profile: profile,
       };
     } catch (error) {
+      // If it's a network error, provide user-friendly message
+      if (isNetworkError(error)) {
+        throw new Error(getNetworkErrorMessage(error));
+      }
       // Re-throw timeout and other errors
       throw error;
     }
@@ -186,6 +240,11 @@ export const authService = {
 
   // Sign out
   async logout() {
+    // Clear document lock state before signing out
+    documentLockService.clearOnSignout();
+    // Clear idle unlock attempt state before signing out
+    idleSecurityService.clearAttemptState();
+
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },

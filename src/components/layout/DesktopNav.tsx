@@ -1,11 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Calendar, Users, User, LogOut, Home, Plus, Bell } from 'lucide-react';
+import { FileText, Calendar, Users, User, LogOut, Home, Plus, Bell, Lock as LockIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { triggerHaptic } from '../../utils/animations';
 import { useState, useEffect, useRef } from 'react';
 import { getUnreadCount } from '../../services/notifications';
 import NotificationsModal from '../modals/NotificationsModal';
+import { prefersReducedMotion } from '../../utils/animations';
+import { useOptionalIdleTimeout } from '../../contexts/IdleTimeoutContext';
 
 const navItems = [
   { path: '/dashboard', label: 'Expiring Soon', icon: Home },
@@ -19,6 +21,8 @@ export default function DesktopNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuth();
+  const reduced = prefersReducedMotion();
+  const idle = useOptionalIdleTimeout();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const previousPathRef = useRef(location.pathname);
@@ -66,62 +70,140 @@ export default function DesktopNav() {
     }
   };
 
+  const showIdleIndicator =
+    !!idle?.settings?.idleTimeoutEnabled &&
+    !idle.locked &&
+    typeof idle.remainingSeconds === 'number' &&
+    idle.remainingSeconds > 0 &&
+    idle.remainingSeconds <= 5 * 60;
+
+  const remainingLabel = (() => {
+    if (!showIdleIndicator || typeof idle?.remainingSeconds !== 'number') return '';
+    const s = idle.remainingSeconds;
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    if (m <= 0) return `${sec}s`;
+    return `${m}m`;
+  })();
+
   return (
-    <header
-      className="fixed top-0 left-0 right-0 h-16 z-50 pointer-events-auto"
-      style={{
-        background: 'rgba(26, 22, 37, 0.7)',
-        backdropFilter: 'blur(30px)',
-        WebkitBackdropFilter: 'blur(30px)',
-      }}
-    >
-      <div className="h-full px-4 xl:px-8 flex items-center justify-between" style={{ gap: '16px' }}>
-        {/* Logo/Brand */}
-        <div className="flex items-center gap-2 xl:gap-3 flex-shrink-0" style={{ minWidth: 'fit-content' }}>
+    <header className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
+      <div className="pt-4">
+        <div className="mx-auto max-w-7xl px-4 xl:px-8">
           <div
-            className="w-9 h-9 xl:w-10 xl:h-10 rounded-xl flex items-center justify-center"
+            className="flex items-center justify-between gap-3 px-4 md:px-5 py-4 rounded-[999px]"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)',
+              background:
+                'radial-gradient(circle at 18% 12%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 42%, rgba(255,255,255,0.05) 100%), linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(139,92,246,0.10) 55%, rgba(59,130,246,0.10) 100%)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              backdropFilter: 'blur(34px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+              boxShadow:
+                '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
             }}
           >
-            <FileText className="w-5 h-5 xl:w-6 xl:h-6 text-white" />
+        {/* Logo/Brand */}
+        <div className="flex items-center gap-3 pr-2 flex-shrink-0" style={{ minWidth: 'fit-content' }}>
+          <div
+            className="w-12 h-12 rounded-3xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(59,130,246,0.85))',
+              boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
+              border: '1px solid rgba(255,255,255,0.20)',
+            }}
+          >
+            <FileText className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-sm sm:text-base xl:text-xl font-bold text-white whitespace-nowrap">DocuTrack</h1>
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="text-white font-semibold tracking-tight text-base md:text-lg whitespace-nowrap">DocuTrackr</span>
+            <span className="text-white/60 text-xs md:text-sm whitespace-nowrap">Your documents, calm & secure</span>
+          </div>
         </div>
 
-        {/* Navigation Items - Centered */}
-        <nav className="flex items-center flex-1 justify-center max-w-3xl mx-auto" style={{ gap: '4px' }}>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-
-            return (
-              <motion.button
-                key={item.path}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  navigate(item.path);
-                }}
-                className={`flex items-center gap-1.5 xl:gap-2 px-3 xl:px-5 py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                  active ? 'text-white' : 'text-white/60 hover:text-white/80'
-                }`}
-                style={{
-                  background: active ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
-                  pointerEvents: 'auto',
-                }}
-              >
-                <Icon className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" />
-                <span className="font-medium text-xs xl:text-sm">{item.label}</span>
-              </motion.button>
-            );
-          })}
+        {/* Navigation Items - Centered (segmented glass) */}
+        <nav className="hidden md:flex items-center flex-1 justify-center">
+          <div
+            className="relative inline-flex items-center gap-1 rounded-[999px] p-1.5"
+            style={{
+              background: 'rgba(0,0,0,0.18)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10)',
+            }}
+          >
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <motion.button
+                  key={item.path}
+                  onClick={() => {
+                    triggerHaptic('light');
+                    navigate(item.path);
+                  }}
+                  className="relative px-5 py-2.5 rounded-[999px] text-base transition-colors flex items-center gap-2"
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.72)',
+                  }}
+                  whileTap={reduced ? undefined : { scale: 0.98 }}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="app-nav-pill"
+                      className="absolute inset-0 rounded-[999px]"
+                      style={{
+                        background:
+                          'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 48%, rgba(255,255,255,0.06) 100%), linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.08) 100%)',
+                        border: '1px solid rgba(255,255,255,0.18)',
+                        backdropFilter: 'blur(22px)',
+                        WebkitBackdropFilter: 'blur(22px)',
+                        boxShadow:
+                          '0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)',
+                        pointerEvents: 'none',
+                      }}
+                      transition={
+                        reduced
+                          ? { duration: 0 }
+                          : { type: 'spring', stiffness: 380, damping: 32, mass: 0.8 }
+                      }
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium whitespace-nowrap">{item.label}</span>
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
         </nav>
 
         {/* Right Actions */}
         <div className="flex items-center flex-shrink-0" style={{ gap: '8px' }}>
+          {showIdleIndicator ? (
+            <motion.button
+              whileHover={reduced ? undefined : { scale: 1.02, y: -1 }}
+              whileTap={reduced ? undefined : { scale: 0.98 }}
+              onClick={() => {
+                triggerHaptic('medium');
+                idle?.lockNow?.();
+              }}
+              className="hidden md:flex items-center gap-2 px-4 h-12 rounded-full text-white/90 font-medium text-sm"
+              style={{
+                background:
+                  'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.05) 100%)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                backdropFilter: 'blur(26px)',
+                WebkitBackdropFilter: 'blur(26px)',
+                boxShadow: '0 20px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+              }}
+              title="Lock now (Ctrl/Cmd+L)"
+            >
+              <LockIcon className="w-4 h-4" />
+              <span className="tabular-nums">Auto-lock {remainingLabel}</span>
+            </motion.button>
+          ) : null}
+
           {/* Notification Bell */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -130,12 +212,18 @@ export default function DesktopNav() {
               triggerHaptic('light');
               setShowNotifications(true);
             }}
-            className="relative flex items-center justify-center w-9 h-9 xl:w-10 xl:h-10 rounded-lg xl:rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            className="relative flex items-center justify-center w-12 h-12 rounded-full text-white/85 hover:text-white transition-colors cursor-pointer"
             style={{
               pointerEvents: 'auto',
+              background:
+                'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.05) 100%)',
+              border: '1px solid rgba(255,255,255,0.16)',
+              backdropFilter: 'blur(26px)',
+              WebkitBackdropFilter: 'blur(26px)',
+              boxShadow: '0 20px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
             }}
           >
-            <Bell className="w-5 h-5 xl:w-6 xl:h-6" />
+            <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -159,14 +247,14 @@ export default function DesktopNav() {
               triggerHaptic('medium');
               navigate('/add-document');
             }}
-            className="flex items-center gap-1.5 xl:gap-2 px-3 xl:px-5 py-2 xl:py-2.5 rounded-lg xl:rounded-xl text-white font-medium text-xs xl:text-sm cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-2 px-6 h-12 rounded-full text-white font-medium text-base cursor-pointer whitespace-nowrap"
             style={{
               background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)',
+              boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
               pointerEvents: 'auto',
             }}
           >
-            <Plus className="w-4 h-4 xl:w-5 xl:h-5" />
+            <Plus className="w-5 h-5" />
             <span>Add</span>
           </motion.button>
 
@@ -174,14 +262,20 @@ export default function DesktopNav() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleLogout}
-            className="flex items-center gap-1.5 xl:gap-2 px-3 xl:px-4 py-2 xl:py-2.5 rounded-lg xl:rounded-xl text-red-400 hover:bg-red-500/10 transition-colors text-xs xl:text-sm font-medium cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-2 px-5 h-12 rounded-full text-red-200 hover:text-red-100 transition-colors text-base font-medium cursor-pointer whitespace-nowrap"
             style={{
               pointerEvents: 'auto',
+              background: 'rgba(0,0,0,0.18)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              backdropFilter: 'blur(22px)',
+              WebkitBackdropFilter: 'blur(22px)',
             }}
           >
-            <LogOut className="w-4 h-4 xl:w-5 xl:h-5" />
+            <LogOut className="w-5 h-5" />
             <span>Logout</span>
           </motion.button>
+        </div>
+          </div>
         </div>
       </div>
 

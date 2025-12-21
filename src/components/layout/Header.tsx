@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, FileText, Lock as LockIcon } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 import NotificationPermissionStatus from '../shared/NotificationPermissionStatus';
 import { useAuth } from '../../hooks/useAuth';
-import Avatar from '../ui/Avatar';
 import QuickAddModal from '../documents/QuickAddModal';
 import AddImportantDateModal from '../dates/AddImportantDateModal';
 import SearchOverlay from '../search/SearchOverlay';
+import { triggerHaptic } from '../../utils/animations';
+import { useOptionalIdleTimeout } from '../../contexts/IdleTimeoutContext';
 
 export default function Header() {
   const { user } = useAuth();
+  const idle = useOptionalIdleTimeout();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -27,19 +29,6 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Get user initials for avatar
-  const getInitials = () => {
-    if (user?.user_metadata?.full_name) {
-      return user.user_metadata.full_name
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return user?.email?.[0].toUpperCase() || 'U';
-  };
-
   // Hide add button on auth pages, add-document page, and profile page
   const isAuthPage = location.pathname.startsWith('/login') ||
                      location.pathname.startsWith('/signup') ||
@@ -51,6 +40,22 @@ export default function Header() {
   // Determine current page
   const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
   const isDatesPage = location.pathname === '/dates';
+
+  const showIdleIndicator =
+    !!idle?.settings?.idleTimeoutEnabled &&
+    !idle.locked &&
+    typeof idle.remainingSeconds === 'number' &&
+    idle.remainingSeconds > 0 &&
+    idle.remainingSeconds <= 5 * 60;
+
+  const remainingLabel = (() => {
+    if (!showIdleIndicator || typeof idle?.remainingSeconds !== 'number') return '';
+    const s = idle.remainingSeconds;
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    if (m <= 0) return `${sec}s`;
+    return `${m}m`;
+  })();
 
   const handleAddClick = () => {
     if (isDashboard) {
@@ -72,48 +77,78 @@ export default function Header() {
           backgroundColor: isScrolled ? 'rgba(35, 29, 51, 0.6)' : 'rgba(35, 29, 51, 0.3)',
         }}
         transition={{ duration: 0.3 }}
-        className="sticky top-0 z-50 border-b border-white/10 h-[70px] flex items-center"
+        className="sticky top-0 z-50 h-[92px] flex items-center"
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 50,
         }}
       >
-        <div className="flex items-center justify-between w-full md:max-w-[1024px] md:mx-auto md:px-6">
-          <motion.h1
-            onClick={() => navigate('/dashboard')}
-            className="text-lg font-bold text-white pl-4 md:pl-0 pr-2 cursor-pointer"
-            style={{ textShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        <div className="w-full px-4">
+          <div
+            className="mx-auto max-w-3xl rounded-[999px] px-4 py-4 flex items-center justify-between gap-3"
+            style={{
+              background:
+                'radial-gradient(circle at 18% 12%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 42%, rgba(255,255,255,0.05) 100%), linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(139,92,246,0.10) 55%, rgba(59,130,246,0.10) 100%)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              backdropFilter: 'blur(34px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+              boxShadow:
+                '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
+            }}
           >
-            DocuTrack
-          </motion.h1>
-          <div className="flex items-center gap-3 md:gap-4 pr-5 md:pr-0">
+            <motion.button
+              onClick={() => navigate('/dashboard')}
+              className="w-12 h-12 rounded-3xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(59,130,246,0.85))',
+                boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
+                border: '1px solid rgba(255,255,255,0.20)',
+              }}
+              whileTap={{ scale: 0.98 }}
+              aria-label="Go to dashboard"
+            >
+              <FileText className="w-6 h-6 text-white" />
+            </motion.button>
+
+            <div className="flex items-center gap-3">
+            {showIdleIndicator ? (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  triggerHaptic('medium');
+                  idle?.lockNow?.();
+                }}
+                className="h-12 px-3 rounded-full flex items-center gap-2 text-white/90 text-xs"
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                }}
+                title="Lock now (Ctrl/Cmd+L)"
+              >
+                <LockIcon className="w-4 h-4" />
+                <span className="tabular-nums">{remainingLabel}</span>
+              </motion.button>
+            ) : null}
             {showAddButton && (
               <motion.button
                 data-fab-button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddClick}
-                className="w-9 h-9 md:w-[40px] md:h-[40px] rounded-full flex items-center justify-center transition-all duration-300 touch-manipulation active:scale-95"
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 touch-manipulation active:scale-95"
                 style={{
                   background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                  boxShadow: '0 2px 12px rgba(139, 92, 246, 0.4)',
+                  boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
                 }}
                 aria-label="Add document"
               >
-                <Plus className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                <Plus className="w-5 h-5 text-white" />
               </motion.button>
             )}
             <NotificationBell />
-            <div className="w-10 h-10 md:w-[40px] md:h-[40px] rounded-full glass-card border border-white/20 flex items-center justify-center overflow-hidden">
-              <Avatar
-                src={user?.user_metadata?.avatar_url}
-                fallback={getInitials()}
-                size="small"
-                className="w-full h-full"
-              />
             </div>
           </div>
         </div>

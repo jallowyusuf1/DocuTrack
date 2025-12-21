@@ -121,21 +121,7 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
                 className="w-full h-full object-cover"
                 loading="lazy"
                 onError={() => setImageError(true)}
-                style={{
-                  filter: document.is_locked 
-                    ? 'blur(20px) brightness(0.5) contrast(0.8)' 
-                    : 'none',
-                }}
               />
-              {/* Dark overlay for locked documents */}
-              {document.is_locked && (
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    background: 'rgba(0, 0, 0, 0.4)',
-                  }}
-                />
-              )}
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
             </>
@@ -181,36 +167,27 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
 
             {/* Right: Days left and Date */}
             <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-              {document.is_locked ? (
-                <>
-                  <div className="h-4 w-16 rounded" style={{ background: 'rgba(255, 255, 255, 0.1)' }} />
-                  <div className="h-3 w-20 rounded" style={{ background: 'rgba(255, 255, 255, 0.1)' }} />
-                </>
-              ) : (
-                <>
-                  {/* Days left - Prominent */}
-                  <div
-                    className="text-[15px] font-bold whitespace-nowrap"
-                    style={{
-                      color: urgencyColor,
-                    }}
-                  >
-                    {daysLeft < 0
-                      ? 'Expired'
-                      : daysLeft === 0
-            ? 'Expires today'
-                      : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`}
-                  </div>
+              {/* Days left - Prominent */}
+              <div
+                className="text-[15px] font-bold whitespace-nowrap"
+                style={{
+                  color: urgencyColor,
+                }}
+              >
+                {daysLeft < 0
+                  ? 'Expired'
+                  : daysLeft === 0
+                    ? 'Expires today'
+                  : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`}
+              </div>
 
-                  {/* Date with icon */}
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4" style={{ color: '#FFFFFF' }} />
-                    <span className="text-[13px] font-semibold text-white">
-                      {formatDate(document.expiration_date)}
-                    </span>
-                  </div>
-                </>
-              )}
+              {/* Date with icon */}
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" style={{ color: '#FFFFFF' }} />
+                <span className="text-[13px] font-semibold text-white">
+                  {formatDate(document.expiration_date)}
+                </span>
+              </div>
             </div>
       </div>
 

@@ -3,9 +3,34 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn('⚠️ Missing Supabase environment variables. Please add them to your .env file.');
-  console.warn('VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required for full functionality.');
+// Validate environment variables
+export const validateSupabaseConfig = (): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+
+  if (!import.meta.env.VITE_SUPABASE_URL) {
+    errors.push('VITE_SUPABASE_URL is missing');
+  } else if (import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
+    errors.push('VITE_SUPABASE_URL is using placeholder value');
+  }
+
+  if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    errors.push('VITE_SUPABASE_ANON_KEY is missing');
+  } else if (import.meta.env.VITE_SUPABASE_ANON_KEY === 'placeholder-key') {
+    errors.push('VITE_SUPABASE_ANON_KEY is using placeholder value');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
+// Check configuration on load
+const configValidation = validateSupabaseConfig();
+if (!configValidation.isValid) {
+  console.error('❌ Supabase configuration errors:', configValidation.errors);
+  console.warn('⚠️ Authentication features will not work until configuration is fixed.');
+  console.warn('Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.');
 }
 
 // Singleton pattern to prevent multiple client instances
@@ -23,6 +48,18 @@ export const supabase: SupabaseClient = (() => {
         // Use localStorage for persistent sessions across browser restarts
         storage: window.localStorage,
         storageKey: 'supabase.auth.token',
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'docutrack-web',
+        },
+      },
+      db: {
+        schema: 'public',
+      },
+      // Add timeout and retry settings
+      realtime: {
+        timeout: 30000, // 30 second timeout
       },
     });
   }

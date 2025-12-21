@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, X, Filter, ChevronDown, FolderOpen, XCircle, RefreshCw, Grid3x3, List } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
+import { documentLockService } from '../../services/documentLockService';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
 import type { Document, DocumentType } from '../../types';
@@ -18,6 +19,8 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import Toast from '../../components/ui/Toast';
 import EmptyState from '../../components/ui/EmptyState';
+import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
+import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
 
 const getSortLabel = (sort: SortOption): string => {
   switch (sort) {
@@ -148,6 +151,11 @@ export default function Documents() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Document Lock State
+  const [isLocked, setIsLocked] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [lockCheckComplete, setLockCheckComplete] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
@@ -180,6 +188,70 @@ export default function Documents() {
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  // Check if documents should be locked on mount
+  useEffect(() => {
+    const checkLockStatus = async () => {
+      if (!user?.id) {
+        setLockCheckComplete(true);
+        return;
+      }
+
+      try {
+        // Check if lock is enabled in settings
+        const settings = await documentLockService.getLockSettings(user.id);
+
+        if (!settings?.lockEnabled || !settings?.lockPasswordHash) {
+          // Lock not enabled or no password set
+          setIsLocked(false);
+          setLockCheckComplete(true);
+          return;
+        }
+
+        // Check if already unlocked in this session
+        const isAlreadyUnlocked = !documentLockService.isDocumentsLocked();
+
+        if (isAlreadyUnlocked) {
+          setIsLocked(false);
+          setLockCheckComplete(true);
+          return;
+        }
+
+        // Lock based on trigger setting
+        if (settings.lockTrigger === 'always') {
+          // Always lock on page load
+          documentLockService.setDocumentsLocked(true);
+          setIsLocked(true);
+        } else if (settings.lockTrigger === 'manual') {
+          // Only lock if manually locked
+          const isManuallyLocked = documentLockService.isDocumentsLocked();
+          setIsLocked(isManuallyLocked);
+        } else if (settings.lockTrigger === 'idle') {
+          // TODO: Implement idle timeout logic
+          const isManuallyLocked = documentLockService.isDocumentsLocked();
+          setIsLocked(isManuallyLocked);
+        }
+
+        setLockCheckComplete(true);
+      } catch (error) {
+        console.error('Error checking lock status:', error);
+        setIsLocked(false);
+        setLockCheckComplete(true);
+      }
+    };
+
+    checkLockStatus();
+  }, [user]);
+
+  // Handle unlock
+  const handleUnlock = () => {
+    setIsUnlocking(true);
+  };
+
+  const handleUnlockComplete = () => {
+    setIsUnlocking(false);
+    setIsLocked(false);
+  };
 
   // Filter and sort documents
   const filteredAndSortedDocuments = useMemo(() => {
@@ -272,8 +344,27 @@ export default function Documents() {
   const showNoDocuments = !loading && documents.length === 0;
   const showNoResults = !loading && documents.length > 0 && filteredAndSortedDocuments.length === 0;
 
+  // Show loading until lock check is complete
+  if (!lockCheckComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-[72px] relative overflow-hidden">
+      {/* Document Lock Overlay */}
+      {isLocked && !isUnlocking && (
+        <DocumentLockOverlay onUnlock={handleUnlock} />
+      )}
+
+      {/* Unlock Animation */}
+      {isUnlocking && (
+        <UnlockAnimation onComplete={handleUnlockComplete} />
+      )}
+
       {/* Background Gradient Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
