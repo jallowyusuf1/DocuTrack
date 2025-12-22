@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { X, Lock, Eye, EyeOff, Check, AlertCircle } from 'lucide-react';
-import BaseModal from '../modals/BaseModal';
+import FrostedModal from '../ui/FrostedModal';
 import { documentLockService } from '../../services/documentLockService';
 import { useAuth } from '../../hooks/useAuth';
+import Button from '../ui/Button';
 
 interface SetDocumentLockModalProps {
   isOpen: boolean;
@@ -117,34 +118,66 @@ export default function SetDocumentLockModal({
   const strength = passwordStrength(newPassword);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose}>
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+    <FrostedModal isOpen={isOpen} onClose={handleClose} maxWidthClass="max-w-md" zIndexClassName="z-[100]">
+      <div className="flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div
+          className="flex items-center justify-between px-6 py-5 border-b border-white/10"
+          style={{
+            background: 'rgba(26, 22, 37, 0.35)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+          }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-              <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <div
+              className="w-11 h-11 rounded-2xl flex items-center justify-center"
+              style={{
+                background: 'rgba(139, 92, 246, 0.18)',
+                border: '1px solid rgba(139, 92, 246, 0.35)',
+                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.18)',
+              }}
+            >
+              <Lock className="w-5 h-5 text-purple-300" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {mode === 'set' ? 'Set Lock Password' : 'Change Lock Password'}
-            </h2>
+            <div>
+              <div className="text-white text-xl font-bold leading-tight">
+                {mode === 'set' ? 'Set Document Lock' : 'Change Document Lock'}
+              </div>
+              <div className="text-xs mt-0.5" style={{ color: '#A78BFA' }}>
+                Protect your documents with a password
+              </div>
+            </div>
           </div>
+
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+            style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
+              color: 'rgba(255, 255, 255, 0.80)',
+            }}
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="px-6 py-5 space-y-4">
           {/* Info message */}
-          <div className="flex gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-            <AlertCircle className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-purple-900 dark:text-purple-300">
+          <div
+            className="flex gap-3 p-4 rounded-2xl"
+            style={{
+              background: 'rgba(35, 29, 51, 0.55)',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
+            }}
+          >
+            <AlertCircle className="w-5 h-5 text-purple-300 flex-shrink-0 mt-0.5" />
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
               {mode === 'set'
-                ? 'Create a password to secure your documents. You\'ll need this password to unlock your documents page.'
+                ? "Create a password to secure your documents. You'll need it to unlock the Documents page."
                 : 'Enter your current password and choose a new one.'}
             </p>
           </div>
@@ -152,7 +185,7 @@ export default function SetDocumentLockModal({
           {/* Old password (only for change mode) */}
           {mode === 'change' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-white mb-2">
                 Current Password
               </label>
               <div className="relative">
@@ -160,13 +193,29 @@ export default function SetDocumentLockModal({
                   type={showOldPassword ? 'text' : 'password'}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-full h-[52px] px-4 pr-12 rounded-xl text-white placeholder:text-white/40 focus:outline-none"
                   placeholder="Enter current password"
+                  style={{
+                    background: 'rgba(35, 29, 51, 0.55)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowOldPassword(!showOldPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
+                  style={{
+                    color: '#A78BFA',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.18)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                  aria-label={showOldPassword ? 'Hide password' : 'Show password'}
                 >
                   {showOldPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -176,7 +225,7 @@ export default function SetDocumentLockModal({
 
           {/* New password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               {mode === 'set' ? 'Password' : 'New Password'}
             </label>
             <div className="relative">
@@ -184,13 +233,29 @@ export default function SetDocumentLockModal({
                 type={showNewPassword ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full h-[52px] px-4 pr-12 rounded-xl text-white placeholder:text-white/40 focus:outline-none"
                 placeholder="Enter password (4-20 characters)"
+                style={{
+                  background: 'rgba(35, 29, 51, 0.55)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
+                style={{
+                  color: '#A78BFA',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(139, 92, 246, 0.18)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                aria-label={showNewPassword ? 'Hide password' : 'Show password'}
               >
                 {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -200,17 +265,27 @@ export default function SetDocumentLockModal({
             {newPassword && (
               <div className="mt-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Strength</span>
-                  <span className={`text-xs font-medium ${
-                    strength.label === 'Strong' ? 'text-green-600' :
-                    strength.label === 'Good' ? 'text-yellow-600' :
-                    strength.label === 'Weak' ? 'text-orange-600' :
-                    'text-red-600'
-                  }`}>
+                  <span className="text-xs text-white/60">Strength</span>
+                  <span
+                    className="text-xs font-semibold"
+                    style={{
+                      color:
+                        strength.label === 'Strong'
+                          ? '#34D399'
+                          : strength.label === 'Good'
+                            ? '#FBBF24'
+                            : strength.label === 'Weak'
+                              ? '#FB923C'
+                              : '#F87171',
+                    }}
+                  >
                     {strength.label}
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="w-full h-1.5 rounded-full overflow-hidden"
+                  style={{ background: 'rgba(255, 255, 255, 0.10)' }}
+                >
                   <div
                     className={`h-full ${strength.color} transition-all duration-300`}
                     style={{ width: strength.width }}
@@ -222,7 +297,7 @@ export default function SetDocumentLockModal({
 
           {/* Confirm password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               Confirm Password
             </label>
             <div className="relative">
@@ -230,19 +305,35 @@ export default function SetDocumentLockModal({
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full h-[52px] px-4 pr-16 rounded-xl text-white placeholder:text-white/40 focus:outline-none"
                 placeholder="Confirm password"
+                style={{
+                  background: 'rgba(35, 29, 51, 0.55)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
+                style={{
+                  color: '#A78BFA',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(139, 92, 246, 0.18)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
               >
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
               {confirmPassword && newPassword === confirmPassword && (
                 <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                  <Check className="w-5 h-5 text-green-500" />
+                  <Check className="w-5 h-5 text-emerald-400" />
                 </div>
               )}
             </div>
@@ -250,38 +341,42 @@ export default function SetDocumentLockModal({
 
           {/* Error message */}
           {error && (
-            <div className="flex gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            <div
+              className="flex gap-2 p-3 rounded-xl"
+              style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+              }}
+            >
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <p className="text-sm text-red-200">{error}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={handleClose}
-            disabled={isLoading}
-            className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading || !newPassword || !confirmPassword || (mode === 'change' && !oldPassword)}
-            className="flex-1 px-4 py-3 bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl hover:brightness-110 transition-all disabled:opacity-50 disabled:hover:brightness-100 font-medium"
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                {mode === 'set' ? 'Setting...' : 'Changing...'}
-              </div>
-            ) : (
-              mode === 'set' ? 'Set Password' : 'Change Password'
-            )}
-          </button>
+        <div className="px-6 pb-6 pt-2">
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={handleSubmit}
+              loading={isLoading}
+              disabled={!newPassword || !confirmPassword || (mode === 'change' && !oldPassword)}
+            >
+              {mode === 'set' ? 'Set Password' : 'Change Password'}
+            </Button>
+          </div>
         </div>
       </div>
-    </BaseModal>
+    </FrostedModal>
   );
 }

@@ -50,7 +50,6 @@ import { documentLockService, type DocumentLockSettings } from '../../services/d
 import { idleSecurityService, type IdleSecuritySettings } from '../../services/idleSecurityService';
 import { webauthnService, type WebAuthnCredentialRow } from '../../services/webauthnService';
 import { supabase } from '../../config/supabase';
-import DesktopNav from '../../components/layout/DesktopNav';
 import BackButton from '../../components/ui/BackButton';
 import EditProfileModal from '../../components/profile/EditProfileModal';
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
@@ -235,14 +234,11 @@ export default function DesktopSettings() {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col" style={{
+    <div className="min-h-full w-full flex flex-col" style={{
       background: 'linear-gradient(135deg, #1a1625 0%, #2d1b3d 100%)',
     }}>
-      {/* Desktop Nav */}
-      <DesktopNav />
-
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden pt-[104px]">
+      <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <aside className="w-[280px] flex-shrink-0 overflow-y-auto" style={{
           background: 'rgba(26, 22, 37, 0.6)',

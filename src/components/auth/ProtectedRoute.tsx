@@ -1,5 +1,4 @@
 import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import TutorialGate from '../onboarding/TutorialGate';
 import OnboardingGate from '../onboarding/OnboardingGate';
@@ -9,28 +8,10 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
-  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const { isAuthenticated, isLoading, hasCheckedAuth } = useAuth();
 
-  // Add timeout to prevent infinite loading
-  useEffect(() => {
-    if (isLoading) {
-      const timeout = setTimeout(() => {
-        setHasTimedOut(true);
-      }, 5000); // 5 second timeout
-
-      return () => clearTimeout(timeout);
-    } else {
-      setHasTimedOut(false);
-    }
-  }, [isLoading]);
-
-  // If loading for too long, redirect to login
-  if (isLoading && hasTimedOut) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (isLoading) {
+  // Don't redirect during initial session hydration.
+  if (!hasCheckedAuth || isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">

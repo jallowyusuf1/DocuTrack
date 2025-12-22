@@ -93,20 +93,13 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
       whileHover={{ y: -4, scale: 1.01 }}
       whileTap={{ scale: 0.98 }}
       onClick={handleClick}
-      className="rounded-3xl overflow-hidden cursor-pointer"
-      style={{
-        background: 'rgba(42, 38, 64, 0.7)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-      }}
+      className="glass-card-elevated glass-tiled rounded-[28px] overflow-hidden cursor-pointer"
     >
       <div className="flex h-[120px]">
         {/* Image Section - Thumbnail on left */}
         <div className="relative flex-shrink-0 w-[80px] h-full overflow-hidden"
           style={{
-            background: 'rgba(35, 29, 51, 0.5)',
+            background: 'rgba(255,255,255,0.02)',
           }}
         >
           {imageLoading && !imageError ? (
@@ -136,7 +129,7 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
         <div 
           className="flex-1 px-4 py-3 flex flex-col min-w-0 h-full"
           style={{
-            background: 'linear-gradient(180deg, rgba(42, 38, 64, 0.95) 0%, rgba(35, 29, 51, 1) 100%)',
+            background: 'transparent',
           }}
         >
           {/* Badge and Title Row */}
@@ -202,9 +195,9 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
               }}
               className="flex-1 flex items-center justify-center py-2.5 px-3 rounded-xl font-semibold text-[13px] transition-all"
               style={{
-                background: 'rgba(35, 29, 51, 0.6)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(18px)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
                 color: '#FFFFFF',
               }}
             >

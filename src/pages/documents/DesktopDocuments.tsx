@@ -13,7 +13,6 @@ import ListView from '../../components/documents/desktop/ListView';
 import BulkActionsBar from '../../components/documents/desktop/BulkActionsBar';
 import QuickViewModal from '../../components/documents/desktop/QuickViewModal';
 import Toast from '../../components/ui/Toast';
-import DesktopNav from '../../components/layout/DesktopNav';
 import BackButton from '../../components/ui/BackButton';
 import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
 import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
@@ -417,9 +416,8 @@ export default function DesktopDocuments() {
   // Show nothing until lock check is complete
   if (!lockCheckComplete) {
     return (
-      <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
-        <DesktopNav />
-        <div className="flex-1 flex items-center justify-center pt-[104px]">
+      <div className="min-h-full flex flex-col bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
+        <div className="flex-1 flex items-center justify-center">
           <div className="text-white text-lg">Loading...</div>
         </div>
       </div>
@@ -427,10 +425,7 @@ export default function DesktopDocuments() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
-      {/* Desktop Navigation - Always visible */}
-      <DesktopNav />
-
+    <div className="min-h-full flex flex-col bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
       {/* Document Lock Overlay */}
       {isLocked && !isUnlocking && (
         <DocumentLockOverlay onUnlock={handleUnlock} />
@@ -442,7 +437,7 @@ export default function DesktopDocuments() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden mt-[104px]">
+      <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <FilterSidebar
           categories={categories}

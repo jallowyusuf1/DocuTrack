@@ -198,16 +198,9 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
         whileHover={{ y: -4, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleClick}
-        className="rounded-3xl overflow-hidden cursor-pointer"
-        style={{
-          background: 'linear-gradient(145deg, rgba(42, 38, 64, 0.95) 0%, rgba(35, 29, 51, 1) 100%)',
-          backdropFilter: 'blur(30px)',
-          WebkitBackdropFilter: 'blur(30px)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: isUrgent
-            ? `0 8px 32px rgba(239, 68, 68, 0.4), 0 0 40px ${urgencyColor}30`
-            : '0 8px 32px rgba(0, 0, 0, 0.4)',
-        }}
+        className={`glass-card-elevated glass-tiled rounded-[28px] overflow-hidden cursor-pointer ${
+          isUrgent ? 'ring-1 ring-red-400/30' : ''
+        }`}
       >
         <div className="relative h-[220px] overflow-hidden">
           {imageLoading && !imageError ? (

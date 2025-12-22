@@ -23,14 +23,12 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     // Check for existing session on app load for session persistence
     const initializeSession = async () => {
       try {
-        // Ensure storage bucket exists
-        await ensureBucketExists();
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Session exists - restore user state
-          await checkAuth();
-        }
+        // Always attempt to restore auth state on load.
+        // ProtectedRoute will wait for hasCheckedAuth before redirecting.
+        await checkAuth();
+
+        // Bucket setup should not block auth restore; run after.
+        ensureBucketExists().catch(() => {});
       } catch (error) {
         console.warn('Failed to restore session:', error);
       }

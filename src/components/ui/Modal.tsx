@@ -73,19 +73,38 @@ export default function Modal({
               exit="exit"
               variants={bottomSheet}
               transition={getTransition(transitions.spring)}
-              className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              className="fixed inset-x-0 bottom-0 z-50 relative rounded-t-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
               style={{
-                background: 'rgba(42, 38, 64, 0.85)',
-                backdropFilter: 'blur(25px)',
-                WebkitBackdropFilter: 'blur(25px)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'rgba(42, 38, 64, 0.84)',
+                backdropFilter: 'blur(40px)',
+                WebkitBackdropFilter: 'blur(40px)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
                 borderBottom: 'none',
-                boxShadow: '0 -16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+                boxShadow:
+                  '0 -18px 54px rgba(0, 0, 0, 0.70), 0 0 90px rgba(139, 92, 246, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
                 maxWidth: '100%',
               }}
               data-tablet-bottom-sheet="true"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Neon edge highlight */}
+              <div
+                className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
+                style={{
+                  background:
+                    'linear-gradient(90deg, rgba(139, 92, 246, 0.0), rgba(139, 92, 246, 0.55), rgba(34, 211, 238, 0.30), rgba(139, 92, 246, 0.0))',
+                }}
+              />
+
+              {/* Ambient gradient */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(900px 420px at 15% 10%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0) 55%), radial-gradient(720px 420px at 85% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 60%), radial-gradient(700px 420px at 80% 95%, rgba(34, 211, 238, 0.10) 0%, rgba(34, 211, 238, 0) 55%)',
+                }}
+              />
+
               <style>{`
                 @media (min-width: 768px) {
                   [data-tablet-bottom-sheet="true"] {
@@ -114,7 +133,17 @@ export default function Modal({
 
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-padding="true">
+            <div
+              className="relative flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10"
+              style={{
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                background: 'rgba(26, 22, 37, 0.32)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+              }}
+              data-tablet-padding="true"
+            >
               <style>{`
                 @media (min-width: 768px) {
                   [data-tablet-padding="true"] {
@@ -150,7 +179,7 @@ export default function Modal({
           )}
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto px-5 md:px-6" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-content="true">
+              <div className="relative flex-1 overflow-y-auto px-5 md:px-6" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-content="true">
                 <style>{`
                   @media (min-width: 768px) {
                     [data-tablet-content="true"] {
@@ -192,19 +221,48 @@ export default function Modal({
               exit="exit"
               variants={scaleInCenter}
               transition={getTransition(transitions.spring)}
-                className={`rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col`}
+                className={`relative rounded-2xl w-full ${sizeStyles[size]} max-h-[90vh] overflow-hidden flex flex-col`}
               style={{
-                background: 'rgba(42, 38, 64, 0.85)',
-                backdropFilter: 'blur(25px)',
-                WebkitBackdropFilter: 'blur(25px)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+                background: 'rgba(42, 38, 64, 0.84)',
+                backdropFilter: 'blur(40px)',
+                WebkitBackdropFilter: 'blur(40px)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                boxShadow:
+                  '0 22px 70px rgba(0, 0, 0, 0.72), 0 0 90px rgba(139, 92, 246, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
               }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Neon edge highlight */}
+              <div
+                className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
+                style={{
+                  background:
+                    'linear-gradient(90deg, rgba(139, 92, 246, 0.0), rgba(139, 92, 246, 0.55), rgba(34, 211, 238, 0.30), rgba(139, 92, 246, 0.0))',
+                }}
+              />
+
+              {/* Ambient gradient */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(900px 420px at 15% 10%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0) 55%), radial-gradient(720px 420px at 85% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 60%), radial-gradient(700px 420px at 80% 95%, rgba(34, 211, 238, 0.10) 0%, rgba(34, 211, 238, 0) 55%)',
+                }}
+              />
+
               {/* Header */}
               {title && (
-                <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10" style={{ paddingLeft: '20px', paddingRight: '20px' }} data-tablet-center-padding="true">
+                <div
+                  className="relative flex items-center justify-between px-5 md:px-6 py-4 border-b border-white/10"
+                  style={{
+                    paddingLeft: '20px',
+                    paddingRight: '20px',
+                    background: 'rgba(26, 22, 37, 0.32)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                  }}
+                  data-tablet-center-padding="true"
+                >
                   <style>{`
                     @media (min-width: 768px) {
                       [data-tablet-center-padding="true"] {
@@ -231,7 +289,7 @@ export default function Modal({
               )}
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto">{children}</div>
+              <div className="relative flex-1 overflow-y-auto">{children}</div>
             </motion.div>
           </motion.div>
         </>

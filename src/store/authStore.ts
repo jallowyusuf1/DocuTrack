@@ -9,6 +9,7 @@ interface AuthState {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasCheckedAuth: boolean;
   error: string | null;
   
   // Actions
@@ -25,6 +26,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   isAuthenticated: false,
   isLoading: false,
+  hasCheckedAuth: false,
   error: null,
 
   signup: async (data: SignupData) => {
@@ -40,6 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         session: result.session,
         isAuthenticated: authenticated,
         isLoading: false,
+        hasCheckedAuth: true,
         error: null,
       });
       return result;
@@ -51,6 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         session: null,
         isAuthenticated: false,
         isLoading: false,
+        hasCheckedAuth: true,
         error: errorMessage,
       });
       throw error;
@@ -67,6 +71,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         session: result.session,
         isAuthenticated: true,
         isLoading: false,
+        hasCheckedAuth: true,
         error: null,
       });
     } catch (error) {
@@ -77,6 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         session: null,
         isAuthenticated: false,
         isLoading: false,
+        hasCheckedAuth: true,
         error: errorMessage,
       });
       throw error;
@@ -93,6 +99,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         session: null,
         isAuthenticated: false,
         isLoading: false,
+        hasCheckedAuth: true,
         error: null,
       });
     } catch (error) {
@@ -109,6 +116,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       const session = await authService.getSession();
       
       if (session?.user && session?.access_token) {
+        // Use the session user immediately; don't depend on network for "refresh persistence".
+        const sessionUser = session.user;
+
         // Verify the session is still valid by checking token expiry
         const expiresAt = session.expires_at;
         const now = Math.floor(Date.now() / 1000);
@@ -116,17 +126,17 @@ export const useAuthStore = create<AuthState>((set) => ({
         // If token is expired or expiring soon, Supabase will auto-refresh
         // But we should still verify the user is valid
         if (expiresAt && expiresAt > now) {
-          // Session is valid - verify the user is still valid
-          const user = await authService.getCurrentUser();
-          
-          // Get profile, but don't fail if it doesn't exist
-          let profile = null;
+          // Session is valid. Prefer session user; optionally confirm with getUser if available.
+          let user = sessionUser;
           try {
-            profile = await authService.getUserProfile(user.id);
-          } catch (profileError) {
-            // Profile fetch failed, but user is still authenticated
-            console.warn('Profile fetch failed during auth check:', profileError);
+            const confirmedUser = await authService.getCurrentUser();
+            if (confirmedUser) user = confirmedUser;
+          } catch {
+            // Offline / transient: keep session user.
           }
+
+          // Profile is optional; don't fail auth if it can't be loaded.
+          const profile = await authService.getUserProfile(user.id);
           
           set({
             user,
@@ -134,6 +144,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             session,
             isAuthenticated: true,
             isLoading: false,
+            hasCheckedAuth: true,
             error: null,
           });
         } else {
@@ -141,7 +152,13 @@ export const useAuthStore = create<AuthState>((set) => ({
           // Try to refresh the session
           const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
           if (refreshedSession) {
-            const user = await authService.getCurrentUser();
+            let user = refreshedSession.user;
+            try {
+              const confirmedUser = await authService.getCurrentUser();
+              if (confirmedUser) user = confirmedUser;
+            } catch {
+              // Keep refreshed session user if offline.
+            }
             const profile = await authService.getUserProfile(user.id);
             set({
               user,
@@ -149,6 +166,7 @@ export const useAuthStore = create<AuthState>((set) => ({
               session: refreshedSession,
               isAuthenticated: true,
               isLoading: false,
+              hasCheckedAuth: true,
               error: null,
             });
           } else {
@@ -159,6 +177,7 @@ export const useAuthStore = create<AuthState>((set) => ({
               session: null,
               isAuthenticated: false,
               isLoading: false,
+              hasCheckedAuth: true,
               error: null,
             });
           }
@@ -171,6 +190,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           session: null,
           isAuthenticated: false,
           isLoading: false,
+          hasCheckedAuth: true,
           error: null,
         });
       }
@@ -183,6 +203,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         session: null,
         isAuthenticated: false,
         isLoading: false,
+        hasCheckedAuth: true,
         error: null, // Don't show error for failed auth check
       });
     }

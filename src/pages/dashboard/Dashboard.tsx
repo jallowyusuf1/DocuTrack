@@ -14,14 +14,12 @@ import {
   Plus, 
   Search, 
   Bell, 
-  Share2,
-  Trash2,
   ChevronRight
 } from 'lucide-react';
-import UrgencySummaryCard from '../../components/documents/UrgencySummaryCard';
 import DashboardDocumentCard from '../../components/documents/DashboardDocumentCard';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
+import { LiquidPill, LiquidGlowDot } from '../../components/ui/liquid';
 
 interface DocumentStats {
   total: number;
@@ -49,14 +47,11 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [swipedDocumentId, setSwipedDocumentId] = useState<string | null>(null);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
-  const swipeStartX = useRef<number>(0);
-  const swipeCurrentX = useRef<number>(0);
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -208,28 +203,6 @@ export default function Dashboard() {
     pullDistance.current = 0;
   };
 
-  // Swipe handlers for mobile/tablet
-  const handleSwipeStart = (e: React.TouchEvent, documentId: string) => {
-    swipeStartX.current = e.touches[0].clientX;
-    swipeCurrentX.current = swipeStartX.current;
-  };
-
-  const handleSwipeMove = (e: React.TouchEvent, documentId: string) => {
-    if (swipeStartX.current === 0) return;
-    swipeCurrentX.current = e.touches[0].clientX;
-    const deltaX = swipeCurrentX.current - swipeStartX.current;
-    
-    if (deltaX < -50) {
-      setSwipedDocumentId(documentId);
-    } else if (deltaX > 50) {
-      setSwipedDocumentId(null);
-    }
-  };
-
-  const handleSwipeEnd = () => {
-    swipeStartX.current = 0;
-    swipeCurrentX.current = 0;
-  };
 
   // Handle urgency card click - navigate to filtered documents
   const handleUrgencyCardClick = (minDays: number, maxDays: number) => {
@@ -245,36 +218,10 @@ export default function Dashboard() {
     navigate(`/documents?urgency=${urgencyFilter}`);
   };
 
-  // Handle document share
-  const handleShare = async (document: Document) => {
-    setSwipedDocumentId(null);
-    // Implement share functionality
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: document.document_name,
-          text: `Check out my ${document.document_type}`,
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-      }
-    }
-  };
-
-  // Handle document delete
-  const handleDelete = async (document: Document) => {
-    if (!user) return;
-    setSwipedDocumentId(null);
-    
-    if (window.confirm(`Are you sure you want to delete "${document.document_name}"?`)) {
-      try {
-        await documentService.deleteDocument(document.id, user.id);
-        await fetchData();
-      } catch (err) {
-        console.error('Error deleting document:', err);
-        alert('Failed to delete document');
-      }
-    }
+  const urgencyGlow = (kind: 'urgent' | 'soon' | 'upcoming') => {
+    if (kind === 'urgent') return '#FF453A';
+    if (kind === 'soon') return '#FF9F0A';
+    return '#FFD60A';
   };
 
   // Loading skeleton
@@ -347,24 +294,7 @@ export default function Dashboard() {
   const showOfflineBanner = !isOnline;
 
   return (
-    <div className="pb-[72px] min-h-screen relative overflow-hidden">
-      {/* Background Gradient Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div
-          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
-            transform: 'translate(-50%, -50%)',
-          }}
-        />
-        <div
-          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
-            transform: 'translate(50%, 50%)',
-          }}
-        />
-      </div>
+    <div className="pb-[72px] min-h-screen liquid-dashboard-bg">
 
       {/* Offline Banner */}
       {showOfflineBanner && (
@@ -396,142 +326,111 @@ export default function Dashboard() {
         onTouchEnd={handleTouchEnd}
         className="relative z-10 px-4 md:px-6 lg:px-8 pt-12 md:pt-16 lg:pt-20 md:max-w-[1024px] md:mx-auto"
       >
-        {/* Hero Text Section */}
-        <motion.div
-          initial="initial"
-          animate="animate"
-          variants={fadeInUp}
-          className="mb-8 md:mb-12 text-center"
-        >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 md:mb-4" style={{
-            fontFamily: 'SF Pro Display, -apple-system, sans-serif',
-            letterSpacing: '-0.5px',
-            textShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
-          }}>
-            Never miss another deadline
-          </h1>
-          <p className="text-lg md:text-xl text-glass-secondary max-w-2xl mx-auto">
-            Track every document. Get reminded automatically. Simple, secure, and beautifully designed.
-          </p>
+        {/* Header capsule */}
+        <motion.div initial="initial" animate="animate" variants={fadeInUp} className="mb-6 md:mb-8">
+          <LiquidPill tone="milky" className="px-5 py-4" glowColor="rgba(34, 211, 238, 0.65)">
+            <div className="flex items-center gap-4">
+              <div className="min-w-0">
+                <div
+                  className="text-white font-semibold text-xl md:text-2xl truncate"
+                  style={{
+                    fontFamily: 'SF Pro Display, -apple-system, sans-serif',
+                    letterSpacing: '-0.24px',
+                  }}
+                >
+                  {getGreeting()}, {getUserName()}!
+                </div>
+                <div className="text-sm text-white/70">
+                  {stats.total === 0 ? 'No documents yet' : `${stats.total} document${stats.total !== 1 ? 's' : ''} tracked`}
+                </div>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={() => navigate('/search')}
+                  className="glass-pill w-11 h-11 flex items-center justify-center relative"
+                  aria-label="Search"
+                  title="Search"
+                >
+                  <Search className="w-5 h-5 text-white/90 relative" />
+                </button>
+                <button
+                  onClick={() => navigate('/notifications')}
+                  className="glass-pill w-11 h-11 flex items-center justify-center relative"
+                  aria-label="Notifications"
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5 text-white/90 relative" />
+                  {unreadCount > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center font-bold"
+                      style={{
+                        background: '#FF453A',
+                        boxShadow: '0 0 16px rgba(255,69,58,0.75)',
+                      }}
+                    >
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </LiquidPill>
         </motion.div>
 
-        {/* Header with Greeting and Actions */}
-        <div className="mb-6 md:mb-8">
-          <div className="flex items-center mb-4">
-            <div>
-              <h2 className="text-xl md:text-2xl font-semibold text-white mb-1">
-                {getGreeting()}, {getUserName()}!
-              </h2>
-              <p className="text-sm md:text-base text-glass-secondary">
-                {stats.total === 0 
-                  ? 'No documents yet'
-                  : `${stats.total} document${stats.total !== 1 ? 's' : ''} tracked`}
-              </p>
-            </div>
-
-            {/* Mobile: Action Icons */}
-            <div className="md:hidden flex items-center gap-3 ml-auto">
-              <button
-                onClick={() => navigate('/search')}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center border border-white/20"
-              >
-                <Search className="w-5 h-5 text-white" />
-              </button>
-              <button
-                onClick={() => navigate('/notifications')}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center border border-white/20 relative"
-              >
-                <Bell className="w-5 h-5 text-white" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Urgency Summary Cards - Clickable */}
+        {/* Urgency Capsules */}
         {(urgentCount > 0 || soonCount > 0 || upcomingCount > 0) && (
-          <div className="mb-6 md:mb-8">
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              animate="show"
-              className="grid grid-cols-3 gap-3 md:gap-4"
-            >
-              <motion.div variants={staggerItem}>
-                <button
-                  onClick={() => handleUrgencyCardClick(0, 7)}
-                  className="w-full"
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="mb-6 md:mb-8 grid grid-cols-3 gap-3 md:gap-4">
+            {[
+              { key: 'urgent' as const, label: 'URGENT', value: urgentCount, range: [0, 7] as const, tone: 'milky' as const },
+              { key: 'soon' as const, label: 'SOON', value: soonCount, range: [8, 30] as const, tone: 'milky' as const },
+              { key: 'upcoming' as const, label: 'UPCOMING', value: upcomingCount, range: [31, 60] as const, tone: 'clear' as const },
+            ].map((c) => (
+              <motion.div key={c.key} variants={staggerItem}>
+                <LiquidPill
+                  tone={c.tone}
+                  interactive
+                  glowColor={urgencyGlow(c.key)}
+                  className="px-4 py-4 md:px-5 md:py-5"
+                  onClick={() => handleUrgencyCardClick(c.range[0], c.range[1])}
                 >
-                  <UrgencySummaryCard
-                    count={urgentCount}
-                    label="URGENT"
-                    bgColor=""
-                    textColor="text-red-500"
-                    iconColor="text-red-400"
-                  />
-                </button>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-white/70 text-[11px] md:text-xs font-semibold tracking-[0.18em]">
+                        {c.label}
+                      </div>
+                      <div className="text-white text-3xl md:text-4xl font-bold mt-2" style={{ letterSpacing: '-0.04em' }}>
+                        {c.value}
+                      </div>
+                    </div>
+                    <LiquidGlowDot color={urgencyGlow(c.key)} />
+                  </div>
+                </LiquidPill>
               </motion.div>
-              <motion.div variants={staggerItem}>
-                <button
-                  onClick={() => handleUrgencyCardClick(8, 30)}
-                  className="w-full"
-                >
-                  <UrgencySummaryCard
-                    count={soonCount}
-                    label="SOON"
-                    bgColor=""
-                    textColor="text-orange-500"
-                    iconColor="text-orange-400"
-                  />
-                </button>
-              </motion.div>
-              <motion.div variants={staggerItem}>
-                <button
-                  onClick={() => handleUrgencyCardClick(31, 60)}
-                  className="w-full"
-                >
-                  <UrgencySummaryCard
-                    count={upcomingCount}
-                    label="UPCOMING"
-                    bgColor=""
-                    textColor="text-yellow-500"
-                    iconColor="text-yellow-400"
-                  />
-                </button>
-              </motion.div>
-            </motion.div>
-          </div>
+            ))}
+          </motion.div>
         )}
 
-        {/* Stats Section */}
+        {/* Stats Capsule (minimal) */}
         {stats.total > 0 && (
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={fadeInUp}
-            className="mb-6 md:mb-8 glass-card-primary rounded-2xl p-4 md:p-6"
-          >
-            <h2 className="text-lg md:text-xl font-bold text-white mb-4">Statistics</h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stats.total}</div>
-                <div className="text-xs md:text-sm text-glass-secondary">Total Documents</div>
+          <motion.div initial="initial" animate="animate" variants={fadeInUp} className="mb-6 md:mb-8">
+            <LiquidPill tone="clear" className="px-5 py-4" glowColor="rgba(59, 130, 246, 0.55)">
+              <div className="flex items-center justify-between gap-4">
+                {[
+                  { label: 'TOTAL', value: stats.total },
+                  { label: 'ON-TIME', value: `${stats.onTimeRate}%` },
+                  { label: 'STORAGE', value: `${Math.round((stats.total * 0.5) / 1024)}MB` },
+                ].map((m, idx) => (
+                  <div key={m.label} className="flex-1 text-center relative">
+                    <div className="text-white/55 text-[11px] font-semibold tracking-[0.18em]">{m.label}</div>
+                    <div className="text-white text-2xl md:text-3xl font-bold mt-2" style={{ letterSpacing: '-0.03em' }}>
+                      {m.value}
+                    </div>
+                    {idx < 2 && <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 h-10 w-px bg-white/10" />}
+                  </div>
+                ))}
               </div>
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stats.onTimeRate}%</div>
-                <div className="text-xs md:text-sm text-glass-secondary">On-Time Rate</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1">
-                  {Math.round((stats.total * 0.5) / 1024)}MB
-                </div>
-                <div className="text-xs md:text-sm text-glass-secondary">Storage Used</div>
-              </div>
-            </div>
+            </LiquidPill>
           </motion.div>
         )}
 
@@ -550,16 +449,16 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Recent Documents Section */}
+        {/* Recent Documents (scrollable list) */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-xl font-bold text-white">Recent Documents</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base md:text-lg font-bold text-white">Recent Documents</h2>
             {recentDocuments.length > 0 && (
               <button
                 onClick={() => navigate('/documents')}
-                className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                className="text-sm text-white/70 hover:text-white flex items-center gap-1"
               >
-                View All
+                View all
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
@@ -571,30 +470,35 @@ export default function Dashboard() {
               initial="initial"
               animate="animate"
               variants={fadeInUp}
-              className="glass-card-elevated rounded-3xl p-12 flex flex-col items-center justify-center"
+              className="text-center"
             >
-              <div className="w-24 h-24 rounded-full glass-card flex items-center justify-center mb-6">
-                <Plus className="w-12 h-12 text-purple-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">No Documents Yet</h2>
-              <p className="text-sm text-glass-secondary text-center mb-6">
-                Start tracking your documents to never miss a deadline
-              </p>
-              <Button
-                variant="primary"
-                onClick={() => navigate('/add-document')}
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add Expiring Item
-              </Button>
+              <LiquidPill tone="milky" className="px-6 py-10 max-w-2xl mx-auto">
+                <div className="w-16 h-16 rounded-[22px] mx-auto mb-5 flex items-center justify-center"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.14)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                  }}
+                >
+                  <Plus className="w-8 h-8 text-white/85" />
+                </div>
+                <h3 className="text-white text-2xl font-bold mb-2">Add your first document</h3>
+                <p className="text-white/65 text-sm mb-6 max-w-md mx-auto">
+                  Once you add documents, this dashboard will surface expiring items with calm, readable alerts.
+                </p>
+                <Button variant="primary" onClick={() => navigate('/add-document')} className="inline-flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Add document
+                </Button>
+              </LiquidPill>
             </motion.div>
           ) : (
             <motion.div
               variants={staggerContainer}
               initial="hidden"
               animate="show"
-              className="space-y-3 md:space-y-4"
+              className="space-y-3 md:space-y-4 max-h-[420px] overflow-y-auto pr-1"
             >
               {recentDocuments.map((document) => (
                 <motion.div
@@ -602,46 +506,7 @@ export default function Dashboard() {
                   variants={staggerItem}
                   className="relative"
                 >
-                  {/* Swipe Actions (Mobile/Tablet) */}
-                  <div className="absolute right-0 top-0 bottom-0 flex items-center gap-2 pr-4 z-10">
-                    <AnimatePresence>
-                      {swipedDocumentId === document.id && (
-                        <>
-                          <motion.button
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 50, opacity: 0 }}
-                            onClick={() => handleShare(document)}
-                            className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center"
-                          >
-                            <Share2 className="w-5 h-5 text-white" />
-                          </motion.button>
-                          <motion.button
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 50, opacity: 0 }}
-                            onClick={() => handleDelete(document)}
-                            className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center"
-                          >
-                            <Trash2 className="w-5 h-5 text-white" />
-                          </motion.button>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Document Card */}
-                  <div
-                    onTouchStart={(e) => handleSwipeStart(e, document.id)}
-                    onTouchMove={(e) => handleSwipeMove(e, document.id)}
-                    onTouchEnd={handleSwipeEnd}
-                    style={{
-                      transform: swipedDocumentId === document.id ? 'translateX(-120px)' : 'translateX(0)',
-                      transition: 'transform 0.3s ease',
-                    }}
-                  >
-                    <DashboardDocumentCard document={document} />
-                  </div>
+                  <DashboardDocumentCard document={document} />
                 </motion.div>
               ))}
             </motion.div>
