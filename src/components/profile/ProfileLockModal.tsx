@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, X, AlertCircle, Loader2, Mail } from 'lucide-react';
+import { Lock, AlertCircle, Loader2, Mail } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { triggerHaptic } from '../../utils/animations';
 import Button from '../ui/Button';
@@ -8,12 +8,14 @@ import Button from '../ui/Button';
 interface ProfileLockModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onExit?: () => void;
   onUnlock: () => void;
 }
 
 export default function ProfileLockModal({
   isOpen,
   onClose,
+  onExit,
   onUnlock,
 }: ProfileLockModalProps) {
   const [password, setPassword] = useState('');
@@ -21,6 +23,12 @@ export default function ProfileLockModal({
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const supportsWebkitTextSecurity =
+    typeof window !== 'undefined' &&
+    typeof (window as any).CSS !== 'undefined' &&
+    typeof (window as any).CSS.supports === 'function' &&
+    (window as any).CSS.supports('-webkit-text-security', 'disc');
+  const secureInputType: 'text' | 'password' = supportsWebkitTextSecurity ? 'text' : 'password';
 
   // Reset on open
   useEffect(() => {
@@ -78,7 +86,6 @@ export default function ProfileLockModal({
         // Success!
         triggerHaptic('medium');
         onUnlock();
-        onClose();
       } else {
         // Wrong password
         const newAttempts = attempts + 1;
@@ -125,6 +132,7 @@ export default function ProfileLockModal({
           onClick={onClose}
           className="absolute inset-0"
           style={{
+            background: 'rgba(0,0,0,0.55)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
           }}
@@ -162,15 +170,6 @@ export default function ProfileLockModal({
                 <p className="text-sm" style={{ color: '#A78BFA' }}>Enter your profile lock password</p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-              }}
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
           </div>
 
           {/* Content */}
@@ -202,9 +201,9 @@ export default function ProfileLockModal({
                 <Button
                   variant="primary"
                   fullWidth
-                  onClick={onClose}
+                  onClick={onExit ?? onClose}
                 >
-                  Close
+                  Back to Dashboard
                 </Button>
               </motion.div>
             ) : (
@@ -216,7 +215,7 @@ export default function ProfileLockModal({
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
                     <input
-                      type="text"
+                      type={secureInputType}
                       maxLength={8}
                       value={password}
                       onChange={(e) => {
@@ -236,7 +235,12 @@ export default function ProfileLockModal({
                         background: 'rgba(35, 29, 51, 0.6)',
                         backdropFilter: 'blur(10px)',
                         border: error ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                        WebkitTextSecurity: 'disc',
                       }}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       autoFocus
                     />
                   </div>
@@ -275,6 +279,15 @@ export default function ProfileLockModal({
                       Unlock Profile
                     </>
                   )}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={onExit ?? onClose}
+                  className="h-[48px]"
+                >
+                  Back to Dashboard
                 </Button>
               </>
             )}

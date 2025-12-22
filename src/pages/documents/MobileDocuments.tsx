@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, X, Filter, ChevronDown, FolderOpen, XCircle, RefreshCw, Grid3x3, List } from 'lucide-react';
+import { Search, X, Filter, ChevronDown, FolderOpen, XCircle, RefreshCw, Grid3x3, List, Lock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { documentLockService } from '../../services/documentLockService';
@@ -156,6 +156,7 @@ export default function Documents() {
   const [isLocked, setIsLocked] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [lockCheckComplete, setLockCheckComplete] = useState(false);
+  const [lockAvailable, setLockAvailable] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
@@ -201,7 +202,10 @@ export default function Documents() {
         // Check if lock is enabled in settings
         const settings = await documentLockService.getLockSettings(user.id);
 
-        if (!settings?.lockEnabled || !settings?.lockPasswordHash) {
+        const available = !!settings?.lockEnabled && !!settings?.lockPasswordHash;
+        setLockAvailable(available);
+
+        if (!available) {
           // Lock not enabled or no password set
           setIsLocked(false);
           setLockCheckComplete(true);
@@ -236,12 +240,23 @@ export default function Documents() {
       } catch (error) {
         console.error('Error checking lock status:', error);
         setIsLocked(false);
+        setLockAvailable(false);
         setLockCheckComplete(true);
       }
     };
 
     checkLockStatus();
   }, [user]);
+
+  // React to external lock events (e.g., nav / other pages)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const evt = e as CustomEvent<{ locked?: boolean }>;
+      if (typeof evt.detail?.locked === 'boolean') setIsLocked(evt.detail.locked);
+    };
+    window.addEventListener('documents_lock_change', handler as EventListener);
+    return () => window.removeEventListener('documents_lock_change', handler as EventListener);
+  }, []);
 
   // Handle unlock
   const handleUnlock = () => {
@@ -396,13 +411,41 @@ export default function Documents() {
           }}
         >
           <div className="px-5 py-4 lg:max-w-[1280px] lg:mx-auto lg:px-8">
-            <h1 className="text-2xl font-bold text-white" style={{ fontSize: '24px' }}>My Documents</h1>
-            <p className="text-sm mt-1" style={{
-              fontSize: '14px',
-              color: '#A78BFA',
-            }}>
-              {loading ? 'Loading...' : `${documents.length} document${documents.length !== 1 ? 's' : ''}`}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-white" style={{ fontSize: '24px' }}>My Documents</h1>
+                <p className="text-sm mt-1" style={{
+                  fontSize: '14px',
+                  color: '#A78BFA',
+                }}>
+                  {loading ? 'Loading...' : `${documents.length} document${documents.length !== 1 ? 's' : ''}`}
+                </p>
+              </div>
+
+              {/* Lock Documents button */}
+              {lockAvailable && (
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => {
+                    documentLockService.setDocumentsLocked(true);
+                    setIsLocked(true);
+                    triggerHaptic('light');
+                  }}
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background: 'rgba(35, 29, 51, 0.55)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    boxShadow: '0 0 20px rgba(234, 179, 8, 0.18)',
+                  }}
+                  aria-label="Lock Documents"
+                  title="Lock Documents"
+                >
+                  <Lock className="w-5 h-5 text-yellow-300" />
+                </motion.button>
+              )}
+            </div>
           </div>
         </header>
 

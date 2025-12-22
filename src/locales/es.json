@@ -228,6 +228,63 @@
     "dataExported": "¡Datos exportados exitosamente!",
     "itemAdded": "¡Elemento agregado exitosamente!",
     "dateAdded": "¡Fecha importante agregada exitosamente!"
+  },
+  "onboarding": {
+    "stage2": {
+      "title": "Revisa tu correo",
+      "subtitle": "Enviamos un enlace de verificación a",
+      "instructions": "Haz clic en el enlace del correo para verificar tu cuenta.",
+      "continue": "Continuar",
+      "resendPrefix": "¿No lo recibiste?",
+      "resend": "Reenviar correo",
+      "resendIn": "Reenvío disponible en {{seconds}}s",
+      "wrongEmail": "¿Correo incorrecto?",
+      "changeEmail": "Cambiar correo",
+      "changeEmailTitle": "Cambiar correo",
+      "newEmail": "Nuevo correo",
+      "confirmPassword": "Confirmar contraseña",
+      "update": "Actualizar",
+      "cancel": "Cancelar",
+      "changeEmailNote": "Cambiar el correo requiere iniciar sesión. Si aún no tienes sesión, verifica primero y luego inicia sesión para actualizarlo.",
+      "skip": "Saltar por ahora",
+      "verifyLater": "Verificaré más tarde",
+      "limitedWarning": "Algunas funciones pueden estar limitadas hasta verificar."
+    },
+    "stage3": {
+      "step": "Paso 3 de 4",
+      "title": "Completa tu perfil",
+      "subtitle": "Ayúdanos a personalizar tu experiencia",
+      "skip": "Saltar este paso",
+      "photoLabel": "Foto de perfil (opcional)",
+      "uploadPhoto": "Subir foto",
+      "remove": "Quitar",
+      "phoneLabel": "Número de teléfono (opcional)",
+      "phoneHint": "Para recuperación y 2FA (opcional)",
+      "dobLabel": "Fecha de nacimiento (opcional)",
+      "dobHint": "Para funciones apropiadas por edad",
+      "countryLabel": "País/Región",
+      "currencyLabel": "Moneda (opcional)",
+      "back": "Atrás",
+      "continue": "Continuar"
+    },
+    "stage4": {
+      "step": "Paso 4 de 4",
+      "title": "Protege tu cuenta",
+      "subtitle": "Configura protección y preferencias",
+      "setUpLater": "Configurar más tarde",
+      "backToProfile": "Volver al perfil",
+      "completeSetup": "Completar configuración",
+      "summaryTitle": "Resumen de configuración"
+    },
+    "verifyEmail": {
+      "verifyingTitle": "Verificando…",
+      "verifyingSubtitle": "Espera mientras verificamos tu enlace.",
+      "successTitle": "Correo verificado",
+      "successSubtitle": "Tu cuenta está confirmada. Terminemos la configuración.",
+      "errorTitle": "Enlace inválido o caducado",
+      "backToEmail": "Volver a verificación de correo",
+      "goToSignIn": "Ir a iniciar sesión"
+    }
   }
 }
 

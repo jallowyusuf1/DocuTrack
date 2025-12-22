@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, X, Eye, EyeOff, Check, AlertCircle } from 'lucide-react';
+import { Lock, X, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { triggerHaptic } from '../../utils/animations';
 import Button from '../ui/Button';
@@ -21,18 +21,20 @@ export default function SetProfileLockModal({
 }: SetProfileLockModalProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const supportsWebkitTextSecurity =
+    typeof window !== 'undefined' &&
+    typeof (window as any).CSS !== 'undefined' &&
+    typeof (window as any).CSS.supports === 'function' &&
+    (window as any).CSS.supports('-webkit-text-security', 'disc');
+  const secureInputType: 'text' | 'password' = supportsWebkitTextSecurity ? 'text' : 'password';
 
   // Reset on open
   useEffect(() => {
     if (isOpen) {
       setPassword('');
       setConfirmPassword('');
-      setShowPassword(false);
-      setShowConfirmPassword(false);
       setError(null);
     }
   }, [isOpen]);
@@ -260,7 +262,7 @@ export default function SetProfileLockModal({
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={secureInputType}
                       maxLength={8}
                       value={password}
                       onChange={(e) => {
@@ -274,23 +276,14 @@ export default function SetProfileLockModal({
                         background: 'rgba(35, 29, 51, 0.6)',
                         backdropFilter: 'blur(10px)',
                         border: error ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                        WebkitTextSecurity: 'disc',
                       }}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       autoFocus
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('light');
-                        setShowPassword(!showPassword);
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5 text-white/60" />
-                      ) : (
-                        <Eye className="w-5 h-5 text-white/60" />
-                      )}
-                    </button>
                   </div>
                 </div>
 
@@ -301,7 +294,7 @@ export default function SetProfileLockModal({
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
                     <input
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={secureInputType}
                       maxLength={8}
                       value={confirmPassword}
                       onChange={(e) => {
@@ -320,22 +313,13 @@ export default function SetProfileLockModal({
                         background: 'rgba(35, 29, 51, 0.6)',
                         backdropFilter: 'blur(10px)',
                         border: error ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                        WebkitTextSecurity: 'disc',
                       }}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic('light');
-                        setShowConfirmPassword(!showConfirmPassword);
-                      }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-5 h-5 text-white/60" />
-                      ) : (
-                        <Eye className="w-5 h-5 text-white/60" />
-                      )}
-                    </button>
                   </div>
                 </div>
 

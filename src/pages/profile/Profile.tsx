@@ -195,6 +195,12 @@ export default function Profile() {
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
+  // Safety: never keep the entire page hidden if an animation state gets stuck.
+  useEffect(() => {
+    const failSafe = setTimeout(() => setIsEntering(false), 1600);
+    return () => clearTimeout(failSafe);
+  }, []);
+
   const handleToggle = async (
     setting: 'email' | 'push' | 'darkMode',
     value: boolean
@@ -241,8 +247,13 @@ export default function Profile() {
         <ProfileLockModal
           isOpen={true}
           onClose={() => {
-            // Don't allow closing - must unlock
-            navigate('/dashboard');
+            // Keep the user on /profile. We don't allow dismissing the lock gate without unlocking.
+            triggerHaptic('heavy');
+            showToast('Profile is locked. Enter your lock password to continue.', 'warning');
+          }}
+          onExit={() => {
+            // Explicit exit action from the lock modal (only via the modal’s “Back to Dashboard” button).
+            navigate('/dashboard', { replace: true });
           }}
           onUnlock={() => {
             setProfileUnlocked(true);
@@ -339,7 +350,8 @@ export default function Profile() {
       {/* Profile Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: isEntering ? 0 : 1, y: isEntering ? 20 : 0 }}
+        // Keep content visible; the door panels already cover the transition visually.
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.5 }}
         className="relative z-10"
       >
@@ -910,18 +922,6 @@ export default function Profile() {
       <NotificationPreferencesModal
         isOpen={isNotificationPreferencesOpen}
         onClose={() => setIsNotificationPreferencesOpen(false)}
-      />
-
-      <ProfileLockModal
-        isOpen={isProfileLockModalOpen && isProfileLocked && !profileUnlocked}
-        onClose={() => {
-          // Navigate away if user tries to close
-          navigate('/dashboard');
-        }}
-        onUnlock={() => {
-          setProfileUnlocked(true);
-          setIsProfileLockModalOpen(false);
-        }}
       />
 
       {/* Toast Notifications */}

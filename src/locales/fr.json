@@ -228,6 +228,63 @@
     "dataExported": "Données exportées avec succès !",
     "itemAdded": "Élément ajouté avec succès !",
     "dateAdded": "Date importante ajoutée avec succès !"
+  },
+  "onboarding": {
+    "stage2": {
+      "title": "Vérifiez votre e-mail",
+      "subtitle": "Nous avons envoyé un lien de vérification à",
+      "instructions": "Cliquez sur le lien dans l’e-mail pour vérifier votre compte.",
+      "continue": "Continuer",
+      "resendPrefix": "Vous ne l’avez pas reçu ?",
+      "resend": "Renvoyer l’e-mail",
+      "resendIn": "Renvoi disponible dans {{seconds}}s",
+      "wrongEmail": "Mauvais e-mail ?",
+      "changeEmail": "Changer d’e-mail",
+      "changeEmailTitle": "Changer d’e-mail",
+      "newEmail": "Nouvel e-mail",
+      "confirmPassword": "Confirmer le mot de passe",
+      "update": "Mettre à jour",
+      "cancel": "Annuler",
+      "changeEmailNote": "Changer d’e-mail nécessite d’être connecté. Si vous n’avez pas encore de session, vérifiez d’abord puis connectez-vous pour le modifier.",
+      "skip": "Ignorer pour l’instant",
+      "verifyLater": "Je vérifierai plus tard",
+      "limitedWarning": "Certaines fonctionnalités peuvent être limitées tant que l’e-mail n’est pas vérifié."
+    },
+    "stage3": {
+      "step": "Étape 3 sur 4",
+      "title": "Complétez votre profil",
+      "subtitle": "Aidez-nous à personnaliser votre expérience",
+      "skip": "Ignorer cette étape",
+      "photoLabel": "Photo de profil (optionnel)",
+      "uploadPhoto": "Téléverser une photo",
+      "remove": "Retirer",
+      "phoneLabel": "Numéro de téléphone (optionnel)",
+      "phoneHint": "Pour la récupération et la 2FA (optionnel)",
+      "dobLabel": "Date de naissance (optionnel)",
+      "dobHint": "Pour des fonctionnalités adaptées à l’âge",
+      "countryLabel": "Pays/Région",
+      "currencyLabel": "Devise (optionnel)",
+      "back": "Retour",
+      "continue": "Continuer"
+    },
+    "stage4": {
+      "step": "Étape 4 sur 4",
+      "title": "Sécurisez votre compte",
+      "subtitle": "Configurez la protection et les préférences",
+      "setUpLater": "Configurer plus tard",
+      "backToProfile": "Retour au profil",
+      "completeSetup": "Terminer la configuration",
+      "summaryTitle": "Résumé de configuration"
+    },
+    "verifyEmail": {
+      "verifyingTitle": "Vérification…",
+      "verifyingSubtitle": "Veuillez patienter pendant la vérification du lien.",
+      "successTitle": "E-mail vérifié",
+      "successSubtitle": "Votre compte est confirmé. Terminons la configuration.",
+      "errorTitle": "Lien invalide ou expiré",
+      "backToEmail": "Retour à la vérification d’e-mail",
+      "goToSignIn": "Aller à la connexion"
+    }
   }
 }
 

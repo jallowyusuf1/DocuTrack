@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import TutorialGate from '../onboarding/TutorialGate';
+import OnboardingGate from '../onboarding/OnboardingGate';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -45,9 +46,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   return (
-    <TutorialGate>
-      {children}
-    </TutorialGate>
+    <OnboardingGate>
+      <TutorialGate>{children}</TutorialGate>
+    </OnboardingGate>
   );
 }
 

@@ -170,6 +170,13 @@ class DocumentLockService {
       // Clear attempt state on successful unlock
       this.clearAttemptState();
     }
+
+    // Notify UI listeners (Documents pages) immediately
+    try {
+      window.dispatchEvent(new CustomEvent('documents_lock_change', { detail: { locked } }));
+    } catch {
+      // no-op (SSR / older browsers)
+    }
   }
 
   /**

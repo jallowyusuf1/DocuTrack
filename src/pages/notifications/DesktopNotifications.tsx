@@ -15,7 +15,6 @@ import {
 } from '../../services/notifications';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, isToday, isThisWeek } from 'date-fns';
-import DesktopNav from '../../components/layout/DesktopNav';
 
 type NotificationGroup = 'all' | 'unread' | 'expiry' | 'renewal' | 'family' | 'system' | 'archived';
 type DateFilter = 'today' | 'this_week' | 'all';
@@ -208,10 +207,7 @@ export default function DesktopNotifications({ onNotificationClick }: DesktopNot
         </div>
       )}
 
-      {/* Only show DesktopNav if not in modal */}
-      {!onNotificationClick && <DesktopNav />}
-
-      <main className={`px-8 pb-8 max-w-[1920px] mx-auto ${onNotificationClick ? 'pt-4' : 'pt-[104px]'}`}>
+      <main className={`px-8 pb-8 max-w-[1920px] mx-auto ${onNotificationClick ? 'pt-4' : 'pt-4'}`}>
         <div className="grid grid-cols-[320px_1fr] gap-8">
           {/* Sidebar */}
           <div className="space-y-6">

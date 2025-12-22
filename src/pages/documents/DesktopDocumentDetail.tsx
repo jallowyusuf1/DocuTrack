@@ -145,7 +145,7 @@ export default function DesktopDocumentDetail() {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
         <DesktopNav />
-        <div className="flex-1 flex items-center justify-center" style={{ marginTop: '64px' }}>
+        <div className="flex-1 flex items-center justify-center" style={{ marginTop: '104px' }}>
           <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
@@ -156,7 +156,7 @@ export default function DesktopDocumentDetail() {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
         <DesktopNav />
-        <div className="flex-1 flex items-center justify-center" style={{ marginTop: '64px' }}>
+        <div className="flex-1 flex items-center justify-center" style={{ marginTop: '104px' }}>
           <div className="text-center">
             <p className="text-white text-lg mb-4">{error || 'Document not found'}</p>
             <button
@@ -182,7 +182,7 @@ export default function DesktopDocumentDetail() {
     <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
       <DesktopNav />
 
-      <main className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 64px)', marginTop: '64px' }}>
+      <main className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 104px)', marginTop: '104px' }}>
         {/* Sidebar - 280px */}
         <div className="flex-shrink-0 border-r border-white/10" style={{ width: '280px' }}>
           <DesktopDocumentSidebar

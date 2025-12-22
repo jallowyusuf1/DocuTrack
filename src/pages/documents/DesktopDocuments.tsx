@@ -18,6 +18,7 @@ import BackButton from '../../components/ui/BackButton';
 import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
 import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
 import { mockDocuments } from '../../data/mockDocuments';
+import { Lock } from 'lucide-react';
 
 type ViewMode = 'grid' | 'list';
 
@@ -83,6 +84,7 @@ export default function DesktopDocuments() {
   const [isLocked, setIsLocked] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [lockCheckComplete, setLockCheckComplete] = useState(false);
+  const [lockAvailable, setLockAvailable] = useState(false);
 
   // Save view mode to localStorage when it changes
   useEffect(() => {
@@ -148,7 +150,10 @@ export default function DesktopDocuments() {
         // Check if lock is enabled in settings
         const settings = await documentLockService.getLockSettings(user.id);
 
-        if (!settings?.lockEnabled || !settings?.lockPasswordHash) {
+        const available = !!settings?.lockEnabled && !!settings?.lockPasswordHash;
+        setLockAvailable(available);
+
+        if (!available) {
           // Lock not enabled or no password set
           setIsLocked(false);
           setLockCheckComplete(true);
@@ -183,12 +188,23 @@ export default function DesktopDocuments() {
       } catch (error) {
         console.error('Error checking lock status:', error);
         setIsLocked(false);
+        setLockAvailable(false);
         setLockCheckComplete(true);
       }
     };
 
     checkLockStatus();
   }, [user]);
+
+  // React to external lock events (e.g., a future nav button)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const evt = e as CustomEvent<{ locked?: boolean }>;
+      if (typeof evt.detail?.locked === 'boolean') setIsLocked(evt.detail.locked);
+    };
+    window.addEventListener('documents_lock_change', handler as EventListener);
+    return () => window.removeEventListener('documents_lock_change', handler as EventListener);
+  }, []);
 
   // Handle unlock
   const handleUnlock = () => {
@@ -462,6 +478,28 @@ export default function DesktopDocuments() {
                 }}
               />
             </div>
+
+            {/* Lock Documents button */}
+            {lockAvailable && (
+              <button
+                onClick={() => {
+                  // Lock immediately (will show overlay on this page)
+                  documentLockService.setDocumentsLocked(true);
+                  setIsLocked(true);
+                }}
+                className="h-[44px] px-4 rounded-xl flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                style={{
+                  background: 'rgba(35, 29, 51, 0.55)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                }}
+                title="Lock Documents"
+              >
+                <Lock className="w-4 h-4 text-yellow-300" />
+                <span>Lock</span>
+              </button>
+            )}
           </div>
 
           {/* Document Views */}

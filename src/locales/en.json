@@ -239,6 +239,63 @@
     "dataExported": "Data exported successfully!",
     "itemAdded": "Item added successfully!",
     "dateAdded": "Important date added successfully!"
+  },
+  "onboarding": {
+    "stage2": {
+      "title": "Check your email",
+      "subtitle": "We sent a verification link to",
+      "instructions": "Click the link in the email to verify your account.",
+      "continue": "Continue",
+      "resendPrefix": "Didn't receive it?",
+      "resend": "Resend email",
+      "resendIn": "Resend available in {{seconds}}s",
+      "wrongEmail": "Wrong email?",
+      "changeEmail": "Change email",
+      "changeEmailTitle": "Change email",
+      "newEmail": "New email",
+      "confirmPassword": "Confirm password",
+      "update": "Update",
+      "cancel": "Cancel",
+      "changeEmailNote": "Changing email requires signing in. If you don't have a session yet, verify first, then sign in to update it.",
+      "skip": "Skip for now",
+      "verifyLater": "I'll verify later",
+      "limitedWarning": "Some features may be limited until verified."
+    },
+    "stage3": {
+      "step": "Step 3 of 4",
+      "title": "Complete your profile",
+      "subtitle": "Help us personalize your experience",
+      "skip": "Skip this step",
+      "photoLabel": "Profile photo (optional)",
+      "uploadPhoto": "Upload Photo",
+      "remove": "Remove",
+      "phoneLabel": "Phone Number (optional)",
+      "phoneHint": "For recovery and 2FA (optional)",
+      "dobLabel": "Date of Birth (optional)",
+      "dobHint": "For age-appropriate features",
+      "countryLabel": "Country/Region",
+      "currencyLabel": "Currency (optional)",
+      "back": "Back",
+      "continue": "Continue"
+    },
+    "stage4": {
+      "step": "Step 4 of 4",
+      "title": "Secure your account",
+      "subtitle": "Set up protection and preferences",
+      "setUpLater": "Set up later",
+      "backToProfile": "Back to Profile",
+      "completeSetup": "Complete Setup",
+      "summaryTitle": "Your Setup Summary"
+    },
+    "verifyEmail": {
+      "verifyingTitle": "Verifying…",
+      "verifyingSubtitle": "Please wait while we verify your link.",
+      "successTitle": "Email verified",
+      "successSubtitle": "Your account is confirmed. Let’s finish setup.",
+      "errorTitle": "Invalid or expired link",
+      "backToEmail": "Back to email verification",
+      "goToSignIn": "Go to sign in"
+    }
   }
 }
 

@@ -61,7 +61,14 @@ export default function Signup() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) navigate('/dashboard', { replace: true });
+    if (!isAuthenticated) return;
+    // If we just created an account, force onboarding instead of dashboard.
+    const onboardingActive = localStorage.getItem('onboarding.active') === '1';
+    if (onboardingActive) {
+      navigate('/onboarding/email', { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
+    }
   }, [isAuthenticated, navigate]);
 
   if (isAuthenticated) return null;
@@ -93,8 +100,14 @@ export default function Signup() {
         await logTermsAcceptance(result.user.id);
         await checkAuth();
         triggerHaptic('medium');
-        navigate('/dashboard', { replace: true });
+        // Mark onboarding active so authenticated redirect doesn't jump to dashboard.
+        localStorage.setItem('onboarding.active', '1');
+        localStorage.setItem('onboarding.email', data.email);
+        navigate('/onboarding/email', { replace: true, state: { email: data.email } });
       } else {
+        // Email confirmation required: we won't have a session yet, but we still enter onboarding flow.
+        localStorage.setItem('onboarding.active', '1');
+        localStorage.setItem('onboarding.email', data.email);
         setShowSuccess(true);
         triggerHaptic('medium');
       }
@@ -470,10 +483,12 @@ export default function Signup() {
                     className="w-full"
                     onClick={() => {
                       setShowSuccess(false);
-                      navigate('/login');
+                      navigate('/onboarding/email', {
+                        state: { email: email || localStorage.getItem('onboarding.email') || '' },
+                      });
                     }}
                   >
-                    Go to sign in <ArrowRight className="w-4 h-4" />
+                    Continue <ArrowRight className="w-4 h-4" />
                   </GlassButton>
                   <GlassButton variant="secondary" className="w-full" onClick={() => setShowSuccess(false)}>
                     Close

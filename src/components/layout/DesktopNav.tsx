@@ -3,7 +3,7 @@ import { FileText, Calendar, Users, User, LogOut, Home, Plus, Bell, Lock as Lock
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { triggerHaptic } from '../../utils/animations';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { getUnreadCount } from '../../services/notifications';
 import NotificationsModal from '../modals/NotificationsModal';
 import { prefersReducedMotion } from '../../utils/animations';
@@ -26,6 +26,7 @@ export default function DesktopNav() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const previousPathRef = useRef(location.pathname);
+  const headerRef = useRef<HTMLElement | null>(null);
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {
@@ -70,6 +71,26 @@ export default function DesktopNav() {
     }
   };
 
+  // Expose nav height as a CSS variable so every page can offset correctly.
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const h = el.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--app-desktop-nav-h', `${Math.ceil(h)}px`);
+    };
+
+    update();
+    const ro = new ResizeObserver(() => update());
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
   const showIdleIndicator =
     !!idle?.settings?.idleTimeoutEnabled &&
     !idle.locked &&
@@ -87,8 +108,8 @@ export default function DesktopNav() {
   })();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
-      <div className="pt-4">
+    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
+      <div className="pt-0">
         <div className="mx-auto max-w-7xl px-4 xl:px-8">
           <div
             className="flex items-center justify-between gap-3 px-4 md:px-5 py-4 rounded-[999px]"

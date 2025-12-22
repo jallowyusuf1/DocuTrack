@@ -113,7 +113,16 @@ export default function MainLayout() {
         {isDesktop ? <DesktopNav /> : <Header />}
         <main
           ref={mainRef}
-          className={`flex-1 overflow-y-auto pb-[72px] relative z-10 ${isDesktop ? 'pt-[104px]' : ''}`}
+          className="flex-1 overflow-y-auto pb-[72px] relative z-10"
+          style={
+            isDesktop
+              ? {
+                  // DesktopNav is fixed; reserve enough top space so content starts below it,
+                  // but can scroll under it (behind the glass) without overlapping.
+                  paddingTop: 'calc(var(--app-desktop-nav-h, 0px) + 16px)',
+                }
+              : undefined
+          }
         >
           <AnimatePresence mode="wait">
             <motion.div

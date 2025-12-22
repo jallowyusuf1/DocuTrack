@@ -318,7 +318,7 @@ export default function Hero() {
                   letterSpacing: '-0.04em',
                 }}
               >
-                The glass‑smooth way to track documents, renewals, and life.
+                Track every document. Renew on time. Stay calm.
               </h1>
             </MotionInView>
 

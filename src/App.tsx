@@ -43,6 +43,12 @@ const FamilySharing = lazy(() => import('./pages/info/FamilySharing'));
 const HelpCenter = lazy(() => import('./pages/info/HelpCenter'));
 const FAQ = lazy(() => import('./pages/info/FAQ'));
 
+// Onboarding routes
+const EmailVerification = lazy(() => import('./pages/onboarding/EmailVerification'));
+const VerifyEmail = lazy(() => import('./pages/onboarding/VerifyEmail'));
+const ProfileCompletion = lazy(() => import('./pages/onboarding/ProfileCompletion'));
+const SecuritySetup = lazy(() => import('./pages/onboarding/SecuritySetup'));
+
 // Loading fallback component
 const PageLoader = () => (
   <div 
@@ -401,6 +407,44 @@ function AppRoutes() {
             <Suspense fallback={<PageLoader />}>
               <Signup />
             </Suspense>
+          }
+        />
+
+        {/* Onboarding (Stage 2 is public, Stage 3/4 are protected) */}
+        <Route
+          path="/onboarding/email"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <EmailVerification />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/verify-email"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <VerifyEmail />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/onboarding/profile"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <ProfileCompletion />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/onboarding/security"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}>
+                <SecuritySetup />
+              </Suspense>
+            </ProtectedRoute>
           }
         />
         <Route

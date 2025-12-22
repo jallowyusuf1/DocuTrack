@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { documentService } from '../../services/documents';
 import { useAuth } from '../../hooks/useAuth';
 import type { Document, DocumentType } from '../../types';
-import DesktopNav from '../../components/layout/DesktopNav';
 import { getDaysUntil } from '../../utils/dateUtils';
 import BackButton from '../../components/ui/BackButton';
 
@@ -471,9 +470,7 @@ export default function DesktopSearch() {
         />
       </div>
 
-      <DesktopNav />
-
-      <main className="pt-20 px-8 pb-8 max-w-[1920px] mx-auto">
+      <main className="pt-4 px-8 pb-8 max-w-[1920px] mx-auto">
         {/* Back Button */}
         <div className="mb-6">
           <BackButton to="/dashboard" />
