@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, ChevronDown, Globe, Lock, Shield, Bell, Eye } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, CheckCircle2, ChevronDown, Globe, Lock, Shield, Bell, Eye, Check } from 'lucide-react';
 import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { GlassButton, GlassCard, GlassPill } from '../../components/ui/glass/Glass';
 import { prefersReducedMotion, triggerHaptic } from '../../utils/animations';
@@ -164,8 +164,20 @@ export default function SecuritySetup() {
     const open = openSection === id;
     return (
       <div
-        className="rounded-2xl overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
+        className="rounded-2xl overflow-hidden transition-all duration-300"
+        style={{ 
+          background: open 
+            ? 'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(139,92,246,0.10) 100%)'
+            : 'rgba(255,255,255,0.06)',
+          border: open 
+            ? '1px solid rgba(255,255,255,0.18)' 
+            : '1px solid rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          boxShadow: open 
+            ? '0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)' 
+            : '0 2px 8px rgba(0,0,0,0.1)',
+        }}
       >
         <button
           type="button"
@@ -173,20 +185,48 @@ export default function SecuritySetup() {
             triggerHaptic('light');
             setOpenSection(open ? 'language' : id);
           }}
-          className="w-full px-5 py-4 flex items-center justify-between"
+          className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
         >
           <div className="flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.18)', border: '1px solid rgba(139,92,246,0.30)' }}>
+            <div 
+              className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200" 
+              style={{ 
+                background: open 
+                  ? 'rgba(139,92,246,0.25)' 
+                  : 'rgba(139,92,246,0.18)', 
+                border: open 
+                  ? '1px solid rgba(139,92,246,0.40)' 
+                  : '1px solid rgba(139,92,246,0.30)',
+                boxShadow: open 
+                  ? '0 0 12px rgba(139,92,246,0.3)' 
+                  : 'none',
+              }}
+            >
               {icon}
             </div>
             <div>
-              <div className="text-white font-semibold">{title}</div>
-              {subtitle ? <div className="text-white/55 text-sm">{subtitle}</div> : null}
+              <div className="text-white font-semibold text-base">{title}</div>
+              {subtitle ? <div className="text-white/60 text-sm mt-0.5">{subtitle}</div> : null}
             </div>
           </div>
-          <ChevronDown className="w-5 h-5 text-white/70" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 180ms ease' }} />
+          <ChevronDown className="w-5 h-5 text-white/70 transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
         </button>
-        {open ? <div className="px-5 pb-5">{children}</div> : null}
+        <AnimatePresence>
+          {open && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className="px-5 pb-5"
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
+                {children}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   };
@@ -319,15 +359,15 @@ export default function SecuritySetup() {
             </h1>
             <p className="mt-2 text-white/65 text-[17px] leading-relaxed">{t('onboarding.stage4.subtitle')}</p>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-8 space-y-6">
               <Section
                 id="language"
                 title="🌍 Language & Region"
                 subtitle="Choose your language (RTL supported)"
                 icon={<Globe className="w-5 h-5 text-purple-200" />}
               >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {languages.map((l) => {
                       const selected = selectedLanguage === l.code;
                       return (
@@ -338,10 +378,19 @@ export default function SecuritySetup() {
                             triggerHaptic('light');
                             setSelectedLanguage(l.code);
                           }}
-                          className="rounded-2xl p-4 text-left relative"
+                          className="rounded-2xl p-4 text-left relative transition-all duration-200"
                           style={{
-                            background: selected ? 'rgba(139,92,246,0.18)' : 'rgba(255,255,255,0.06)',
-                            border: selected ? '2px solid rgba(139,92,246,0.65)' : '1px solid rgba(255,255,255,0.12)',
+                            background: selected 
+                              ? 'linear-gradient(135deg, rgba(139,92,246,0.20) 0%, rgba(139,92,246,0.12) 100%)' 
+                              : 'rgba(255,255,255,0.06)',
+                            border: selected 
+                              ? '2px solid rgba(139,92,246,0.65)' 
+                              : '1px solid rgba(255,255,255,0.12)',
+                            backdropFilter: 'blur(20px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            boxShadow: selected 
+                              ? '0 4px 16px rgba(139,92,246,0.25), inset 0 1px 0 rgba(255,255,255,0.1)' 
+                              : '0 2px 8px rgba(0,0,0,0.1)',
                           }}
                         >
                           <div className="text-[44px] leading-none">{l.flag}</div>
@@ -354,8 +403,14 @@ export default function SecuritySetup() {
                   </div>
 
                   <div
-                    className="rounded-2xl p-4"
-                    style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)' }}
+                    className="rounded-2xl p-5"
+                    style={{ 
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    }}
                   >
                     <div className="flex items-center gap-2 text-white/80 text-sm font-semibold">
                       <Eye className="w-4 h-4 text-purple-200" />
@@ -406,14 +461,24 @@ export default function SecuritySetup() {
                   <div className="text-white/75 text-sm">Enable Idle Timeout</div>
                   <button
                     type="button"
-                    onClick={() => setIdleEnabled((v) => !v)}
-                    className="w-12 h-7 rounded-full relative"
-                    style={{ background: idleEnabled ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setIdleEnabled((v) => !v);
+                    }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                    style={{ 
+                      background: idleEnabled 
+                        ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                        : 'rgba(255,255,255,0.12)',
+                      border: idleEnabled 
+                        ? '2px solid rgba(139,92,246,0.5)' 
+                        : '2px solid rgba(255,255,255,0.2)',
+                      boxShadow: idleEnabled 
+                        ? '0 0 12px rgba(139,92,246,0.4)' 
+                        : 'none',
+                    }}
                   >
-                    <span
-                      className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                      style={{ transform: idleEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-                    />
+                    {idleEnabled && <Check className="w-5 h-5 text-white" />}
                   </button>
                 </div>
 
@@ -444,68 +509,102 @@ export default function SecuritySetup() {
                   <div>
                     <div className="text-white/65 text-xs mb-2">Max password attempts</div>
                     <select
-                      className="glass-input w-full h-11 px-4 text-white bg-transparent"
+                      className="glass-input w-full h-11 px-4 text-white bg-transparent rounded-xl"
                       value={idleMaxAttempts}
                       onChange={(e) => setIdleMaxAttempts(Number(e.target.value) as any)}
                       disabled={!idleEnabled}
-                      style={{ opacity: idleEnabled ? 1 : 0.5 }}
+                      style={{ 
+                        opacity: idleEnabled ? 1 : 0.5,
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                      }}
                     >
                       {[1, 3, 5, 10].map((v) => (
-                        <option key={v} value={v}>{v}</option>
+                        <option key={v} value={v} style={{ background: '#1A1625' }}>{v}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)', opacity: idleEnabled ? 1 : 0.5 }}>
+                  <div className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', opacity: idleEnabled ? 1 : 0.5 }}>
                     <div>
                       <div className="text-white text-sm font-semibold">Wipe local data</div>
                       <div className="text-white/55 text-xs">after max attempts</div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setIdleWipeLocal((v) => !v)}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setIdleWipeLocal((v) => !v);
+                      }}
                       disabled={!idleEnabled}
-                      className="w-12 h-7 rounded-full relative"
-                      style={{ background: idleWipeLocal ? 'rgba(248,113,113,0.95)' : 'rgba(255,255,255,0.18)' }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                      style={{ 
+                        background: idleWipeLocal 
+                          ? 'linear-gradient(135deg, rgba(248,113,113,0.95) 0%, rgba(220,38,38,0.95) 100%)'
+                          : 'rgba(255,255,255,0.12)',
+                        border: idleWipeLocal 
+                          ? '2px solid rgba(248,113,113,0.5)' 
+                          : '2px solid rgba(255,255,255,0.2)',
+                        boxShadow: idleWipeLocal 
+                          ? '0 0 12px rgba(248,113,113,0.4)' 
+                          : 'none',
+                      }}
                     >
-                      <span
-                        className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                        style={{ transform: idleWipeLocal ? 'translateX(22px)' : 'translateX(2px)' }}
-                      />
+                      {idleWipeLocal && <Check className="w-5 h-5 text-white" />}
                     </button>
                   </div>
-                  <div className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)', opacity: idleEnabled ? 1 : 0.5 }}>
+                  <div className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', opacity: idleEnabled ? 1 : 0.5 }}>
                     <div>
                       <div className="text-white text-sm font-semibold">Biometric unlock</div>
                       <div className="text-white/55 text-xs">Face ID / Passkey</div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setIdleBiometric((v) => !v)}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setIdleBiometric((v) => !v);
+                      }}
                       disabled={!idleEnabled}
-                      className="w-12 h-7 rounded-full relative"
-                      style={{ background: idleBiometric ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                      style={{ 
+                        background: idleBiometric 
+                          ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                          : 'rgba(255,255,255,0.12)',
+                        border: idleBiometric 
+                          ? '2px solid rgba(139,92,246,0.5)' 
+                          : '2px solid rgba(255,255,255,0.2)',
+                        boxShadow: idleBiometric 
+                          ? '0 0 12px rgba(139,92,246,0.4)' 
+                          : 'none',
+                      }}
                     >
-                      <span
-                        className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                        style={{ transform: idleBiometric ? 'translateX(22px)' : 'translateX(2px)' }}
-                      />
+                      {idleBiometric && <Check className="w-5 h-5 text-white" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)', opacity: idleEnabled ? 1 : 0.5 }}>
+                <div className="mt-3 flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', opacity: idleEnabled ? 1 : 0.5 }}>
                   <div className="text-white text-sm font-semibold">Sound alerts</div>
                   <button
                     type="button"
-                    onClick={() => setIdleSoundAlerts((v) => !v)}
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setIdleSoundAlerts((v) => !v);
+                    }}
                     disabled={!idleEnabled}
-                    className="w-12 h-7 rounded-full relative"
-                    style={{ background: idleSoundAlerts ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                    style={{ 
+                      background: idleSoundAlerts 
+                        ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                        : 'rgba(255,255,255,0.12)',
+                      border: idleSoundAlerts 
+                        ? '2px solid rgba(139,92,246,0.5)' 
+                        : '2px solid rgba(255,255,255,0.2)',
+                      boxShadow: idleSoundAlerts 
+                        ? '0 0 12px rgba(139,92,246,0.4)' 
+                        : 'none',
+                    }}
                   >
-                    <span
-                      className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                      style={{ transform: idleSoundAlerts ? 'translateX(22px)' : 'translateX(2px)' }}
-                    />
+                    {idleSoundAlerts && <Check className="w-5 h-5 text-white" />}
                   </button>
                 </div>
               </Section>
@@ -521,6 +620,7 @@ export default function SecuritySetup() {
                   <button
                     type="button"
                     onClick={() => {
+                      triggerHaptic('light');
                       const next = !docLockEnabled;
                       setDocLockEnabled(next);
                       if (next && !docLockHasPassword) {
@@ -528,13 +628,20 @@ export default function SecuritySetup() {
                         setDocLockModalMode('set');
                       }
                     }}
-                    className="w-12 h-7 rounded-full relative"
-                    style={{ background: docLockEnabled ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                    style={{ 
+                      background: docLockEnabled 
+                        ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                        : 'rgba(255,255,255,0.12)',
+                      border: docLockEnabled 
+                        ? '2px solid rgba(139,92,246,0.5)' 
+                        : '2px solid rgba(255,255,255,0.2)',
+                      boxShadow: docLockEnabled 
+                        ? '0 0 12px rgba(139,92,246,0.4)' 
+                        : 'none',
+                    }}
                   >
-                    <span
-                      className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                      style={{ transform: docLockEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-                    />
+                    {docLockEnabled && <Check className="w-5 h-5 text-white" />}
                   </button>
                 </div>
 
@@ -563,7 +670,7 @@ export default function SecuritySetup() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                <div className="mt-4 flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
                   <div>
                     <div className="text-white text-sm font-semibold">Lock password</div>
                     <div className="text-white/55 text-xs">{docLockHasPassword ? 'Password set' : 'Not set yet'}</div>
@@ -571,6 +678,7 @@ export default function SecuritySetup() {
                   <GlassButton
                     variant="secondary"
                     onClick={() => {
+                      triggerHaptic('light');
                       setShowDocLockModal(true);
                       setDocLockModalMode(docLockHasPassword ? 'change' : 'set');
                     }}
@@ -605,13 +713,20 @@ export default function SecuritySetup() {
                       }
                       setShowMFAModal(true);
                     }}
-                    className="w-12 h-7 rounded-full relative"
-                    style={{ background: twoFactorEnabled ? 'rgba(34,197,94,0.95)' : 'rgba(255,255,255,0.18)' }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                    style={{ 
+                      background: twoFactorEnabled 
+                        ? 'linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(22,163,74,0.95) 100%)'
+                        : 'rgba(255,255,255,0.12)',
+                      border: twoFactorEnabled 
+                        ? '2px solid rgba(34,197,94,0.5)' 
+                        : '2px solid rgba(255,255,255,0.2)',
+                      boxShadow: twoFactorEnabled 
+                        ? '0 0 12px rgba(34,197,94,0.4)' 
+                        : 'none',
+                    }}
                   >
-                    <span
-                      className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                      style={{ transform: twoFactorEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-                    />
+                    {twoFactorEnabled && <Check className="w-5 h-5 text-white" />}
                   </button>
                 </div>
                 <div className="mt-3 text-xs text-white/55">
@@ -629,14 +744,24 @@ export default function SecuritySetup() {
                   <div className="text-white/75 text-sm">Enable Notifications</div>
                   <button
                     type="button"
-                    onClick={() => setNotificationsEnabled((v) => !v)}
-                    className="w-12 h-7 rounded-full relative"
-                    style={{ background: notificationsEnabled ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                    onClick={() => {
+                      triggerHaptic('light');
+                      setNotificationsEnabled((v) => !v);
+                    }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                    style={{ 
+                      background: notificationsEnabled 
+                        ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                        : 'rgba(255,255,255,0.12)',
+                      border: notificationsEnabled 
+                        ? '2px solid rgba(139,92,246,0.5)' 
+                        : '2px solid rgba(255,255,255,0.2)',
+                      boxShadow: notificationsEnabled 
+                        ? '0 0 12px rgba(139,92,246,0.4)' 
+                        : 'none',
+                    }}
                   >
-                    <span
-                      className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                      style={{ transform: notificationsEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-                    />
+                    {notificationsEnabled && <Check className="w-5 h-5 text-white" />}
                   </button>
                 </div>
 
@@ -646,19 +771,29 @@ export default function SecuritySetup() {
                     { label: 'Email', value: notificationsEmail, set: setNotificationsEmail },
                     { label: 'SMS', value: notificationsSms, set: setNotificationsSms },
                   ].map((c) => (
-                    <div key={c.label} className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                    <div key={c.label} className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
                       <div className="text-white text-sm font-semibold">{c.label}</div>
                       <button
                         type="button"
-                        onClick={() => c.set((v: boolean) => !v)}
+                        onClick={() => {
+                          triggerHaptic('light');
+                          c.set((v: boolean) => !v);
+                        }}
                         disabled={!notificationsEnabled}
-                        className="w-12 h-7 rounded-full relative"
-                        style={{ background: c.value ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                        style={{ 
+                          background: c.value 
+                            ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                            : 'rgba(255,255,255,0.12)',
+                          border: c.value 
+                            ? '2px solid rgba(139,92,246,0.5)' 
+                            : '2px solid rgba(255,255,255,0.2)',
+                          boxShadow: c.value 
+                            ? '0 0 12px rgba(139,92,246,0.4)' 
+                            : 'none',
+                        }}
                       >
-                        <span
-                          className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                          style={{ transform: c.value ? 'translateX(22px)' : 'translateX(2px)' }}
-                        />
+                        {c.value && <Check className="w-5 h-5 text-white" />}
                       </button>
                     </div>
                   ))}
@@ -677,21 +812,31 @@ export default function SecuritySetup() {
                     { label: 'Face detection', sub: 'On-device only', value: faceDetectionEnabled, set: setFaceDetectionEnabled },
                     { label: 'Cloud OCR sync', sub: 'Encrypted transfer', value: cloudOcrSyncEnabled, set: setCloudOcrSyncEnabled },
                   ].map((c) => (
-                    <div key={c.label} className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                    <div key={c.label} className="flex items-center justify-between rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
                       <div>
                         <div className="text-white text-sm font-semibold">{c.label}</div>
                         <div className="text-white/55 text-xs">{c.sub}</div>
                       </div>
                       <button
                         type="button"
-                        onClick={() => c.set((v: boolean) => !v)}
-                        className="w-12 h-7 rounded-full relative"
-                        style={{ background: c.value ? 'rgba(139,92,246,0.9)' : 'rgba(255,255,255,0.18)' }}
+                        onClick={() => {
+                          triggerHaptic('light');
+                          c.set((v: boolean) => !v);
+                        }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+                        style={{ 
+                          background: c.value 
+                            ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                            : 'rgba(255,255,255,0.12)',
+                          border: c.value 
+                            ? '2px solid rgba(139,92,246,0.5)' 
+                            : '2px solid rgba(255,255,255,0.2)',
+                          boxShadow: c.value 
+                            ? '0 0 12px rgba(139,92,246,0.4)' 
+                            : 'none',
+                        }}
                       >
-                        <span
-                          className="absolute top-[2px] w-6 h-6 rounded-full bg-white transition-transform"
-                          style={{ transform: c.value ? 'translateX(22px)' : 'translateX(2px)' }}
-                        />
+                        {c.value && <Check className="w-5 h-5 text-white" />}
                       </button>
                     </div>
                   ))}
@@ -700,17 +845,28 @@ export default function SecuritySetup() {
             </div>
 
             <div
-              className="mt-8 rounded-2xl p-5"
+              className="mt-8 rounded-2xl p-6"
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(139,92,246,0.10) 100%)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                backdropFilter: 'blur(34px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
               }}
             >
-              <div className="text-white font-semibold">{t('onboarding.stage4.summaryTitle')}</div>
-              <div className="mt-2 text-white/65 text-sm">
-                Language: {languages.find((l) => l.code === selectedLanguage)?.name || 'English'} • Idle timeout:{' '}
-                {idleEnabled ? `${idleMinutes} minutes` : 'Off'} • Document lock: {docLockEnabled ? 'On' : 'Off'} • 2FA:{' '}
-                {twoFactorEnabled ? 'On' : 'Off'} • Notifications: {notificationsEnabled ? 'On' : 'Off'}
+              <div className="text-white font-semibold text-lg mb-3">{t('onboarding.stage4.summaryTitle')}</div>
+              <div className="text-white/75 text-sm leading-relaxed">
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
+                  <span>Language: <span className="text-white/90 font-medium">{languages.find((l) => l.code === selectedLanguage)?.name || 'English'}</span></span>
+                  <span>•</span>
+                  <span>Idle timeout: <span className="text-white/90 font-medium">{idleEnabled ? `${idleMinutes} minutes` : 'Off'}</span></span>
+                  <span>•</span>
+                  <span>Document lock: <span className="text-white/90 font-medium">{docLockEnabled ? 'On' : 'Off'}</span></span>
+                  <span>•</span>
+                  <span>2FA: <span className="text-white/90 font-medium">{twoFactorEnabled ? 'On' : 'Off'}</span></span>
+                  <span>•</span>
+                  <span>Notifications: <span className="text-white/90 font-medium">{notificationsEnabled ? 'On' : 'Off'}</span></span>
+                </div>
               </div>
             </div>
 

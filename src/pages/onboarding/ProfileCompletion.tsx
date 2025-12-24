@@ -186,18 +186,8 @@ export default function ProfileCompletion() {
               border: '1px solid rgba(255,255,255,0.14)',
             }}
           >
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               <GlassPill className="text-white/85">{t('onboarding.stage3.step')}</GlassPill>
-              <button
-                type="button"
-                className="text-white/60 hover:text-white text-sm underline underline-offset-4"
-                onClick={() => {
-                  triggerHaptic('light');
-                  skipStep();
-                }}
-              >
-                {t('onboarding.stage3.skip')}
-              </button>
             </div>
 
             <h1 className="mt-4 text-white font-semibold tracking-tight text-[32px] leading-tight">

@@ -490,7 +490,7 @@ export default function ExpireSoon() {
               </div>
             </motion.div>
           ) : (
-            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-3 md:space-y-4 max-h-[420px] overflow-y-auto pr-1">
+            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4 md:space-y-6 max-h-[420px] overflow-y-auto pr-1">
               {filteredDocuments.map((document) => (
                 <motion.div key={document.id} variants={staggerItem} className="relative">
                   <DashboardDocumentCard document={document} />

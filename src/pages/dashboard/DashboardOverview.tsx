@@ -168,7 +168,7 @@ export default function DashboardOverview() {
               </LiquidPill>
             </motion.div>
           ) : (
-            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-3 md:space-y-4">
+            <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4 md:space-y-6">
               {recentDocuments.map((document) => (
                 <motion.div key={document.id} variants={staggerItem}>
                   <DocumentCard document={document} />

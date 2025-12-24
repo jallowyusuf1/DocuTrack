@@ -529,7 +529,7 @@ export default function Dashboard() {
               variants={staggerContainer}
               initial="hidden"
               animate="show"
-              className="space-y-3 md:space-y-4 max-h-[420px] overflow-y-auto pr-1"
+              className="space-y-4 md:space-y-6 max-h-[420px] overflow-y-auto pr-1"
             >
               {filteredDocuments.map((document) => (
                 <motion.div

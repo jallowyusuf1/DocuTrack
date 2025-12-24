@@ -427,7 +427,7 @@ export default function DesktopDocuments() {
   // Show nothing until lock check is complete
   if (!lockCheckComplete) {
     return (
-      <div className="min-h-full flex flex-col bg-black">
+      <div className="min-h-full flex flex-col liquid-dashboard-bg">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-white text-lg">Loading...</div>
         </div>
