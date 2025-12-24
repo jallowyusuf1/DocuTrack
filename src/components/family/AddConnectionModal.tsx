@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserPlus, Mail, Heart, Users as UsersIcon, Baby, UserCheck, Sparkles } from 'lucide-react';
+import { X, UserPlus, Mail, Heart, Users as UsersIcon, Baby, UserCheck, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { sendConnectionRequest } from '../../services/social';
 
@@ -219,7 +219,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                   {/* Relationship Selector - Redesigned Liquid Glass Cards */}
                   <div>
                     <label className="block text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      <Check className="w-4 h-4 text-purple-400" />
                       <span>Relationship Type</span>
                     </label>
                     <div className="grid grid-cols-3 gap-3 md:gap-4">
@@ -439,7 +439,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
+                          <Check className="w-5 h-5 md:w-6 md:h-6" />
                           <span>Send Invitation</span>
                         </>
                       )}

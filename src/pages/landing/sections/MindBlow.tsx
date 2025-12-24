@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ShieldCheck, Sparkles, Wand2, Zap, LockKeyhole, Database } from 'lucide-react';
+import { ShieldCheck, Check, Wand2, Zap, LockKeyhole, Database } from 'lucide-react';
 import { MotionInView } from '../../../components/ui/motion/MotionInView';
 import { GlassCard, GlassPill, GlassTile } from '../../../components/ui/glass/Glass';
 import { prefersReducedMotion } from '../../../utils/animations';
@@ -49,7 +49,7 @@ function MindBlowPanel() {
       <div className="relative z-10">
         <div className="flex items-center justify-between gap-3">
           <GlassPill className="text-white/85">
-            <Sparkles className="w-4 h-4 text-white/70" />
+            <Check className="w-4 h-4 text-white/70" />
             The mind‑blow moment
           </GlassPill>
           <div className="text-white/55 text-sm">Auto‑scheduled</div>

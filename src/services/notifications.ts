@@ -566,3 +566,55 @@ export async function checkAndSendNotifications(userId: string): Promise<void> {
   }
 }
 
+/**
+ * Send notification for new permission request (parent receives this)
+ */
+export async function sendRequestNotification(
+  parentUserId: string,
+  childName: string,
+  requestType: string,
+  documentName?: string,
+  requestId?: string
+): Promise<void> {
+  const requestTypeLabel = requestType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const title = 'New Permission Request';
+  const body = documentName
+    ? `${childName} wants to ${requestType.replace(/_/g, ' ')} "${documentName}"`
+    : `${childName} wants to ${requestType.replace(/_/g, ' ')}`;
+
+  // In-app notification
+  try {
+    await supabase.from('notifications').insert({
+      user_id: parentUserId,
+      notification_type: 'system',
+      title,
+      message: body,
+      metadata: {
+        type: 'permission_request',
+        request_id: requestId,
+        request_type: requestType,
+        child_name: childName,
+        document_name: documentName,
+      },
+      is_read: false,
+    });
+  } catch (error) {
+    console.warn('Failed to create in-app notification:', error);
+  }
+
+  // Push notification
+  try {
+    const preferences = await getNotificationPreferences(parentUserId);
+    if (preferences.push_enabled) {
+      sendPushNotification(title, body, {
+        urgent: true,
+      });
+    }
+  } catch (error) {
+    console.warn('Failed to send push notification:', error);
+  }
+
+  // TODO: Email notification if enabled
+  // TODO: Toast notification if parent is currently using the app
+}
+

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { WifiOff, X, CheckCircle } from 'lucide-react';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 
@@ -39,48 +40,70 @@ export default function OfflineIndicator() {
     return null;
   }
 
-  return (
+  const node = (
     <div
-      className={`
-        fixed top-0 left-0 right-0 z-50
-        ${isOnline ? 'bg-green-600' : 'bg-orange-600'}
-        text-white px-4 py-3
-        flex items-center justify-between
-        shadow-lg
-        animate-slide-down
-        safe-area-top
-      `}
+      className="fixed left-1/2 -translate-x-1/2 z-[120] safe-area-top"
+      style={{
+        top: 'calc(env(safe-area-inset-top) + 12px)',
+        width: 'min(680px, calc(100vw - 24px))',
+        pointerEvents: 'none', // allow page interactions except inside the toast
+      }}
     >
-      <div className="flex items-center gap-3 flex-1">
-        {isOnline ? (
-          <>
-            <CheckCircle className="w-5 h-5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold">Back online!</p>
-              <p className="text-xs text-white/90">Your changes are being synced</p>
-            </div>
-          </>
-        ) : (
-          <>
-            <WifiOff className="w-5 h-5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold">You're offline</p>
-              <p className="text-xs text-white/90">Changes will sync when reconnected</p>
-            </div>
-          </>
-        )}
-      </div>
-
-      <button
-        onClick={() => {
-          setDismissed(true);
-          setShowReconnected(false);
+      <div
+        className="pointer-events-auto rounded-[22px] px-4 py-3 flex items-center gap-3"
+        style={{
+          background: isOnline ? 'rgba(16, 185, 129, 0.18)' : 'rgba(249, 115, 22, 0.18)',
+          border: isOnline ? '1px solid rgba(16, 185, 129, 0.32)' : '1px solid rgba(249, 115, 22, 0.32)',
+          backdropFilter: 'blur(28px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+          boxShadow:
+            '0 26px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14)',
         }}
-        className="p-1 rounded hover:bg-white/20 active:bg-white/30 transition-colors"
-        aria-label="Dismiss"
+        role="status"
+        aria-live="polite"
       >
-        <X className="w-5 h-5" />
-      </button>
+        <div
+          className="w-10 h-10 rounded-[16px] flex items-center justify-center flex-shrink-0"
+          style={{
+            background: isOnline ? 'rgba(16, 185, 129, 0.22)' : 'rgba(249, 115, 22, 0.22)',
+            border: '1px solid rgba(255,255,255,0.14)',
+          }}
+        >
+          {isOnline ? (
+            <CheckCircle className="w-5 h-5 text-white/90" />
+          ) : (
+            <WifiOff className="w-5 h-5 text-white/90" />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="text-white font-semibold text-sm">
+            {isOnline ? 'Back online!' : "You're offline"}
+          </div>
+          <div className="text-white/80 text-xs truncate">
+            {isOnline ? 'Your changes are being synced' : 'Changes will sync when reconnected'}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setDismissed(true);
+            setShowReconnected(false);
+          }}
+          className="w-10 h-10 rounded-[16px] flex items-center justify-center"
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            color: 'rgba(255,255,255,0.85)',
+          }}
+          aria-label="Dismiss"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(node, document.body) : null;
 }

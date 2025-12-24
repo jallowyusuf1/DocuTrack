@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Share2, Eye, Edit3, FileText, Search, Check, Sparkles } from 'lucide-react';
+import { X, Share2, Eye, Edit3, FileText, Search, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getConnections, shareDocument } from '../../services/social';
 import { documentService } from '../../services/documents';
@@ -509,7 +509,7 @@ export default function ShareDocumentModal({
                   >
                     <div>
                       <label className="block text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-purple-400" />
+                        <Check className="w-4 h-4 text-purple-400" />
                         <span>Permission Level</span>
                       </label>
                       <div className="grid grid-cols-2 gap-4">
@@ -777,7 +777,7 @@ export default function ShareDocumentModal({
                           </>
                         ) : (
                           <>
-                            <Sparkles className="w-5 h-5" />
+                            <Check className="w-5 h-5" />
                             <span>Share Document</span>
                           </>
                         )}

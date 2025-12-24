@@ -263,7 +263,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
         category: data.category || data.document_type,
       };
 
-      await documentService.createDocument(formData, user.id);
+      await documentService.createDocument(formData, user.id, 'dashboard');
       showToast('Item added successfully!', 'success');
       onSuccess();
       onClose();

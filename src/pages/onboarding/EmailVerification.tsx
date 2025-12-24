@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, Mail, RefreshCw, ArrowRight, AlertTriangle } from 'lucide-react';
 import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { GlassButton, GlassCard, GlassPill } from '../../components/ui/glass/Glass';
 import { authService } from '../../services/authService';
@@ -44,6 +44,7 @@ export default function EmailVerification() {
   const [changingEmail, setChangingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [updatingEmail, setUpdatingEmail] = useState(false);
 
   const timerRef = useRef<number | null>(null);
@@ -364,15 +365,32 @@ export default function EmailVerification() {
                       />
 
                       <label className="block text-white/70 text-xs mb-1 mt-3">{t('onboarding.stage2.confirmPassword')}</label>
-                      <input
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="glass-input w-full h-11 px-4 text-white placeholder:text-white/45"
-                        type="password"
-                        autoComplete="current-password"
-                        disabled={updatingEmail}
-                      />
+                      <div className="relative">
+                        <input
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="glass-input w-full h-11 pl-4 pr-11 text-white placeholder:text-white/45"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          autoComplete="current-password"
+                          disabled={updatingEmail}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic('light');
+                            setShowConfirmPassword(!showConfirmPassword);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                          style={{
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.10)',
+                          }}
+                          aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
 
                       <div className="mt-3 flex gap-2">
                         <GlassButton

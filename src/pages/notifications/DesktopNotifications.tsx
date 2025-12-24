@@ -203,6 +203,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Delete this notification?')) return;
     try {
       await deleteNotification(id);
       setNotifications(prev => prev.filter(n => n.id !== id));
@@ -217,6 +218,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
   };
 
   const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.size} notification${selectedIds.size === 1 ? '' : 's'}?`)) return;
     try {
       await Promise.all(Array.from(selectedIds).map(id => deleteNotification(id)));
       setNotifications(prev => prev.filter(n => !selectedIds.has(n.id)));

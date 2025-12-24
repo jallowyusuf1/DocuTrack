@@ -19,6 +19,7 @@ export type DocumentType =
 export interface Document {
   id: string;
   user_id: string;
+  scope: 'dashboard' | 'expire_soon';
   document_type: DocumentType;
   document_name: string;
   document_number?: string;

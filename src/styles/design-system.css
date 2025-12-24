@@ -4,6 +4,11 @@
  */
 
 :root {
+  /* ========================================
+     MODERN APPLE GLASSMORPHISM DESIGN SYSTEM
+     iOS 18 / macOS 15 Style
+     ======================================== */
+
   /* Spacing Scale (4px base unit) */
   --space-1: 4px;
   --space-2: 8px;
@@ -15,25 +20,68 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* Border Radius */
+  /* Border Radius (Apple-style soft corners) */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
   --radius-xl: 24px;
+  --radius-2xl: 28px;
   --radius-pill: 999px;
   --radius-full: 50%;
 
-  /* Shadows */
+  /* Glass Material Properties */
+  --glass-blur-light: 20px;
+  --glass-blur-medium: 34px;
+  --glass-blur-heavy: 40px;
+  --glass-saturation: 180%;
+
+  /* Glass Background Colors (Translucent layers) */
+  --glass-bg-subtle: rgba(255, 255, 255, 0.03);
+  --glass-bg-light: rgba(255, 255, 255, 0.045);
+  --glass-bg-medium: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(255, 255, 255, 0.08);
+  --glass-bg-ultra: rgba(255, 255, 255, 0.12);
+
+  /* Glass Borders (Frosted edges) */
+  --glass-border-subtle: rgba(255, 255, 255, 0.10);
+  --glass-border-light: rgba(255, 255, 255, 0.14);
+  --glass-border-medium: rgba(255, 255, 255, 0.16);
+  --glass-border-strong: rgba(255, 255, 255, 0.18);
+
+  /* Glass Inner Highlights (Top shimmer) */
+  --glass-highlight-subtle: rgba(255, 255, 255, 0.12);
+  --glass-highlight-light: rgba(255, 255, 255, 0.16);
+  --glass-highlight-medium: rgba(255, 255, 255, 0.20);
+  --glass-highlight-strong: rgba(255, 255, 255, 0.22);
+
+  /* Glass Shadows (Depth & elevation) */
+  --shadow-glass-sm: 0 10px 40px rgba(0, 0, 0, 0.42);
+  --shadow-glass-md: 0 18px 60px rgba(0, 0, 0, 0.62);
+  --shadow-glass-lg: 0 22px 74px rgba(0, 0, 0, 0.72);
+  --shadow-glass-xl: 0 26px 90px rgba(0, 0, 0, 0.82);
+
+  /* Glass Glow (Purple/accent glow) */
+  --shadow-glow-subtle: 0 0 40px rgba(139, 92, 246, 0.15);
+  --shadow-glow-medium: 0 0 70px rgba(139, 92, 246, 0.22);
+  --shadow-glow-strong: 0 0 90px rgba(139, 92, 246, 0.35);
+
+  /* Tiled Grid Overlay (Frosted matte effect) */
+  --glass-tile-opacity: 0.10;
+  --glass-tile-size: 28px;
+  --glass-tile-color: rgba(255, 255, 255, 0.08);
+
+  /* Legacy Shadows (kept for compatibility) */
   --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
   --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.5);
   --shadow-glow-strong: 0 0 30px rgba(139, 92, 246, 0.7);
 
-  /* Transitions */
+  /* Transitions (Apple's signature ease curves) */
   --transition-fast: 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
-  --transition-normal: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-slow: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-spring: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   /* Typography Scale */
   --text-xs: 11px;
@@ -57,6 +105,12 @@
 
   /* Touch Targets (Mobile) */
   --touch-target-min: 44px;
+
+  /* Accent Colors (Primary purple gradient) */
+  --accent-purple-start: #8B5CF6;
+  --accent-purple-end: #6D28D9;
+  --accent-blue: #3B82F6;
+  --accent-cyan: #22D3EE;
 }
 
 /* Utility Classes */

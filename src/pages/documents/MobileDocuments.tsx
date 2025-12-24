@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, X, Filter, ChevronDown, FolderOpen, XCircle, RefreshCw, Grid3x3, List, Lock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -120,6 +120,7 @@ const filterDocuments = (
 
 export default function Documents() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toasts, removeToast } = useToast();
   
@@ -175,7 +176,23 @@ export default function Documents() {
     setError(null);
     
     try {
-      const fetchedDocs = await documentService.getDocuments(user.id);
+      const params = new URLSearchParams(location.search);
+      // Default Documents page = dashboard scope ONLY (Expiring Soon is a separate workspace)
+      const scopeParam = params.get('scope');
+      const scope = scopeParam === 'expire_soon' ? 'expire_soon' : 'dashboard';
+
+      const expiring = params.get('expiring') === '1';
+      const minDays = Number(params.get('minDays') ?? '0');
+      const maxDays = Number(params.get('maxDays') ?? '60');
+
+      let fetchedDocs = await documentService.getDocuments(user.id, scope as any);
+      if (expiring) {
+        fetchedDocs = fetchedDocs.filter((d) => {
+          const days = getDaysUntil(d.expiration_date);
+          return days >= minDays && days <= maxDays;
+        });
+      }
+
       setDocuments(fetchedDocs);
     } catch (err: any) {
       console.error('Failed to fetch documents:', err);
@@ -184,7 +201,7 @@ export default function Documents() {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [user]);
+  }, [user, location.search]);
 
   useEffect(() => {
     fetchDocuments();
@@ -362,14 +379,14 @@ export default function Documents() {
   // Show loading until lock check is complete
   if (!lockCheckComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-[72px] relative overflow-hidden">
+    <div className="min-h-screen pb-[72px] relative overflow-hidden liquid-dashboard-bg">
       {/* Document Lock Overlay */}
       {isLocked && !isUnlocking && (
         <DocumentLockOverlay onUnlock={handleUnlock} />

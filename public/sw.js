@@ -52,11 +52,12 @@
   }
 
   // PRODUCTION CODE (only runs if not development)
-  const CACHE_NAME = 'doctrack-v3';
-  const RUNTIME_CACHE = 'doctrack-runtime-v3';
+  // Bump this when shipping UI changes so clients don't get stuck on stale entry HTML.
+  const CACHE_NAME = 'doctrack-v4';
+  const RUNTIME_CACHE = 'doctrack-runtime-v4';
 
   self.addEventListener('install', function(event) {
-    console.log('[SW] Installing version 3');
+    console.log('[SW] Installing version 4');
     event.waitUntil(
       caches.open(CACHE_NAME).then(function(cache) {
         return cache.addAll(['/', '/index.html']);
@@ -67,7 +68,7 @@
   });
 
   self.addEventListener('activate', function(event) {
-    console.log('[SW] Activating version 3');
+    console.log('[SW] Activating version 4');
     event.waitUntil(
       caches.keys().then(function(cacheNames) {
         return Promise.all(

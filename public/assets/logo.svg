@@ -1,0 +1,132 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Main glass gradient - purple to blue with pink highlights -->
+    <linearGradient id="glassMain" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0C3FC;stop-opacity:0.95" />
+      <stop offset="25%" style="stop-color:#A78BFA;stop-opacity:0.98" />
+      <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#6366F1;stop-opacity:0.98" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:0.95" />
+    </linearGradient>
+
+    <!-- Top highlight gradient (white/pink glow) -->
+    <linearGradient id="topShine" x1="50%" y1="0%" x2="50%" y2="40%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.9" />
+      <stop offset="30%" style="stop-color:#FAE8FF;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#E9D5FF;stop-opacity:0" />
+    </linearGradient>
+
+    <!-- Edge highlight (left side) -->
+    <linearGradient id="leftEdge" x1="0%" y1="50%" x2="30%" y2="50%">
+      <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#C084FC;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:0" />
+    </linearGradient>
+
+    <!-- Inner glow -->
+    <radialGradient id="innerGlow" cx="35%" cy="35%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.5" />
+      <stop offset="40%" style="stop-color:#F0ABFC;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:0" />
+    </radialGradient>
+
+    <!-- Shadow blur -->
+    <filter id="softShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="3" dy="6" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.35"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Glass refraction effect -->
+    <filter id="glassEffect">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur"/>
+      <feColorMatrix in="blur" type="saturate" values="1.3"/>
+      <feComponentTransfer>
+        <feFuncA type="discrete" tableValues="0 1"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <!-- Drop shadow base -->
+  <path d="M 35 20 L 35 100 L 65 100 C 85 100 100 85 100 60 C 100 35 85 20 65 20 L 35 20 Z M 45 30 L 65 30 C 78 30 88 40 88 60 C 88 80 78 90 65 90 L 45 90 L 45 30 Z"
+        fill="#1E1B4B"
+        opacity="0.25"
+        transform="translate(3, 6)"
+        filter="url(#softShadow)"/>
+
+  <!-- Main 3D glass D shape -->
+  <g filter="url(#glassEffect)">
+    <!-- Base D shape with main gradient -->
+    <path d="M 35 20 L 35 100 L 65 100 C 85 100 100 85 100 60 C 100 35 85 20 65 20 L 35 20 Z M 45 30 L 65 30 C 78 30 88 40 88 60 C 88 80 78 90 65 90 L 45 90 L 45 30 Z"
+          fill="url(#glassMain)"/>
+
+    <!-- Top surface highlight -->
+    <path d="M 35 20 L 65 20 C 75 20 84 23 91 28 L 91 24 C 84 21 75 18 65 18 L 35 18 L 35 20 Z"
+          fill="url(#topShine)"/>
+
+    <!-- Left edge pink/purple highlight -->
+    <path d="M 35 20 L 35 100 L 38 100 L 38 20 Z"
+          fill="url(#leftEdge)"/>
+
+    <!-- Curved outer edge highlight (right side of D) -->
+    <path d="M 65 30 C 72 30 78 33 82 38 C 86 43 88 51 88 60 C 88 69 86 77 82 82 C 78 87 72 90 65 90"
+          stroke="url(#topShine)"
+          stroke-width="2.5"
+          fill="none"
+          opacity="0.7"/>
+
+    <!-- Inner counter opening highlight -->
+    <ellipse cx="68" cy="60" rx="17" ry="26"
+             fill="url(#innerGlow)"
+             opacity="0.6"/>
+
+    <!-- Top-left corner specular highlight -->
+    <ellipse cx="42" cy="28" rx="8" ry="6"
+             fill="#FFFFFF"
+             opacity="0.75"
+             transform="rotate(-15 42 28)"/>
+
+    <!-- Upper curve specular -->
+    <path d="M 65 22 Q 80 22 90 32"
+          stroke="#FFFFFF"
+          stroke-width="2"
+          fill="none"
+          opacity="0.6"
+          stroke-linecap="round"/>
+
+    <!-- Vertical stem subtle highlight -->
+    <rect x="37" y="35" width="6" height="50"
+          fill="url(#leftEdge)"
+          opacity="0.5"
+          rx="1"/>
+
+    <!-- Pink accent on top edge -->
+    <path d="M 45 22 L 65 22 C 70 22 75 23 79 25"
+          stroke="#F0ABFC"
+          stroke-width="1.5"
+          fill="none"
+          opacity="0.8"
+          stroke-linecap="round"/>
+
+    <!-- Bottom depth line -->
+    <path d="M 45 98 L 65 98 C 75 98 84 94 90 88"
+          stroke="#3730A3"
+          stroke-width="1"
+          fill="none"
+          opacity="0.5"
+          stroke-linecap="round"/>
+  </g>
+
+  <!-- Outer glass edge refraction -->
+  <path d="M 35 20 L 35 100 L 65 100 C 85 100 100 85 100 60 C 100 35 85 20 65 20 L 35 20 Z M 45 30 L 65 30 C 78 30 88 40 88 60 C 88 80 78 90 65 90 L 45 90 L 45 30 Z"
+        fill="none"
+        stroke="url(#glassMain)"
+        stroke-width="0.5"
+        opacity="0.6"/>
+</svg>

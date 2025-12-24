@@ -4,7 +4,7 @@ interface AvatarProps {
   src?: string;
   alt?: string;
   fallback: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'xlarge';
   className?: string;
 }
 
@@ -21,6 +21,7 @@ export default function Avatar({
     small: 'w-8 h-8 text-sm',
     medium: 'w-12 h-12 text-base',
     large: 'w-20 h-20 text-3xl',
+    xlarge: 'w-24 h-24 text-4xl', // 96px
   };
 
   const showImage = src && !imageError;

@@ -1,16 +1,17 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Calendar, Users, User, LogOut, Home, Plus, Bell, Lock as LockIcon } from 'lucide-react';
+import { FileText, Calendar, Users, User, Plus, Lock as LockIcon, Clock, MessageSquare, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { triggerHaptic } from '../../utils/animations';
+import BrandLogo from '../ui/BrandLogo';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { getUnreadCount } from '../../services/notifications';
-import NotificationsModal from '../modals/NotificationsModal';
 import { prefersReducedMotion } from '../../utils/animations';
 import { useOptionalIdleTimeout } from '../../contexts/IdleTimeoutContext';
+import { usePendingRequestCount } from '../../hooks/usePendingRequestCount';
+import { childAccountsService } from '../../services/childAccounts';
 
-const navItems = [
-  { path: '/dashboard', label: 'Expiring Soon', icon: Home },
+const baseNavItems = [
+  { path: '/expire-soon', label: 'Expiring Soon', icon: Clock },
   { path: '/documents', label: 'Documents', icon: FileText },
   { path: '/dates', label: 'Dates', icon: Calendar },
   { path: '/family', label: 'Family', icon: Users },
@@ -20,56 +21,42 @@ const navItems = [
 export default function DesktopNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, user } = useAuth();
+  const { user, logout } = useAuth();
   const reduced = prefersReducedMotion();
   const idle = useOptionalIdleTimeout();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const previousPathRef = useRef(location.pathname);
   const headerRef = useRef<HTMLElement | null>(null);
+  const [isParent, setIsParent] = useState(false);
+  const { count: pendingRequestCount } = usePendingRequestCount(isParent ? user?.id : undefined);
+
+  // Check if user is a parent
+  useEffect(() => {
+    if (!user?.id) {
+      setIsParent(false);
+      return;
+    }
+
+    childAccountsService.listMyChildren()
+      .then(children => setIsParent(children.length > 0))
+      .catch(() => setIsParent(false));
+  }, [user?.id]);
+
+  // Build nav items dynamically
+  const navItems = isParent
+    ? [
+        ...baseNavItems.slice(0, 3),
+        { path: '/requests', label: 'Requests', icon: MessageSquare, badge: pendingRequestCount } as const,
+        ...baseNavItems.slice(3),
+      ]
+    : baseNavItems;
 
   const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return location.pathname === '/' || location.pathname === '/dashboard';
+    if (path === '/expire-soon') {
+      return location.pathname === '/expire-soon';
     }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // Track previous path for context-aware back button
-  useEffect(() => {
-    if (location.pathname !== '/notifications' && !showNotifications) {
-      previousPathRef.current = location.pathname;
-    }
-  }, [location.pathname, showNotifications]);
-
-  // Fetch unread count and poll every 30 seconds
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      if (user?.id) {
-        try {
-          const count = await getUnreadCount(user.id);
-          setUnreadCount(count);
-        } catch (error) {
-          console.error('Failed to fetch unread count:', error);
-        }
-      }
-    };
-
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // Poll every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [user?.id]);
-
-  const handleLogout = async () => {
-    triggerHaptic('medium');
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
+  // (Removed notification + logout actions from nav)
 
   // Expose nav height as a CSS variable so every page can offset correctly.
   useLayoutEffect(() => {
@@ -108,14 +95,25 @@ export default function DesktopNav() {
   })();
 
   return (
-    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 pointer-events-auto">
-      <div className="pt-0">
+    <header ref={headerRef} className="fixed top-4 left-0 right-0 z-50 pointer-events-auto">
+      {/* Solid-ish glass scrim so nothing reads “behind” the nav (ex: Settings danger zone) */}
+      <div
+        className="fixed inset-x-0 top-0 h-[120px] pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(26,22,37,0.92) 0%, rgba(26,22,37,0.72) 55%, rgba(26,22,37,0.00) 100%)',
+          backdropFilter: 'blur(34px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}
+      />
+      <div className="pt-0 relative">
         <div className="mx-auto max-w-7xl px-4 xl:px-8">
           <div
-            className="flex items-center justify-between gap-3 px-4 md:px-5 py-4 rounded-[999px]"
+            className="flex items-center justify-between gap-4 px-6 md:px-8 py-5 rounded-[999px]"
             style={{
               background:
-                'radial-gradient(circle at 18% 12%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 42%, rgba(255,255,255,0.05) 100%), linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(139,92,246,0.10) 55%, rgba(59,130,246,0.10) 100%)',
+                'radial-gradient(circle at 18% 12%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.07) 42%, rgba(255,255,255,0.04) 100%), linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(139,92,246,0.12) 55%, rgba(59,130,246,0.08) 100%)',
               border: '1px solid rgba(255,255,255,0.18)',
               backdropFilter: 'blur(34px) saturate(180%)',
               WebkitBackdropFilter: 'blur(34px) saturate(180%)',
@@ -125,15 +123,11 @@ export default function DesktopNav() {
           >
         {/* Logo/Brand */}
         <div className="flex items-center gap-3 pr-2 flex-shrink-0" style={{ minWidth: 'fit-content' }}>
-          <div
-            className="w-12 h-12 rounded-3xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(59,130,246,0.85))',
-              boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
-              border: '1px solid rgba(255,255,255,0.20)',
-            }}
-          >
-            <FileText className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 flex items-center justify-center">
+            <BrandLogo
+              className="w-12 h-12"
+              alt="DocuTrackr Logo"
+            />
           </div>
           <div className="hidden sm:flex flex-col leading-tight">
             <span className="text-white font-semibold tracking-tight text-base md:text-lg whitespace-nowrap">DocuTrackr</span>
@@ -161,7 +155,7 @@ export default function DesktopNav() {
                     triggerHaptic('light');
                     navigate(item.path);
                   }}
-                  className="relative px-5 py-2.5 rounded-[999px] text-base transition-colors flex items-center gap-2"
+                  className="relative px-6 py-3 rounded-[999px] text-base transition-colors flex items-center gap-2"
                   style={{
                     WebkitTapHighlightColor: 'transparent',
                     color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.72)',
@@ -192,6 +186,19 @@ export default function DesktopNav() {
                   <span className="relative z-10 flex items-center gap-2">
                     <Icon className="w-5 h-5 flex-shrink-0" />
                     <span className="font-medium whitespace-nowrap">{item.label}</span>
+                    {'badge' in item && item.badge !== undefined && item.badge > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold text-white flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                          boxShadow: '0 0 15px rgba(239, 68, 68, 0.6)',
+                        }}
+                      >
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </motion.span>
+                    )}
                   </span>
                 </motion.button>
               );
@@ -200,7 +207,7 @@ export default function DesktopNav() {
         </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center flex-shrink-0" style={{ gap: '8px' }}>
+        <div className="flex items-center flex-shrink-0" style={{ gap: '10px' }}>
           {showIdleIndicator ? (
             <motion.button
               whileHover={reduced ? undefined : { scale: 1.02, y: -1 }}
@@ -225,40 +232,38 @@ export default function DesktopNav() {
             </motion.button>
           ) : null}
 
-          {/* Notification Bell */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              triggerHaptic('light');
-              setShowNotifications(true);
+            whileHover={reduced ? undefined : { scale: 1.02, y: -1 }}
+            whileTap={reduced ? undefined : { scale: 0.98 }}
+            onClick={async () => {
+              triggerHaptic('medium');
+              try {
+                await logout();
+              } catch (error) {
+                console.error('Logout error:', error);
+              } finally {
+                // Always navigate to login, even if logout fails
+                navigate('/login', { replace: true });
+              }
             }}
-            className="relative flex items-center justify-center w-12 h-12 rounded-full text-white/85 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-4 h-12 rounded-full text-white/90 font-medium text-sm"
             style={{
-              pointerEvents: 'auto',
               background:
-                'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.05) 100%)',
+                'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.05) 100%), linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(139,92,246,0.10) 55%, rgba(59,130,246,0.10) 100%)',
               border: '1px solid rgba(255,255,255,0.16)',
-              backdropFilter: 'blur(26px)',
-              WebkitBackdropFilter: 'blur(26px)',
+              backdropFilter: 'blur(26px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(26px) saturate(180%)',
               boxShadow: '0 20px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+              backgroundImage: `
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+              `,
+              backgroundSize: '20px 20px',
             }}
+            title="Logout"
           >
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white"
-                style={{
-                  background: 'linear-gradient(135deg, #EF4444, #DC2626)',
-                  boxShadow: '0 2px 8px rgba(239, 68, 68, 0.6)',
-                  padding: '0 4px',
-                }}
-              >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </motion.div>
-            )}
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
           </motion.button>
 
           <motion.button
@@ -266,7 +271,8 @@ export default function DesktopNav() {
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               triggerHaptic('medium');
-              navigate('/add-document');
+              // Keep nav behavior unchanged
+              navigate(location.pathname === '/expire-soon' ? '/add-document?scope=expire_soon' : '/add-document?scope=dashboard');
             }}
             className="flex items-center gap-2 px-6 h-12 rounded-full text-white font-medium text-base cursor-pointer whitespace-nowrap"
             style={{
@@ -278,34 +284,10 @@ export default function DesktopNav() {
             <Plus className="w-5 h-5" />
             <span>Add</span>
           </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-5 h-12 rounded-full text-red-200 hover:text-red-100 transition-colors text-base font-medium cursor-pointer whitespace-nowrap"
-            style={{
-              pointerEvents: 'auto',
-              background: 'rgba(0,0,0,0.18)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              backdropFilter: 'blur(22px)',
-              WebkitBackdropFilter: 'blur(22px)',
-            }}
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </motion.button>
         </div>
           </div>
         </div>
       </div>
-
-      {/* Notifications Modal */}
-      <NotificationsModal
-        isOpen={showNotifications}
-        onClose={() => setShowNotifications(false)}
-        previousPath={previousPathRef.current}
-      />
     </header>
   );
 }

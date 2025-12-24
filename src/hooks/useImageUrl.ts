@@ -110,9 +110,14 @@ export function useImageUrl(imageUrl: string | null | undefined) {
 
         if (urlError) {
           console.error('Failed to get signed URL:', urlError);
-          setError('Failed to load image. Please try again.');
-          // Don't fallback - security requires signed URLs
-          setSignedUrl(null);
+          // Try to use the original URL as fallback if it's a public URL
+          if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+            console.warn('Using original URL as fallback');
+            setSignedUrl(imageUrl);
+          } else {
+            setError('Failed to load image. Please try again.');
+            setSignedUrl(null);
+          }
         } else if (data?.signedUrl) {
           setSignedUrl(data.signedUrl);
           // Cache the signed URL
@@ -122,7 +127,12 @@ export function useImageUrl(imageUrl: string | null | undefined) {
           });
         } else {
           setError('Failed to generate secure image URL');
-          setSignedUrl(null);
+          // Try fallback to original URL
+          if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+            setSignedUrl(imageUrl);
+          } else {
+            setSignedUrl(null);
+          }
         }
       } catch (err: any) {
         if (abortControllerRef.current?.signal.aborted) {

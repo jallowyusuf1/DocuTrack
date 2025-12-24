@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import SourceSelectionModal from './SourceSelectionModal';
-import PreviewScreen from './PreviewScreen';
-import FormScreen from './FormScreen';
+import { AnimatePresence } from 'framer-motion';
+import Step1UploadImage from './Step1UploadImage';
+import Step2SelectType from './Step2SelectType';
+import Step3DocumentDetails from './Step3DocumentDetails';
+import Step4ReviewSave from './Step4ReviewSave';
 import SuccessAnimation from './SuccessAnimation';
-import type { DocumentFormData } from '../../../types';
+import type { DocumentFormData, DocumentType } from '../../../types';
 
-type FlowStep = 'source' | 'preview' | 'form' | 'success';
+type FlowStep = 1 | 2 | 3 | 4 | 'success';
 
 interface AddDocumentFlowProps {
   onSubmit: (data: DocumentFormData) => Promise<void>;
@@ -21,122 +22,137 @@ export default function AddDocumentFlow({
   isDesktop = false,
   isMobile = false,
 }: AddDocumentFlowProps) {
-  const [currentStep, setCurrentStep] = useState<FlowStep>('source');
+  const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [processedFile, setProcessedFile] = useState<File | null>(null);
-  const [showSourceModal, setShowSourceModal] = useState(true);
-  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType | null>(null);
+  const [selectedDocumentTypeLabel, setSelectedDocumentTypeLabel] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [formData, setFormData] = useState<Partial<DocumentFormData>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Detect if device is mobile/tablet
-  const deviceIsMobile = isMobile || (typeof window !== 'undefined' && window.innerWidth < 768);
-
-  // Handle image selection
+  // Step 1: Handle image selection
   const handleImageSelected = (file: File) => {
     setSelectedFile(file);
-    setProcessedFile(file);
-
+    
     // Create preview URL
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
-      setShowSourceModal(false);
-      setCurrentStep('preview');
+      setCurrentStep(2); // Move to Step 2: Select Type
     };
     reader.readAsDataURL(file);
   };
 
-  // Handle preview continue
-  const handlePreviewContinue = (file: File) => {
-    setProcessedFile(file);
-    setCurrentStep('form');
+  // Step 2: Handle document type selection
+  const handleTypeSelected = (type: DocumentType, label: string, category: string) => {
+    setSelectedDocumentType(type);
+    setSelectedDocumentTypeLabel(label);
+    setSelectedCategory(category);
+    setCurrentStep(3); // Move to Step 3: Document Details
   };
 
-  // Handle form submit
-  const handleFormSubmit = async (data: DocumentFormData) => {
+  // Step 3: Handle form data
+  const handleFormDataContinue = (data: Partial<DocumentFormData>) => {
+    setFormData({
+      ...data,
+      document_type: selectedDocumentType!,
+    });
+    setCurrentStep(4); // Move to Step 4: Review & Save
+  };
+
+  // Step 4: Handle final save
+  const handleSave = async () => {
+    if (!selectedFile || !selectedDocumentType) return;
+
+    setIsSaving(true);
     try {
-      await onSubmit(data);
+      const finalData: DocumentFormData = {
+        document_type: selectedDocumentType,
+        document_name: formData.document_name || '',
+        document_number: formData.document_number,
+        issue_date: formData.issue_date,
+        expiration_date: formData.expiration_date || '',
+        category: formData.category || selectedCategory || selectedDocumentTypeLabel,
+        notes: formData.notes,
+        image: selectedFile,
+      };
+
+      await onSubmit(finalData);
       setCurrentStep('success');
     } catch (error) {
       // Error handling is done in parent component
       throw error;
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // Handle back navigation
   const handleBack = () => {
-    if (currentStep === 'preview') {
-      setCurrentStep('source');
-      setShowSourceModal(true);
+    if (currentStep === 2) {
+      setCurrentStep(1);
       setSelectedFile(null);
       setPreviewUrl(null);
-      setProcessedFile(null);
-    } else if (currentStep === 'form') {
-      setCurrentStep('preview');
+    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    } else if (currentStep === 4) {
+      setCurrentStep(3);
     }
   };
 
   // Handle cancel
   const handleCancel = () => {
-    if (selectedFile || processedFile) {
-      setShowDiscardConfirm(true);
+    if (selectedFile || selectedDocumentType) {
+      // Show confirmation if user has made progress
+      if (confirm('Are you sure you want to cancel? Your progress will be lost.')) {
+        onCancel();
+      }
     } else {
       onCancel();
     }
   };
 
-  // Confirm discard
-  const confirmDiscard = () => {
-    setShowDiscardConfirm(false);
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setProcessedFile(null);
-    onCancel();
-  };
-
   return (
     <>
       <AnimatePresence mode="wait">
-        {currentStep === 'source' && (
-          <motion.div
-            key="source"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="min-h-screen bg-gradient-to-br from-[#1a1625] via-[#2d1b4e] to-[#1a1625] flex items-center justify-center"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSourceModal(true)}
-              className="px-8 py-4 rounded-2xl font-semibold text-white"
-              style={{
-                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.4)',
-              }}
-            >
-              Select Image
-            </motion.button>
-          </motion.div>
+        {currentStep === 1 && (
+          <Step1UploadImage
+            key="step1"
+            onImageSelected={handleImageSelected}
+            onCancel={handleCancel}
+          />
         )}
 
-        {currentStep === 'preview' && selectedFile && previewUrl && (
-          <PreviewScreen
-            key="preview"
-            imageFile={selectedFile}
-            imagePreview={previewUrl}
-            onContinue={handlePreviewContinue}
+        {currentStep === 2 && selectedFile && previewUrl && (
+          <Step2SelectType
+            key="step2"
+            onTypeSelected={handleTypeSelected}
             onBack={handleBack}
           />
         )}
 
-        {currentStep === 'form' && processedFile && (
-          <FormScreen
-            key="form"
-            imageFile={processedFile}
-            onSubmit={handleFormSubmit}
+        {currentStep === 3 && selectedFile && selectedDocumentType && (
+          <Step3DocumentDetails
+            key="step3"
+            documentType={selectedDocumentType}
+            documentTypeLabel={selectedDocumentTypeLabel}
+            imageFile={selectedFile}
+            onContinue={handleFormDataContinue}
             onBack={handleBack}
-            isDesktop={isDesktop}
+          />
+        )}
+
+        {currentStep === 4 && selectedFile && previewUrl && selectedDocumentType && (
+          <Step4ReviewSave
+            key="step4"
+            imageFile={selectedFile}
+            imagePreview={previewUrl}
+            formData={formData}
+            documentTypeLabel={selectedDocumentTypeLabel}
+            onSave={handleSave}
+            onBack={handleBack}
+            isSaving={isSaving}
           />
         )}
 
@@ -147,52 +163,6 @@ export default function AddDocumentFlow({
           />
         )}
       </AnimatePresence>
-
-      {/* Source Selection Modal */}
-      <SourceSelectionModal
-        isOpen={showSourceModal}
-        onClose={() => {
-          setShowSourceModal(false);
-          if (!selectedFile) {
-            handleCancel();
-          }
-        }}
-        onImageSelected={handleImageSelected}
-        isMobile={deviceIsMobile}
-      />
-
-      {/* Discard Confirmation */}
-      {showDiscardConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-[rgba(42,38,64,0.95)] rounded-2xl p-6 max-w-md mx-4 border border-white/10"
-            style={{
-              backdropFilter: 'blur(40px)',
-            }}
-          >
-            <h3 className="text-xl font-bold text-white mb-2">Discard Changes?</h3>
-            <p className="text-white/60 mb-6">
-              Your progress will be lost. Are you sure you want to continue?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDiscardConfirm(false)}
-                className="flex-1 py-3 rounded-xl border border-white/20 text-white font-medium hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDiscard}
-                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
-              >
-                Discard
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </>
   );
 }

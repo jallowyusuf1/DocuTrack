@@ -7,7 +7,7 @@ export default function MobileCalendar() {
   const navigate = useNavigate();
 
   return (
-    <div className="pb-[72px] min-h-screen">
+    <div className="pb-[72px] min-h-screen liquid-dashboard-bg">
       <div className="px-4 md:px-6 pt-4 md:pt-6">
         <div className="mb-6">
           <BackButton to="/dashboard" />

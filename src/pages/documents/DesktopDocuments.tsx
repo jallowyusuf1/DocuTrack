@@ -16,7 +16,6 @@ import Toast from '../../components/ui/Toast';
 import BackButton from '../../components/ui/BackButton';
 import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
 import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
-import { mockDocuments } from '../../data/mockDocuments';
 import { Lock } from 'lucide-react';
 
 type ViewMode = 'grid' | 'list';
@@ -103,35 +102,47 @@ export default function DesktopDocuments() {
     setSearchParams(params, { replace: true });
   }, [filters, setSearchParams]);
 
-  // Fetch documents - Use mock data for instant loading
+  // Fetch documents (Supabase)
   const fetchDocuments = useCallback(async () => {
-    // Simulate a brief loading state (0.5-1 second) for smooth UX
-    const startTime = Date.now();
-
-    // Load mock documents immediately
-    setDocuments(mockDocuments);
-
-    // Ensure minimum loading time of 500ms for smooth transition
-    const elapsed = Date.now() - startTime;
-    if (elapsed < 500) {
-      await new Promise(resolve => setTimeout(resolve, 500 - elapsed));
+    if (!user?.id) {
+      setDocuments([]);
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    try {
+      setLoading(true);
+      setError(null);
 
-    // Optionally fetch real documents in the background
-    if (user?.id) {
-      try {
-        const fetchedDocs = await documentService.getDocuments(user.id);
-        if (fetchedDocs && fetchedDocs.length > 0) {
-          setDocuments(fetchedDocs);
-        }
-      } catch (err: any) {
-        console.error('Failed to fetch real documents:', err);
-        // Keep using mock documents if real fetch fails
+      // Default Documents page = dashboard scope ONLY (Expiring Soon is a separate workspace)
+      const scopeParam = searchParams.get('scope');
+      const scope = scopeParam === 'expire_soon' ? 'expire_soon' : 'dashboard';
+
+      const expiring = searchParams.get('expiring') === '1';
+      const minDays = Number(searchParams.get('minDays') ?? '0');
+      const maxDays = Number(searchParams.get('maxDays') ?? '60');
+
+      let fetchedDocs = await documentService.getDocuments(user.id, scope as any);
+
+      if (expiring) {
+        fetchedDocs = fetchedDocs.filter((d) => {
+          const days = getDaysUntil(d.expiration_date);
+          return days >= minDays && days <= maxDays;
+        });
       }
+
+      setDocuments(fetchedDocs);
+      setHasMore(false);
+      setCurrentPage(1);
+      setSelectedIds([]);
+    } catch (err: any) {
+      console.error('Failed to fetch documents:', err);
+      setError(err?.message ?? 'Failed to fetch documents');
+      setDocuments([]);
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user?.id, searchParams]);
 
   useEffect(() => {
     fetchDocuments();
@@ -416,7 +427,7 @@ export default function DesktopDocuments() {
   // Show nothing until lock check is complete
   if (!lockCheckComplete) {
     return (
-      <div className="min-h-full flex flex-col bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
+      <div className="min-h-full flex flex-col bg-black">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-white text-lg">Loading...</div>
         </div>
@@ -425,7 +436,7 @@ export default function DesktopDocuments() {
   }
 
   return (
-    <div className="min-h-full flex flex-col bg-gradient-to-br from-[#1A1625] to-[#0F0B1A]">
+    <div className="min-h-full flex flex-col liquid-dashboard-bg">
       {/* Document Lock Overlay */}
       {isLocked && !isUnlocking && (
         <DocumentLockOverlay onUnlock={handleUnlock} />
@@ -455,7 +466,9 @@ export default function DesktopDocuments() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Back Button + Toolbar */}
           <div className="flex items-center gap-4 px-6 py-4">
-            <BackButton to="/dashboard" />
+            <BackButton
+              to={searchParams.get('scope') === 'expire_soon' || searchParams.get('expiring') === '1' ? '/expire-soon' : '/dashboard'}
+            />
             <div className="flex-1">
               <DocumentsToolbar
                 viewMode={viewMode}

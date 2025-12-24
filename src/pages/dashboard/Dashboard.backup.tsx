@@ -265,8 +265,6 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Activity Chart */}
-        <ActivityChart documents={documents} />
 
         {/* Document List Section */}
         <div className="mt-6 mb-4">

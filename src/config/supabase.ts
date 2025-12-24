@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { conditionalStorage } from '../utils/sessionStorage';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
@@ -45,8 +46,10 @@ export const supabase: SupabaseClient = (() => {
         // Enable automatic token refresh to maintain sessions
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        // Use localStorage for persistent sessions across browser restarts
-        storage: window.localStorage,
+        // Use conditional storage that respects "Remember Me" preference
+        // If "Remember Me" is false, uses sessionStorage (clears on tab close)
+        // If "Remember Me" is true, uses localStorage (persists)
+        storage: conditionalStorage,
         storageKey: 'supabase.auth.token',
       },
       global: {
@@ -60,8 +63,29 @@ export const supabase: SupabaseClient = (() => {
       // Add timeout and retry settings
       realtime: {
         timeout: 30000, // 30 second timeout
+        // Suppress non-critical WebSocket errors in production
+        logger: import.meta.env.MODE === 'production' ? undefined : console,
       },
     });
+
+    // Suppress console warnings for non-critical errors in production
+    if (import.meta.env.MODE === 'production') {
+      const originalWarn = console.warn;
+      console.warn = (...args: any[]) => {
+        const message = args[0];
+        // Filter out common non-critical Supabase warnings
+        if (
+          typeof message === 'string' &&
+          (message.includes('WebSocket') ||
+           message.includes('realtime') ||
+           message.includes('Initial failed to connect') ||
+           message.includes('PGRST'))
+        ) {
+          return; // Suppress these warnings in production
+        }
+        originalWarn.apply(console, args);
+      };
+    }
   }
   return supabaseInstance;
 })();

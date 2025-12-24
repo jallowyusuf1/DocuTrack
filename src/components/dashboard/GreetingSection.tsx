@@ -81,7 +81,7 @@ export default function GreetingSection({ expiringCount }: GreetingSectionProps)
             letterSpacing: '-0.24px',
           }}
         >
-          You have {expiringCount} {expiringCount === 1 ? 'document' : 'documents'} expiring soon
+          You have {expiringCount} {expiringCount === 1 ? 'item' : 'items'} expiring soon
         </p>
       </div>
     </motion.div>

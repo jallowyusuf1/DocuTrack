@@ -1,4 +1,28 @@
-# Ignore everything except document-tracker
-*
-!document-tracker/
+# Ignore development files
+node_modules
+.git
+.cursor
+.vscode
+.idea
+*.log
+.DS_Store
 
+# Ignore build artifacts (Vercel will create its own)
+dist
+.vercel
+
+# Ignore test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Ignore documentation (optional - can be included)
+*.md
+!README.md
+
+# Ignore scripts
+scripts/
+
+# Ignore old/nested project folder if it exists
+document-tracker/

@@ -42,6 +42,7 @@ import Toast from '../../components/ui/Toast';
 import { getDaysUntil } from '../../utils/dateUtils';
 import { triggerHaptic } from '../../utils/animations';
 import BackButton from '../../components/ui/BackButton';
+import FamilyChildAccountsTab from '../../components/profile/FamilyChildAccountsTab';
 
 interface Statistics {
   totalDocuments: number;
@@ -89,6 +90,7 @@ export default function Profile() {
   const [isProfileLocked, setIsProfileLocked] = useState(false);
   const [isProfileLockModalOpen, setIsProfileLockModalOpen] = useState(false);
   const [profileUnlocked, setProfileUnlocked] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'family'>('profile');
 
   // Get user initials
   const getUserInitials = () => {
@@ -266,7 +268,7 @@ export default function Profile() {
 
   if (loading && statistics.totalDocuments === 0) {
     return (
-      <div className="pb-[72px] min-h-screen relative overflow-hidden">
+      <div className="pb-[72px] min-h-screen relative overflow-hidden liquid-dashboard-bg">
         {/* Background Gradient */}
         <div className="fixed inset-0 pointer-events-none z-0">
           <div
@@ -380,177 +382,212 @@ export default function Profile() {
         </header>
 
         {/* Back Button */}
-        <div className="px-4 pt-4 mb-2">
+        <div className="px-4 pt-4 mb-3 flex items-center justify-between gap-3">
           <BackButton to="/dashboard" />
-        </div>
-
-        {/* User Profile Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: isEntering ? 0 : 1, scale: isEntering ? 0.9 : 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="px-4 pt-5"
-        >
-          <div 
-            className="rounded-3xl p-6"
+          <div
+            className="rounded-2xl p-1 flex items-center gap-1"
             style={{
-              background: 'rgba(42, 38, 64, 0.7)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              background: 'rgba(42, 38, 64, 0.55)',
+              backdropFilter: 'blur(14px)',
+              border: '1px solid rgba(255, 255, 255, 0.10)',
             }}
           >
-            <div className="flex flex-col items-center">
-              {/* Avatar */}
-              <motion.div
-                initial={{ y: -50, opacity: 0, scale: 0.5 }}
-                animate={{ 
-                  y: isEntering ? -50 : 0, 
-                  opacity: isEntering ? 0 : 1, 
-                  scale: isEntering ? 0.5 : 1 
-                }}
-                transition={{ delay: 0.6, duration: 0.5, type: 'spring', stiffness: 200 }}
-                className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden"
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className="px-4 h-10 rounded-xl text-sm font-semibold transition-colors"
+              style={{
+                color: activeTab === 'profile' ? '#FFFFFF' : 'rgba(255,255,255,0.70)',
+                background: activeTab === 'profile' ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))' : 'transparent',
+              }}
+            >
+              Profile
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('family')}
+              className="px-4 h-10 rounded-xl text-sm font-semibold transition-colors"
+              style={{
+                color: activeTab === 'family' ? '#FFFFFF' : 'rgba(255,255,255,0.70)',
+                background: activeTab === 'family' ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))' : 'transparent',
+              }}
+            >
+              Family
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'family' ? (
+          <FamilyChildAccountsTab />
+        ) : (
+          <>
+            {/* User Profile Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: isEntering ? 0 : 1, scale: isEntering ? 0.9 : 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="px-4 pt-5"
+            >
+              <div 
+                className="rounded-3xl p-6"
                 style={{
-                  background: user?.user_metadata?.avatar_url 
-                    ? 'transparent' 
-                    : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                  boxShadow: '0 0 30px rgba(139, 92, 246, 0.5)',
+                  background: 'rgba(42, 38, 64, 0.7)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                 }}
               >
-                {user?.user_metadata?.avatar_url ? (
-                  <img
-                    src={user.user_metadata.avatar_url}
-                    alt={user?.user_metadata?.full_name || 'User'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-white text-3xl font-bold">
-                    {getUserInitials()}
-                  </span>
-                )}
-              </motion.div>
+                <div className="flex flex-col items-center">
+                  {/* Avatar */}
+                  <motion.div
+                    initial={{ y: -50, opacity: 0, scale: 0.5 }}
+                    animate={{ 
+                      y: isEntering ? -50 : 0, 
+                      opacity: isEntering ? 0 : 1, 
+                      scale: isEntering ? 0.5 : 1 
+                    }}
+                    transition={{ delay: 0.6, duration: 0.5, type: 'spring', stiffness: 200 }}
+                    className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden"
+                    style={{
+                      background: user?.user_metadata?.avatar_url 
+                        ? 'transparent' 
+                        : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                      boxShadow: '0 0 30px rgba(139, 92, 246, 0.5)',
+                    }}
+                  >
+                    {user?.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt={user?.user_metadata?.full_name || 'User'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-white text-3xl font-bold">
+                        {getUserInitials()}
+                      </span>
+                    )}
+                  </motion.div>
 
-              {/* Name */}
-              <motion.h2
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isEntering ? 0 : 1 }}
-                transition={{ delay: 0.7, duration: 0.3 }}
-                className="text-xl font-bold text-white mt-4"
-              >
-                {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-              </motion.h2>
+                  {/* Name */}
+                  <motion.h2
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isEntering ? 0 : 1 }}
+                    transition={{ delay: 0.7, duration: 0.3 }}
+                    className="text-xl font-bold text-white mt-4"
+                  >
+                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                  </motion.h2>
 
-              {/* Email */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isEntering ? 0 : 1 }}
-                transition={{ delay: 0.8, duration: 0.3 }}
-                className="text-sm mt-1"
-                style={{ color: '#A78BFA' }}
-              >
-                {user?.email}
-              </motion.p>
+                  {/* Email */}
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isEntering ? 0 : 1 }}
+                    transition={{ delay: 0.8, duration: 0.3 }}
+                    className="text-sm mt-1"
+                    style={{ color: '#A78BFA' }}
+                  >
+                    {user?.email}
+                  </motion.p>
 
-              {/* Edit Profile Button */}
-              <div className="mt-4">
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: isEntering ? 0 : 1, y: isEntering ? 10 : 0 }}
-                  transition={{ delay: 0.9, duration: 0.3 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    triggerHaptic('light');
-                    setIsEditProfileOpen(true);
-                  }}
-                  className="w-full h-10 px-6 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
+                  {/* Edit Profile Button */}
+                  <div className="mt-4">
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: isEntering ? 0 : 1, y: isEntering ? 10 : 0 }}
+                      transition={{ delay: 0.9, duration: 0.3 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setIsEditProfileOpen(true);
+                      }}
+                      className="w-full h-10 px-6 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
+                      style={{
+                        background: 'rgba(35, 29, 51, 0.6)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: '#FFFFFF',
+                      }}
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Profile
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Statistics Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isEntering ? 0 : 1, y: isEntering ? 20 : 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="px-4 mt-5 mb-6"
+            >
+              <div className="flex gap-3">
+                {/* Total Documents */}
+                <div 
+                  className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
                   style={{
-                    background: 'rgba(35, 29, 51, 0.6)',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#FFFFFF',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
                   }}
                 >
-                  <Edit className="w-4 h-4" />
-                  Edit Profile
-                </motion.button>
+                  <Folder className="w-5 h-5 mb-1" style={{ color: '#60A5FA' }} />
+                  <span className="text-2xl font-bold text-white">
+                    {statistics.totalDocuments}
+                  </span>
+                  <span className="text-xs" style={{ color: '#A78BFA' }}>Documents</span>
+                </div>
+
+                {/* Expiring Soon */}
+                <div 
+                  className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(234, 88, 12, 0.2))',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(249, 115, 22, 0.3)',
+                  }}
+                >
+                  <Clock className="w-5 h-5 mb-1" style={{ color: '#FB923C' }} />
+                  <span
+                    className="text-2xl font-bold"
+                    style={{ color: statistics.expiringSoon > 0 ? '#FB923C' : '#FFFFFF' }}
+                  >
+                    {statistics.expiringSoon}
+                  </span>
+                  <span className="text-xs" style={{ color: '#A78BFA' }}>Expiring</span>
+                </div>
+
+                {/* Expired */}
+                <div 
+                  className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2))',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                  }}
+                >
+                  <AlertCircle className="w-5 h-5 mb-1" style={{ color: '#F87171' }} />
+                  <span
+                    className="text-2xl font-bold"
+                    style={{ color: statistics.expired > 0 ? '#F87171' : '#FFFFFF' }}
+                  >
+                    {statistics.expired}
+                  </span>
+                  <span className="text-xs" style={{ color: '#A78BFA' }}>Expired</span>
+                </div>
               </div>
-            </div>
-          </div>
-        </motion.div>
+            </motion.div>
 
-        {/* Statistics Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isEntering ? 0 : 1, y: isEntering ? 20 : 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="px-4 mt-5 mb-6"
-        >
-          <div className="flex gap-3">
-            {/* Total Documents */}
-            <div 
-              className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
-              style={{
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-              }}
+            {/* Settings Sections */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isEntering ? 0 : 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="px-4 space-y-6"
             >
-              <Folder className="w-5 h-5 mb-1" style={{ color: '#60A5FA' }} />
-              <span className="text-2xl font-bold text-white">
-                {statistics.totalDocuments}
-              </span>
-              <span className="text-xs" style={{ color: '#A78BFA' }}>Documents</span>
-            </div>
-
-            {/* Expiring Soon */}
-            <div 
-              className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
-              style={{
-                background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(234, 88, 12, 0.2))',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(249, 115, 22, 0.3)',
-              }}
-            >
-              <Clock className="w-5 h-5 mb-1" style={{ color: '#FB923C' }} />
-              <span
-                className="text-2xl font-bold"
-                style={{ color: statistics.expiringSoon > 0 ? '#FB923C' : '#FFFFFF' }}
-              >
-                {statistics.expiringSoon}
-              </span>
-              <span className="text-xs" style={{ color: '#A78BFA' }}>Expiring</span>
-            </div>
-
-            {/* Expired */}
-            <div 
-              className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
-              style={{
-                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2))',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-              }}
-            >
-              <AlertCircle className="w-5 h-5 mb-1" style={{ color: '#F87171' }} />
-              <span
-                className="text-2xl font-bold"
-                style={{ color: statistics.expired > 0 ? '#F87171' : '#FFFFFF' }}
-              >
-                {statistics.expired}
-              </span>
-              <span className="text-xs" style={{ color: '#A78BFA' }}>Expired</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Settings Sections */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isEntering ? 0 : 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="px-4 space-y-6"
-        >
           {/* Account Settings */}
           <div>
             <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#A78BFA' }}>
@@ -861,7 +898,9 @@ export default function Profile() {
               Logout
             </motion.button>
           </div>
-        </motion.div>
+            </motion.div>
+          </>
+        )}
       </motion.div>
 
       {/* Modals */}

@@ -69,7 +69,23 @@ export default function ActivityChart({ documents = [], data }: ActivityChartPro
   };
 
   return (
-    <div className="glass-card rounded-2xl p-6 md:p-8 mt-5 md:mt-12">
+    <div
+      className="rounded-2xl p-6 md:p-8"
+      style={{
+        // Frosted tile glass - matte, blurred, NOT milky white
+        background: 'rgba(42, 38, 64, 0.4)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        // Frosted tile pattern overlay
+        backgroundImage: `
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: '20px 20px',
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <h3 className="text-xl md:text-2xl font-bold text-white">Activity</h3>

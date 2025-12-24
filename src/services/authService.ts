@@ -7,6 +7,8 @@ export interface SignupData {
   email: string;
   password: string;
   fullName: string;
+  dateOfBirth: string; // YYYY-MM-DD
+  accountRole?: 'user' | 'parent';
 }
 
 export interface LoginData {
@@ -18,6 +20,9 @@ export interface UserProfile {
   id: string;
   user_id: string;
   full_name: string | null;
+  date_of_birth?: string | null;
+  age_years?: number | null;
+  account_role?: 'user' | 'parent' | 'child' | null;
   created_at: string;
   updated_at: string;
 }
@@ -41,7 +46,7 @@ function ensureOnline(): void {
 
 export const authService = {
   // Sign up new user
-  async signup({ email, password, fullName }: SignupData) {
+  async signup({ email, password, fullName, dateOfBirth, accountRole = 'user' }: SignupData) {
     // Check online status first
     ensureOnline();
 
@@ -51,6 +56,13 @@ export const authService = {
         () => supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              full_name: fullName,
+              date_of_birth: dateOfBirth,
+              account_role: accountRole,
+            },
+          },
         }),
         {
           maxRetries: 2,
@@ -85,9 +97,9 @@ export const authService = {
       // The trigger creates it with NULL, so we update it here
       const { data: updatedProfile, error: updateError } = await supabase
         .from('user_profiles')
-        .update({ full_name: fullName })
+        .update({ full_name: fullName, date_of_birth: dateOfBirth, account_role: accountRole })
         .eq('user_id', authData.user.id)
-        .select('id, user_id, full_name, created_at, updated_at')
+        .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
         .single();
       
       if (!updateError && updatedProfile) {
@@ -96,7 +108,7 @@ export const authService = {
         // If update fails, try to fetch the profile (created by trigger)
         const { data: fetchedProfile } = await supabase
           .from('user_profiles')
-          .select('id, user_id, full_name, created_at, updated_at')
+          .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
           .eq('user_id', authData.user.id)
           .maybeSingle();
         
@@ -104,6 +116,9 @@ export const authService = {
           id: '',
           user_id: authData.user.id,
           full_name: fullName,
+          date_of_birth: dateOfBirth,
+          age_years: null,
+          account_role: accountRole,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
@@ -116,6 +131,9 @@ export const authService = {
         id: '',
         user_id: authData.user.id,
         full_name: fullName,
+        date_of_birth: dateOfBirth,
+        age_years: null,
+        account_role: accountRole,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -184,7 +202,7 @@ export const authService = {
         const profileResult = await Promise.race([
           supabase
             .from('user_profiles')
-            .select('id, user_id, full_name, created_at, updated_at')
+            .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
             .eq('user_id', data.user.id)
             .maybeSingle(),
           new Promise<{ data: null; error: null }>((resolve) => {
@@ -201,26 +219,45 @@ export const authService = {
             const retryResult = await Promise.race([
               supabase
                 .from('user_profiles')
-                .select('id, user_id, full_name, created_at, updated_at')
+                .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
                 .eq('user_id', data.user.id)
                 .maybeSingle(),
               new Promise<{ data: null; error: null }>((resolve) => {
                 setTimeout(() => resolve({ data: null, error: null }), 1000);
               })
             ]);
-            
+
             if (retryResult.data) {
               profile = retryResult.data;
             }
-          } else {
-            // Other error - log but don't fail login
-            console.warn('Profile fetch error:', profileError);
+          } else if (import.meta.env.MODE === 'development') {
+            // Only log in development mode to reduce console noise
+            console.debug('[Profile] Fetch error (non-critical):', profileError.message);
           }
         }
       } catch (error) {
         // Profile fetch failed, but login should still succeed
-        console.warn('Profile fetch exception during login:', error);
+        if (import.meta.env.MODE === 'development') {
+          console.debug('[Profile] Fetch exception during login (non-critical):', error instanceof Error ? error.message : error);
+        }
         profile = null;
+      }
+
+      // If signup happened with email confirmation, we might only have metadata at first login.
+      // Best-effort: backfill profile DOB from auth metadata.
+      try {
+        const dob = (data.user.user_metadata as any)?.date_of_birth as string | undefined;
+        if (dob && (!profile || !(profile as any).date_of_birth)) {
+          const { data: updated } = await supabase
+            .from('user_profiles')
+            .update({ date_of_birth: dob })
+            .eq('user_id', data.user.id)
+            .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+            .maybeSingle();
+          if (updated) profile = updated;
+        }
+      } catch {
+        // ignore
       }
 
       return {
@@ -268,7 +305,7 @@ export const authService = {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('id, user_id, full_name, created_at, updated_at')
+        .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
         .eq('user_id', userId)
         .maybeSingle(); // Use maybeSingle instead of single to avoid errors when not found
 
@@ -276,14 +313,19 @@ export const authService = {
         if (error.code === 'PGRST116' || error.code === 'PGRST116') {
           return null; // Not found - this is okay
         }
-        // Log but don't throw for profile errors - user can still use the app
-        console.warn('Profile fetch error:', error);
+        // Only log errors in development mode to reduce console noise
+        if (import.meta.env.MODE === 'development') {
+          console.debug('[Profile] Fetch error (non-critical):', error.message);
+        }
         return null;
       }
 
       return data;
     } catch (error) {
-      console.warn('Profile fetch exception:', error);
+      // Only log errors in development mode to reduce console noise
+      if (import.meta.env.MODE === 'development') {
+        console.debug('[Profile] Fetch exception (non-critical):', error instanceof Error ? error.message : error);
+      }
       return null; // Return null instead of throwing
     }
   },
@@ -311,6 +353,113 @@ export const authService = {
       email: email,
     });
     if (error) throw error;
+  },
+
+  // Sign in with OAuth provider
+  async signInWithOAuth(provider: 'google' | 'github') {
+    ensureOnline();
+
+    try {
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      if (isNetworkError(error)) {
+        throw new Error(getNetworkErrorMessage(error));
+      }
+      throw error;
+    }
+  },
+
+  // Handle OAuth callback
+  async handleOAuthCallback() {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      if (!data.session) {
+        throw new Error('No session found after OAuth callback');
+      }
+
+      const user = data.session.user;
+      
+      // Check if profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at, onboarding_completed, onboarding_stage')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.warn('Profile fetch error:', profileError);
+      }
+
+      // If no profile exists, create one from OAuth metadata
+      if (!profile) {
+        const fullName = user.user_metadata?.full_name || 
+                        user.user_metadata?.name || 
+                        user.user_metadata?.preferred_username ||
+                        user.email?.split('@')[0] || 
+                        null;
+        
+        const avatarUrl = user.user_metadata?.avatar_url || 
+                         user.user_metadata?.picture || 
+                         null;
+
+        // Create profile
+        const { error: createError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: user.id,
+            full_name: fullName,
+            avatar_url: avatarUrl,
+            account_role: 'user',
+            onboarding_completed: false,
+            onboarding_stage: 3, // Start at profile completion
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+
+        if (createError) {
+          console.warn('Profile creation error:', createError);
+        }
+      }
+
+      return {
+        user,
+        session: data.session,
+        profile: profile || null,
+        isNewUser: !profile,
+      };
+    } catch (error) {
+      if (isNetworkError(error)) {
+        throw new Error(getNetworkErrorMessage(error));
+      }
+      throw error;
+    }
+  },
+
+  // Check if email is already registered
+  async checkEmailExists(email: string): Promise<boolean> {
+    try {
+      // We can't directly check if email exists in Supabase Auth
+      // This would need to be handled via a backend function or
+      // we check after OAuth callback
+      return false;
+    } catch {
+      return false;
+    }
   },
 };
 

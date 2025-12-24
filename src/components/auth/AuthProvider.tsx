@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { supabase } from '../../config/supabase';
 import { ensureBucketExists } from '../../utils/storageSetup';
+import { childAccountsService } from '../../services/childAccounts';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -30,11 +31,26 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         // Bucket setup should not block auth restore; run after.
         ensureBucketExists().catch(() => {});
       } catch (error) {
-        console.warn('Failed to restore session:', error);
+        // Only log in development to reduce console noise
+        if (import.meta.env.MODE === 'development') {
+          console.debug('[Auth] Session restore failed (non-critical):', error instanceof Error ? error.message : error);
+        }
       }
     };
 
     initializeSession();
+
+    // Clear session on page unload if "Remember Me" is false
+    const handleBeforeUnload = () => {
+      const rememberMe = localStorage.getItem('rememberMe') === 'true';
+      if (!rememberMe) {
+        // Clear session from localStorage on page unload
+        // sessionStorage will be cleared automatically by browser
+        localStorage.removeItem('supabase.auth.token');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     // Set up auth state change listener for session persistence
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -42,6 +58,14 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         if (event === 'SIGNED_IN' && session) {
           // User signed in - refresh auth state
           await checkAuth();
+          // Best-effort: if this is a child account, update last active timestamp
+          try {
+            if (session.user?.id) {
+              await childAccountsService.touchLastActive(session.user.id);
+            }
+          } catch {
+            // ignore
+          }
         } else if (event === 'SIGNED_OUT') {
           // User signed out - clear state
           useAuthStore.setState({
@@ -64,7 +88,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
               }));
             }
           } catch (error) {
-            console.warn('Failed to update user on token refresh:', error);
+            // Only log in development to reduce console noise
+            if (import.meta.env.MODE === 'development') {
+              console.debug('[Auth] Token refresh user update failed (non-critical):', error instanceof Error ? error.message : error);
+            }
           }
         }
       }
@@ -72,6 +99,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [checkAuth]); // Include checkAuth in deps
 

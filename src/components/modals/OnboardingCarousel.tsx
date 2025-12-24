@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Camera, FolderOpen, Bell, Sparkles, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Camera, FolderOpen, Bell, FileText } from 'lucide-react';
 
 interface OnboardingCarouselProps {
   isOpen: boolean;
@@ -78,7 +78,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
     },
     {
       id: 5,
-      icon: <Sparkles size={120} strokeWidth={1.5} />,
+      icon: <FileText size={120} strokeWidth={1.5} />,
       title: 'Ready to Start!',
       description: 'You\'re all set! Start organizing your documents and never lose track of important dates again.',
       features: [
@@ -305,7 +305,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
                   {isLastScreen ? (
                     <>
                       Get Started
-                      <Sparkles size={24} />
+                      <FileText size={24} />
                     </>
                   ) : (
                     <>

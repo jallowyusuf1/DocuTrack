@@ -1,11 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, FolderOpen, FolderClosed, Calendar, Users, User, DoorOpen, LogOut } from 'lucide-react';
+import { Clock, FolderOpen, FolderClosed, Calendar, Users, User, DoorOpen, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { useState, useEffect } from 'react';
 import { triggerHaptic, pulse } from '../../utils/animations';
 import AnimatedClockIcon from '../ui/AnimatedClockIcon';
+import { usePendingRequestCount } from '../../hooks/usePendingRequestCount';
+import { childAccountsService } from '../../services/childAccounts';
 
 interface NavItem {
   path: string;
@@ -17,10 +19,23 @@ interface NavItem {
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [expiringCount, setExpiringCount] = useState(0);
   const [clockClicked, setClockClicked] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isParent, setIsParent] = useState(false);
+  const { count: pendingRequestCount } = usePendingRequestCount(isParent ? user?.id : undefined);
+
+  // Check if user is a parent
+  useEffect(() => {
+    if (!user?.id) {
+      setIsParent(false);
+      return;
+    }
+
+    childAccountsService.listMyChildren()
+      .then(children => setIsParent(children.length > 0))
+      .catch(() => setIsParent(false));
+  }, [user?.id]);
   
   // Responsive desktop check - must be before early returns
   const [isDesktop, setIsDesktop] = useState(() => {
@@ -44,7 +59,7 @@ export default function BottomNav() {
   // Fetch expiring documents count
   useEffect(() => {
     if (user && !isAuthPage) {
-      documentService.getExpiringDocuments(user.id, 30)
+      documentService.getExpiringDocuments(user.id, 30, 'expire_soon')
         .then(docs => setExpiringCount(docs.length))
         .catch(() => setExpiringCount(0));
     }
@@ -68,19 +83,11 @@ export default function BottomNav() {
   // Track if dates page is active for continuous flip animation
   const isDatesActive = location.pathname === '/dates';
 
-  const handleLogout = async () => {
-    triggerHaptic('medium');
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
+  // (Logout removed from bottom nav)
 
   const navItems: NavItem[] = [
     {
-      path: '/dashboard',
+      path: '/expire-soon',
       icon: Clock,
       label: 'Expiring Soon',
       badge: expiringCount,
@@ -90,6 +97,16 @@ export default function BottomNav() {
       icon: FolderClosed, // Will be animated separately
       label: 'Documents',
     },
+    ...(isParent
+      ? [
+          {
+            path: '/requests',
+            icon: MessageSquare,
+            label: 'Requests',
+            badge: pendingRequestCount,
+          },
+        ]
+      : []),
     {
       path: '/family',
       icon: Users,
@@ -108,8 +125,8 @@ export default function BottomNav() {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return location.pathname === '/' || location.pathname === '/dashboard';
+    if (path === '/expire-soon') {
+      return location.pathname === '/expire-soon';
     }
     return location.pathname.startsWith(path);
   };
@@ -294,30 +311,7 @@ export default function BottomNav() {
           );
         })}
         
-        {/* Logout Button */}
-        <motion.div
-          whileTap={{ scale: 0.9 }}
-          className="flex-1 h-full"
-        >
-          <motion.button
-            onClick={() => {
-              triggerHaptic('medium');
-              if (window.confirm('Are you sure you want to logout?')) {
-                handleLogout();
-              }
-            }}
-            className="
-              flex flex-col items-center justify-center
-              min-h-[48px]
-              select-none touch-manipulation
-              text-red-400 hover:text-red-300
-              transition-colors duration-200
-            "
-          >
-            <LogOut className="w-6 h-6" />
-            <span className="text-[11px] mt-1 font-medium">Logout</span>
-          </motion.button>
-        </motion.div>
+        {/* Logout removed */}
       </div>
     </nav>
   );

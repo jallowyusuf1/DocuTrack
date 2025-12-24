@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, X, Clock, Star, Filter, Grid3x3, List, ArrowRight,
-  FileText, Calendar, Users, Folder, Sparkles, ChevronDown, ChevronRight,
+  FileText, Calendar, Users, Folder, ChevronDown, ChevronRight,
   CheckCircle, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -1123,7 +1123,7 @@ export default function DesktopSearch() {
                 animate={{ opacity: 1 }}
                 className="py-20 text-center"
               >
-                <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-6" />
+                <Search className="w-16 h-16 text-purple-400 mx-auto mb-6" />
                 <h3 className="text-2xl font-bold text-white mb-2">Start searching</h3>
                 <p className="text-white/60">Type in the search bar above to find your documents</p>
               </motion.div>

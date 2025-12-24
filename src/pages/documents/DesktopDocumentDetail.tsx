@@ -10,11 +10,13 @@ import DesktopDocumentSidebar from '../../components/documents/DesktopDocumentSi
 import DesktopDocumentPreview from '../../components/documents/DesktopDocumentPreview';
 import DesktopDocumentInfoPanel from '../../components/documents/DesktopDocumentInfoPanel';
 import DeleteConfirmationModal from '../../components/documents/DeleteConfirmationModal';
+import PermissionGateModals from '../../components/child/PermissionGateModals';
+import { decideChildAction } from '../../utils/childPermissions';
 
 export default function DesktopDocumentDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, accountType, childContext } = useAuth();
   const { showToast } = useToast();
   
   const [document, setDocument] = useState<Document | null>(null);
@@ -22,6 +24,8 @@ export default function DesktopDocumentDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [gateMode, setGateMode] = useState<'permission_denied' | 'approval_required'>('permission_denied');
   const [isEditing, setIsEditing] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
@@ -127,6 +131,21 @@ export default function DesktopDocumentDetail() {
     if (!document || !user?.id) return;
 
     try {
+      if (accountType === 'child' && childContext) {
+        const decision = decideChildAction({
+          action: 'delete_document',
+          permissions: childContext.permissions,
+          oversightLevel: childContext.oversightLevel,
+          isFamilyDocument: false,
+        });
+        if (decision.kind !== 'allow') {
+          setGateMode(decision.reason);
+          setGateOpen(true);
+          setIsDeleteModalOpen(false);
+          return;
+        }
+      }
+
       await documentService.deleteDocument(document.id, user.id);
       showToast('Document deleted successfully', 'success');
       navigate('/documents');
@@ -143,7 +162,7 @@ export default function DesktopDocumentDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
+      <div className="min-h-screen flex flex-col">
         <DesktopNav />
         <div className="flex-1 flex items-center justify-center" style={{ marginTop: '104px' }}>
           <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -154,7 +173,7 @@ export default function DesktopDocumentDetail() {
 
   if (error || !document) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
+      <div className="min-h-screen flex flex-col">
         <DesktopNav />
         <div className="flex-1 flex items-center justify-center" style={{ marginTop: '104px' }}>
           <div className="text-center">
@@ -242,6 +261,17 @@ export default function DesktopDocumentDetail() {
         documentName={document.document_name}
         document={document}
       />
+
+      {accountType === 'child' && childContext && document && (
+        <PermissionGateModals
+          open={gateOpen}
+          mode={gateMode}
+          actionType="delete_document"
+          document={document}
+          onClose={() => setGateOpen(false)}
+          onRequestSent={() => showToast(`Request sent to ${childContext.parentName}!`, 'success')}
+        />
+      )}
     </div>
   );
 }

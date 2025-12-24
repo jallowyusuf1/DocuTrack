@@ -19,7 +19,6 @@ import {
   Eye,
   EyeOff,
   HelpCircle,
-  Sparkles,
   AlertTriangle,
   List,
   FileText,

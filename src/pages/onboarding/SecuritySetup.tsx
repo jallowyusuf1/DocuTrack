@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, ChevronDown, Globe, Lock, Shield, Bell, Eye, Sparkles } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronDown, Globe, Lock, Shield, Bell, Eye } from 'lucide-react';
 import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { GlassButton, GlassCard, GlassPill } from '../../components/ui/glass/Glass';
 import { prefersReducedMotion, triggerHaptic } from '../../utils/animations';
@@ -358,7 +358,7 @@ export default function SecuritySetup() {
                     style={{ background: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.10)' }}
                   >
                     <div className="flex items-center gap-2 text-white/80 text-sm font-semibold">
-                      <Sparkles className="w-4 h-4 text-purple-200" />
+                      <Eye className="w-4 h-4 text-purple-200" />
                       Preview
                     </div>
                     <div className="mt-3 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>

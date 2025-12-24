@@ -82,26 +82,20 @@ export default function UrgencySummaryCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       whileHover={{ y: -2, scale: 1.02 }}
-      className="rounded-2xl p-4 md:p-6 min-h-[100px] md:min-h-[140px] flex flex-col justify-center relative overflow-hidden cursor-pointer"
+      className="rounded-2xl p-3 md:p-4 min-h-[85px] md:min-h-[110px] flex flex-col justify-center relative overflow-hidden cursor-pointer"
       style={{
-        background: `linear-gradient(135deg, ${gradientColors.from}, ${gradientColors.to})`,
-        backdropFilter: 'blur(30px)',
-        WebkitBackdropFilter: 'blur(30px)',
+        background: `rgba(42, 38, 64, 0.45)`,
+        backdropFilter: 'blur(40px) saturate(120%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(120%)',
         border: `1px solid ${gradientColors.border}`,
-        boxShadow: `0 8px 32px rgba(0, 0, 0, 0.3), 0 0 40px ${gradientColors.glow}`,
-        outline: `2px solid ${gradientColors.border}`,
-        outlineOffset: '2px',
+        boxShadow: `0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
       }}
     >
-      {/* Tiled Glass Pattern Overlay */}
+      {/* Frosted overlay - matte, not shiny */}
       <div
-        className="absolute inset-0 opacity-10"
+        className="absolute inset-0 opacity-[0.15]"
         style={{
-          backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '20px 20px',
+          background: `radial-gradient(circle at top left, ${gradientColors.from}, transparent 70%)`,
         }}
       />
 

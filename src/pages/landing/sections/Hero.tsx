@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Shield, Sparkles, ScanLine, CalendarDays, Users } from 'lucide-react';
+import { ArrowRight, Shield, ScanLine, CalendarDays, Users, Check, Play } from 'lucide-react';
 import { GlassButton, GlassCard, GlassPill, GlassTile } from '../../../components/ui/glass/Glass';
 import { MotionInView } from '../../../components/ui/motion/MotionInView';
 import { prefersReducedMotion } from '../../../utils/animations';
+import HeroVideoModal from '../../../components/landing/HeroVideoModal';
+import BrandLogo from '../../../components/ui/BrandLogo';
 
 const navLinks = [
   { label: 'Overview', href: '#overview' },
@@ -12,7 +14,7 @@ const navLinks = [
   { label: 'Features', href: '#features' },
 ];
 
-function TopNav() {
+export function TopNav() {
   const reduced = prefersReducedMotion();
   const [active, setActive] = useState<'overview' | 'how-it-works' | 'features'>(() => {
     const h = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
@@ -46,18 +48,53 @@ function TopNav() {
   }, []);
 
   const scrollToId = (id: 'overview' | 'how-it-works' | 'features') => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const nav = document.querySelector<HTMLElement>('[data-landing-nav]');
-    const offset = (nav?.offsetHeight ?? 96) + 18;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
-    window.history.pushState(null, '', `#${id}`);
+    // Force scroll immediately - don't wait
+    const performScroll = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        const nav = document.querySelector<HTMLElement>('[data-landing-nav]');
+        const offset = (nav?.offsetHeight ?? 96) + 32;
+        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        window.history.pushState(null, '', `#${id}`);
+        return true;
+      }
+      return false;
+    };
+
+    // Try immediate scroll
+    if (performScroll()) {
+      return;
+    }
+
+    // If not found, wait for lazy-loaded sections
+    let attempts = 0;
+    const maxAttempts = 30; // 3 seconds
+    const checkInterval = setInterval(() => {
+      attempts++;
+      if (performScroll() || attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        if (attempts >= maxAttempts) {
+          console.warn(`Section with id "${id}" not found after ${maxAttempts} attempts`);
+        }
+      }
+    }, 100);
   };
 
   return (
-    <div className="sticky top-0 z-40 pt-4 md:pt-6">
-      <div className="mx-auto max-w-7xl px-4 md:px-8">
+    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+      {/* Solid scrim so content goes behind the nav */}
+      <div
+        className="absolute inset-x-0 top-0 h-[140px] pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(26,22,37,0.95) 0%, rgba(26,22,37,0.75) 60%, rgba(26,22,37,0.00) 100%)',
+          backdropFilter: 'blur(34px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+        }}
+      />
+      <div className="relative pt-4 md:pt-6">
+        <div className="mx-auto max-w-7xl px-4 md:px-8 pointer-events-auto">
         <div
           data-landing-nav
           className="flex items-center justify-between gap-3 px-4 md:px-5 py-4 md:py-4.5 rounded-[999px]"
@@ -74,14 +111,9 @@ function TopNav() {
         >
           {/* Left: brand */}
           <div className="flex items-center gap-3 pr-2">
-            <div
-              className="w-12 h-12 rounded-3xl"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(59,130,246,0.85))',
-                boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
-                border: '1px solid rgba(255,255,255,0.20)',
-              }}
-            />
+            <div className="w-12 h-12 flex items-center justify-center">
+              <BrandLogo className="w-12 h-12" alt="DocuTrackr Logo" />
+            </div>
             <div className="hidden sm:flex flex-col leading-tight">
               <span className="text-white font-semibold tracking-tight text-base md:text-lg">DocuTrackr</span>
               <span className="text-white/60 text-xs md:text-sm">Deadline-proof documents</span>
@@ -132,10 +164,16 @@ function TopNav() {
                     href={l.href}
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation(); // Prevent Landing.tsx handler from interfering
+                      e.stopImmediatePropagation(); // Also stop immediate propagation
                       setActive(id);
                       scrollToId(id);
                     }}
-                    className="relative z-10 px-5 py-2.5 rounded-[999px] text-base transition-colors"
+                    onMouseDown={(e) => {
+                      // Prevent default on mousedown too
+                      e.preventDefault();
+                    }}
+                    className="relative z-10 px-5 py-2.5 rounded-[999px] text-base transition-colors cursor-pointer"
                     style={{
                       WebkitTapHighlightColor: 'transparent',
                       color: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.72)',
@@ -161,6 +199,7 @@ function TopNav() {
               </GlassButton>
             </Link>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -295,16 +334,19 @@ function MetricTiles() {
 }
 
 export default function Hero() {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  // TODO: replace with your real URL (direct .mp4 recommended). User will provide later.
+  const heroVideoUrl: string | undefined = undefined;
+
   return (
     <section id="overview" className="relative">
-      <TopNav />
 
       <div className="mx-auto max-w-6xl px-4 md:px-6 pt-10 md:pt-14 pb-14 md:pb-18">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
           <div>
             <MotionInView preset="fadeUp">
               <GlassPill className="text-white/85">
-                <Sparkles className="w-4 h-4 text-white/80" />
+                <Check className="w-4 h-4 text-white/80" />
                 Built for people who never miss deadlines.
               </GlassPill>
             </MotionInView>
@@ -336,6 +378,17 @@ export default function Hero() {
                     Start free <ArrowRight className="w-4 h-4" />
                   </GlassButton>
                 </Link>
+                <GlassButton
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsVideoOpen(true);
+                  }}
+                >
+                  <Play className="w-4 h-4" />
+                  Watch video
+                </GlassButton>
                 <a href="#how-it-works" className="w-full sm:w-auto">
                   <GlassButton variant="secondary" className="w-full sm:w-auto">
                     See how it works
@@ -370,6 +423,13 @@ export default function Hero() {
           </MotionInView>
         </div>
       </div>
+
+      <HeroVideoModal
+        isOpen={isVideoOpen}
+        onClose={() => setIsVideoOpen(false)}
+        videoUrl={heroVideoUrl}
+        title="DocuTrackr — quick demo"
+      />
     </section>
   );
 }
@@ -506,7 +566,7 @@ function OCRPreview() {
           ))}
           <div className="pt-2">
             <GlassPill className="text-white/85">
-              <Sparkles className="w-4 h-4 text-white/70" />
+              <Check className="w-4 h-4 text-white/70" />
               Auto‑categorized + reminders scheduled
             </GlassPill>
           </div>

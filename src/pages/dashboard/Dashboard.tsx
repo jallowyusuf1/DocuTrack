@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { documentService } from '../../services/documents';
-import { getUnreadCount } from '../../services/notifications';
 import type { Document } from '../../types';
 import { getDaysUntil } from '../../utils/dateUtils';
 import { staggerContainer, staggerItem, fadeInUp, getTransition, transitions } from '../../utils/animations';
@@ -13,7 +12,6 @@ import {
   RefreshCw, 
   Plus, 
   Search, 
-  Bell, 
   ChevronRight
 } from 'lucide-react';
 import DashboardDocumentCard from '../../components/documents/DashboardDocumentCard';
@@ -30,12 +28,11 @@ interface DocumentStats {
 }
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { isOnline } = useOnlineStatus();
   
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [recentDocuments, setRecentDocuments] = useState<Document[]>([]);
   const [stats, setStats] = useState<DocumentStats>({
     total: 0,
     onTimeRate: 100,
@@ -43,29 +40,17 @@ export default function Dashboard() {
     soon: 0,
     upcoming: 0,
   });
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
-
-  // Get time-based greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  // Get user name from profile or email
-  const getUserName = () => {
-    // In a real app, you'd fetch from user_profiles table
-    return user?.email?.split('@')[0] || 'there';
-  };
 
   // Calculate urgency counts
   const urgentCount = documents.filter(
@@ -102,19 +87,13 @@ export default function Dashboard() {
       // Fetch all documents for urgency calculations
       const allDocs = await documentService.getAllDocuments(user.id);
       
-      // Fetch recent documents (limit 4, sorted by created_at DESC)
-      const recent = await documentService.getRecentDocuments(user.id, 4);
-      
       // Fetch stats
       const documentStats = await documentService.getDocumentStats(user.id);
-      
-      // Fetch unread notification count
-      const unread = await getUnreadCount(user.id);
 
-      // Filter documents expiring in next 60 days for urgency cards
+      // Filter documents expiring soon (include recently expired so they stand out)
       const expiringDocs = allDocs.filter(doc => {
         const days = getDaysUntil(doc.expiration_date);
-        return days >= 0 && days <= 60;
+        return days >= -30 && days <= 60;
       });
 
       // Sort by days remaining (most urgent first)
@@ -125,15 +104,12 @@ export default function Dashboard() {
       });
 
       setDocuments(sortedDocs);
-      setRecentDocuments(recent);
       setStats(documentStats);
-      setUnreadCount(unread);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
       setError(errorMessage);
       console.error('Error fetching data:', err);
       setDocuments([]);
-      setRecentDocuments([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -147,7 +123,6 @@ export default function Dashboard() {
     } else {
       setIsLoading(false);
       setDocuments([]);
-      setRecentDocuments([]);
     }
   }, [user]);
 
@@ -175,6 +150,24 @@ export default function Dashboard() {
     return () => {
       window.removeEventListener('refreshDashboard', handleRefresh);
     };
+  }, []);
+
+  // Search keyboard behavior
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setSearchQuery('');
+      }
+      // Cmd+K / Ctrl+K opens search
+      if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+        window.setTimeout(() => searchInputRef.current?.focus(), 0);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   // Pull to refresh handlers
@@ -270,7 +263,7 @@ export default function Dashboard() {
   }
 
   // Error state
-  if (error && documents.length === 0 && recentDocuments.length === 0) {
+  if (error && documents.length === 0) {
     return (
       <div className="pb-[72px] min-h-screen flex items-center justify-center px-4">
         <motion.div
@@ -292,6 +285,16 @@ export default function Dashboard() {
 
   // Offline banner
   const showOfflineBanner = !isOnline;
+
+  const filteredDocuments = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return documents;
+    return documents.filter((d) => {
+      const name = d.document_name?.toLowerCase?.() ?? '';
+      const type = d.document_type?.toLowerCase?.() ?? '';
+      return name.includes(q) || type.includes(q);
+    });
+  }, [documents, searchQuery]);
 
   return (
     <div className="pb-[72px] min-h-screen liquid-dashboard-bg">
@@ -328,7 +331,7 @@ export default function Dashboard() {
       >
         {/* Header capsule */}
         <motion.div initial="initial" animate="animate" variants={fadeInUp} className="mb-6 md:mb-8">
-          <LiquidPill tone="milky" className="px-5 py-4" glowColor="rgba(34, 211, 238, 0.65)">
+          <LiquidPill className="px-5 py-4">
             <div className="flex items-center gap-4">
               <div className="min-w-0">
                 <div
@@ -338,41 +341,67 @@ export default function Dashboard() {
                     letterSpacing: '-0.24px',
                   }}
                 >
-                  {getGreeting()}, {getUserName()}!
+                  Expiring Soon
                 </div>
                 <div className="text-sm text-white/70">
-                  {stats.total === 0 ? 'No documents yet' : `${stats.total} document${stats.total !== 1 ? 's' : ''} tracked`}
+                  {documents.length === 0
+                    ? 'No expiring items in the next 60 days'
+                    : `${documents.length} item${documents.length !== 1 ? 's' : ''} in the next 60 days`}
                 </div>
               </div>
 
               <div className="ml-auto flex items-center gap-2">
-                <button
-                  onClick={() => navigate('/search')}
-                  className="glass-pill w-11 h-11 flex items-center justify-center relative"
-                  aria-label="Search"
-                  title="Search"
-                >
-                  <Search className="w-5 h-5 text-white/90 relative" />
-                </button>
-                <button
-                  onClick={() => navigate('/notifications')}
-                  className="glass-pill w-11 h-11 flex items-center justify-center relative"
-                  aria-label="Notifications"
-                  title="Notifications"
-                >
-                  <Bell className="w-5 h-5 text-white/90 relative" />
-                  {unreadCount > 0 && (
-                    <span
-                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center font-bold"
-                      style={{
-                        background: '#FF453A',
-                        boxShadow: '0 0 16px rgba(255,69,58,0.75)',
+                <AnimatePresence mode="wait" initial={false}>
+                  {!isSearchOpen ? (
+                    <motion.button
+                      key="search-icon"
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.16 }}
+                      type="button"
+                      onClick={() => {
+                        setIsSearchOpen(true);
+                        window.setTimeout(() => searchInputRef.current?.focus(), 0);
                       }}
+                      className="glass-pill w-11 h-11 flex items-center justify-center relative"
+                      aria-label="Search expiring items"
+                      title="Search"
                     >
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
+                      <Search className="w-5 h-5 text-white/90 relative" />
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="search-tab"
+                      initial={{ opacity: 0, width: 56 }}
+                      animate={{ opacity: 1, width: 320 }}
+                      exit={{ opacity: 0, width: 56 }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      className="glass-pill h-11 flex items-center gap-3 px-4 overflow-hidden"
+                    >
+                      <Search className="w-5 h-5 text-white/80 flex-shrink-0" />
+                      <input
+                        ref={searchInputRef}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search expiring items…"
+                        className="bg-transparent outline-none text-white placeholder:text-white/45 text-sm flex-1 min-w-0"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          setSearchQuery('');
+                        }}
+                        className="w-8 h-8 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors flex items-center justify-center"
+                        aria-label="Close search"
+                        title="Close"
+                      >
+                        <span className="text-lg leading-none">×</span>
+                      </button>
+                    </motion.div>
                   )}
-                </button>
+                </AnimatePresence>
               </div>
             </div>
           </LiquidPill>
@@ -380,30 +409,43 @@ export default function Dashboard() {
 
         {/* Urgency Capsules */}
         {(urgentCount > 0 || soonCount > 0 || upcomingCount > 0) && (
-          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="mb-6 md:mb-8 grid grid-cols-3 gap-3 md:gap-4">
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="mb-6 md:mb-8 grid grid-cols-3 gap-4 md:gap-6">
             {[
-              { key: 'urgent' as const, label: 'URGENT', value: urgentCount, range: [0, 7] as const, tone: 'milky' as const },
-              { key: 'soon' as const, label: 'SOON', value: soonCount, range: [8, 30] as const, tone: 'milky' as const },
-              { key: 'upcoming' as const, label: 'UPCOMING', value: upcomingCount, range: [31, 60] as const, tone: 'clear' as const },
+              { key: 'urgent' as const, label: 'URGENT', value: urgentCount, range: [0, 7] as const },
+              { key: 'soon' as const, label: 'SOON', value: soonCount, range: [8, 30] as const },
+              { key: 'upcoming' as const, label: 'UPCOMING', value: upcomingCount, range: [31, 60] as const },
             ].map((c) => (
               <motion.div key={c.key} variants={staggerItem}>
                 <LiquidPill
-                  tone={c.tone}
                   interactive
-                  glowColor={urgencyGlow(c.key)}
-                  className="px-4 py-4 md:px-5 md:py-5"
+                  className="px-3 py-3 md:px-4 md:py-4"
                   onClick={() => handleUrgencyCardClick(c.range[0], c.range[1])}
+                  style={{
+                    background:
+                      c.key === 'upcoming'
+                        ? `color-mix(in srgb, ${urgencyGlow(c.key)} 6%, rgba(255,255,255,0.04))`
+                        : `color-mix(in srgb, ${urgencyGlow(c.key)} 8%, rgba(255,255,255,0.05))`,
+                    backdropFilter: 'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 24px color-mix(in srgb, ${urgencyGlow(c.key)} 15%, transparent), inset 0 1px 0 rgba(255,255,255,0.1)`,
+                    border: 'none',
+                    outline: 'none',
+                  }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-white/70 text-[11px] md:text-xs font-semibold tracking-[0.18em]">
+                  <div className="relative flex items-center justify-center text-center">
+                    <div className="min-w-0">
+                      <div className="text-white/70 text-[10px] md:text-[11px] font-semibold tracking-[0.18em]">
                         {c.label}
                       </div>
-                      <div className="text-white text-3xl md:text-4xl font-bold mt-2" style={{ letterSpacing: '-0.04em' }}>
+                      <div className="text-white text-2xl md:text-3xl font-bold mt-1.5" style={{ letterSpacing: '-0.04em' }}>
                         {c.value}
                       </div>
                     </div>
-                    <LiquidGlowDot color={urgencyGlow(c.key)} />
+                    <LiquidGlowDot
+                      color={urgencyGlow(c.key)}
+                      size={c.key === 'urgent' ? 16 : 14}
+                      className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2"
+                    />
                   </div>
                 </LiquidPill>
               </motion.div>
@@ -411,28 +453,6 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Stats Capsule (minimal) */}
-        {stats.total > 0 && (
-          <motion.div initial="initial" animate="animate" variants={fadeInUp} className="mb-6 md:mb-8">
-            <LiquidPill tone="clear" className="px-5 py-4" glowColor="rgba(59, 130, 246, 0.55)">
-              <div className="flex items-center justify-between gap-4">
-                {[
-                  { label: 'TOTAL', value: stats.total },
-                  { label: 'ON-TIME', value: `${stats.onTimeRate}%` },
-                  { label: 'STORAGE', value: `${Math.round((stats.total * 0.5) / 1024)}MB` },
-                ].map((m, idx) => (
-                  <div key={m.label} className="flex-1 text-center relative">
-                    <div className="text-white/55 text-[11px] font-semibold tracking-[0.18em]">{m.label}</div>
-                    <div className="text-white text-2xl md:text-3xl font-bold mt-2" style={{ letterSpacing: '-0.03em' }}>
-                      {m.value}
-                    </div>
-                    {idx < 2 && <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 h-10 w-px bg-white/10" />}
-                  </div>
-                ))}
-              </div>
-            </LiquidPill>
-          </motion.div>
-        )}
 
         {/* Pull to Refresh Indicator */}
         {isRefreshing && (
@@ -449,11 +469,11 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Recent Documents (scrollable list) */}
+        {/* Expiring Soon (scrollable list) */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base md:text-lg font-bold text-white">Recent Documents</h2>
-            {recentDocuments.length > 0 && (
+            <h2 className="text-base md:text-lg font-bold text-white">Expiring Soon</h2>
+            {documents.length > 0 && (
               <button
                 onClick={() => navigate('/documents')}
                 className="text-sm text-white/70 hover:text-white flex items-center gap-1"
@@ -464,7 +484,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {recentDocuments.length === 0 ? (
+          {filteredDocuments.length === 0 ? (
             // Empty State
             <motion.div
               initial="initial"
@@ -472,10 +492,11 @@ export default function Dashboard() {
               variants={fadeInUp}
               className="text-center"
             >
-              <LiquidPill tone="milky" className="px-6 py-10 max-w-2xl mx-auto">
+              <LiquidPill className="px-6 py-10 max-w-2xl mx-auto">
                 <div className="w-16 h-16 rounded-[22px] mx-auto mb-5 flex items-center justify-center"
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
+                    // clear/dark glass (no milky white)
+                    background: 'rgba(0,0,0,0.20)',
                     border: '1px solid rgba(255,255,255,0.14)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
@@ -483,14 +504,24 @@ export default function Dashboard() {
                 >
                   <Plus className="w-8 h-8 text-white/85" />
                 </div>
-                <h3 className="text-white text-2xl font-bold mb-2">Add your first document</h3>
+                <h3 className="text-white text-2xl font-bold mb-2">
+                  {searchQuery.trim() ? 'No matches found' : 'You’re all caught up'}
+                </h3>
                 <p className="text-white/65 text-sm mb-6 max-w-md mx-auto">
-                  Once you add documents, this dashboard will surface expiring items with calm, readable alerts.
+                  {searchQuery.trim()
+                    ? 'Try a different keyword or clear your search.'
+                    : 'Nothing is expiring soon. When something approaches its deadline, it will show up here.'}
                 </p>
-                <Button variant="primary" onClick={() => navigate('/add-document')} className="inline-flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add document
-                </Button>
+                {searchQuery.trim() ? (
+                  <Button variant="secondary" onClick={() => setSearchQuery('')} className="inline-flex items-center gap-2">
+                    Clear search
+                  </Button>
+                ) : (
+                  <Button variant="primary" onClick={() => navigate('/add-document')} className="inline-flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </Button>
+                )}
               </LiquidPill>
             </motion.div>
           ) : (
@@ -500,7 +531,7 @@ export default function Dashboard() {
               animate="show"
               className="space-y-3 md:space-y-4 max-h-[420px] overflow-y-auto pr-1"
             >
-              {recentDocuments.map((document) => (
+              {filteredDocuments.map((document) => (
                 <motion.div
                   key={document.id}
                   variants={staggerItem}

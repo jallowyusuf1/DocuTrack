@@ -66,7 +66,8 @@ export function LiquidPillMedia({
     <div
       className={cn('relative overflow-hidden rounded-[22px]', className)}
       style={{
-        background: 'rgba(255,255,255,0.05)',
+        // Clear glass (avoid milky white panels)
+        background: 'rgba(255,255,255,0.035)',
         border: '1px solid rgba(255,255,255,0.14)',
         backdropFilter: 'blur(22px)',
         WebkitBackdropFilter: 'blur(22px)',
@@ -92,18 +93,22 @@ export function LiquidPillMedia({
 export function LiquidGlowDot({
   color,
   className,
+  size = 10,
+  pulse = true,
 }: {
   color: string;
   className?: string;
+  size?: number;
+  pulse?: boolean;
 }) {
   return (
     <span
-      className={cn('inline-block rounded-full', className)}
+      className={cn('inline-block rounded-full', pulse && 'liquid-glow-dot', className)}
       style={{
-        width: 10,
-        height: 10,
+        width: size,
+        height: size,
         background: color,
-        boxShadow: `0 0 12px ${color}CC, 0 0 26px ${color}66`,
+        boxShadow: `0 0 ${Math.round(size * 1.4)}px ${color}CC, 0 0 ${Math.round(size * 3.0)}px ${color}66`,
       }}
     />
   );

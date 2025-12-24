@@ -37,11 +37,14 @@ import Skeleton from '../../components/ui/Skeleton';
 import { isDesktopDevice } from '../../utils/deviceDetection';
 import { getDocumentPermission } from '../../services/familySharing';
 import { supabase } from '../../config/supabase';
+import PermissionGateModals from '../../components/child/PermissionGateModals';
+import { decideChildAction } from '../../utils/childPermissions';
+import { childAccountsService, timeAgoLabel } from '../../services/childAccounts';
 
 export default function ComprehensiveDocumentDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, accountType, childContext } = useAuth();
   const { showToast } = useToast();
   const isDesktop = isDesktopDevice();
 
@@ -60,6 +63,10 @@ export default function ComprehensiveDocumentDetail() {
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [sharedCount, setSharedCount] = useState(0);
   const [documentPermission, setDocumentPermission] = useState<'owner' | 'view' | 'edit' | null>(null);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [gateMode, setGateMode] = useState<'permission_denied' | 'approval_required'>('permission_denied');
+  const [gateAction, setGateAction] = useState<'view_document' | 'edit_document' | 'delete_document' | 'share_document'>('view_document');
+  const [pendingRequest, setPendingRequest] = useState<any | null>(null);
 
   const { signedUrl: imageUrl, loading: imageUrlLoading } = useImageUrl(document?.image_url);
 
@@ -114,6 +121,29 @@ export default function ComprehensiveDocumentDetail() {
               .eq('document_id', doc.id);
             setSharedCount(count || 0);
           }
+
+          // Child: log view + detect pending request for this document
+          if (accountType === 'child' && childContext?.childAccountId) {
+            childAccountsService.logActivity({
+              child_account_id: childContext.childAccountId,
+              action_type: 'document_view',
+              status: 'success',
+              document_id: doc.id,
+              details: { path: window.location.pathname },
+            }).catch(() => {});
+
+            supabase
+              .from('child_account_requests')
+              .select('*')
+              .eq('child_account_id', childContext.childAccountId)
+              .eq('status', 'pending')
+              .eq('document_id', doc.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+              .then(({ data }) => setPendingRequest(data ?? null))
+              .catch(() => setPendingRequest(null));
+          }
         }
       } catch (err: any) {
         console.error('Failed to fetch document:', err);
@@ -124,7 +154,7 @@ export default function ComprehensiveDocumentDetail() {
     };
 
     fetchData();
-  }, [id, user?.id]);
+  }, [id, user?.id, accountType, childContext?.childAccountId]);
 
   // Find previous and next documents
   const currentIndex = allDocuments.findIndex((d) => d.id === id);
@@ -222,6 +252,30 @@ export default function ComprehensiveDocumentDetail() {
     if (!document || !user?.id) return;
 
     try {
+      if (accountType === 'child' && childContext) {
+        const isFamilyDoc = documentPermission !== 'owner';
+        const decision = decideChildAction({
+          action: 'delete_document',
+          permissions: childContext.permissions,
+          oversightLevel: childContext.oversightLevel,
+          isFamilyDocument: isFamilyDoc,
+        });
+        if (decision.kind !== 'allow') {
+          setGateAction('delete_document');
+          setGateMode(decision.reason);
+          setGateOpen(true);
+          setIsDeleteModalOpen(false);
+          await childAccountsService.logActivity({
+            child_account_id: childContext.childAccountId,
+            action_type: 'document_delete_attempt',
+            status: decision.reason === 'approval_required' ? 'pending' : 'denied',
+            document_id: document.id,
+            details: { is_family: isFamilyDoc },
+          }).catch(() => {});
+          return;
+        }
+      }
+
       await documentService.deleteDocument(document.id, user.id);
       showToast('Document deleted successfully', 'success');
       navigate('/documents');
@@ -282,7 +336,7 @@ export default function ComprehensiveDocumentDetail() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1625] via-[#2d1b4e] to-[#1a1625] p-4">
+      <div className="min-h-screen p-4">
         <Skeleton className="h-64 w-full rounded-2xl mb-4" />
         <Skeleton className="h-8 w-3/4 mb-2" />
         <Skeleton className="h-4 w-1/2 mb-6" />
@@ -298,7 +352,7 @@ export default function ComprehensiveDocumentDetail() {
   // Error state
   if (error || !document) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1625] via-[#2d1b4e] to-[#1a1625] flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <FileText className="w-16 h-16 text-white/40 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Document Not Found</h2>
@@ -317,7 +371,30 @@ export default function ComprehensiveDocumentDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1625] via-[#2d1b4e] to-[#1a1625] pb-20">
+    <div className="min-h-screen pb-20">
+      {/* Child: pending approval banner */}
+      {accountType === 'child' && pendingRequest && (
+        <div className="px-4 pt-4">
+          <div
+            className="rounded-3xl p-4"
+            style={{
+              background: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.24)',
+              backdropFilter: 'blur(18px)',
+            }}
+          >
+            <div className="text-white font-bold">This document has a pending action</div>
+            <div className="text-sm text-white/70 mt-1">
+              You requested permission to {String(pendingRequest.request_type).replaceAll('_', ' ')}{' '}
+              {timeAgoLabel(pendingRequest.created_at)}.
+            </div>
+            <div className="text-sm text-white/70 mt-1">
+              Status: Waiting for {childContext?.parentName || 'your parent'} to review.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-10 p-4 border-b border-white/10 backdrop-blur-lg bg-[rgba(26,22,37,0.8)]">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -353,8 +430,34 @@ export default function ComprehensiveDocumentDetail() {
           <div className="flex items-center gap-2">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(`/documents/${document.id}/edit`)}
+              onClick={() => {
+                if (pendingRequest) return;
+                if (accountType === 'child' && childContext) {
+                  const isFamilyDoc = documentPermission !== 'owner';
+                  const decision = decideChildAction({
+                    action: 'edit_document',
+                    permissions: childContext.permissions,
+                    oversightLevel: childContext.oversightLevel,
+                    isFamilyDocument: isFamilyDoc,
+                  });
+                  if (decision.kind !== 'allow') {
+                    setGateAction('edit_document');
+                    setGateMode(decision.reason);
+                    setGateOpen(true);
+                    childAccountsService.logActivity({
+                      child_account_id: childContext.childAccountId,
+                      action_type: 'document_edit_attempt',
+                      status: decision.reason === 'approval_required' ? 'pending' : 'denied',
+                      document_id: document.id,
+                      details: { is_family: isFamilyDoc },
+                    }).catch(() => {});
+                    return;
+                  }
+                }
+                navigate(`/documents/${document.id}/edit`);
+              }}
               className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors flex items-center gap-2"
+              style={pendingRequest ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
             >
               <Edit className="w-4 h-4" />
               Edit
@@ -362,6 +465,29 @@ export default function ComprehensiveDocumentDetail() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => {
+                if (pendingRequest) return;
+                if (accountType === 'child' && childContext) {
+                  const isFamilyDoc = documentPermission !== 'owner';
+                  const decision = decideChildAction({
+                    action: 'share_document',
+                    permissions: childContext.permissions,
+                    oversightLevel: childContext.oversightLevel,
+                    isFamilyDocument: isFamilyDoc,
+                  });
+                  if (decision.kind !== 'allow') {
+                    setGateAction('share_document');
+                    setGateMode(decision.reason);
+                    setGateOpen(true);
+                    childAccountsService.logActivity({
+                      child_account_id: childContext.childAccountId,
+                      action_type: 'document_share_attempt',
+                      status: decision.reason === 'approval_required' ? 'pending' : 'denied',
+                      document_id: document.id,
+                      details: { is_family: isFamilyDoc },
+                    }).catch(() => {});
+                    return;
+                  }
+                }
                 if (isDesktop) {
                   setIsFamilyShareModalOpen(true);
                 } else {
@@ -369,14 +495,19 @@ export default function ComprehensiveDocumentDetail() {
                 }
               }}
               className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors flex items-center gap-2"
+              style={pendingRequest ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
             >
               <Share2 className="w-4 h-4" />
               Share
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsDeleteModalOpen(true)}
+              onClick={() => {
+                if (pendingRequest) return;
+                setIsDeleteModalOpen(true);
+              }}
               className="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-medium transition-colors flex items-center gap-2"
+              style={pendingRequest ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
             >
               <Trash2 className="w-4 h-4" />
               Delete
@@ -662,6 +793,31 @@ export default function ComprehensiveDocumentDetail() {
         onClose={() => setIsReminderModalOpen(false)}
         documentId={document.id}
       />
+
+      {accountType === 'child' && childContext && (
+        <PermissionGateModals
+          open={gateOpen}
+          mode={gateMode}
+          actionType={gateAction}
+          document={document}
+          onClose={() => setGateOpen(false)}
+          onRequestSent={() => {
+            showToast(`Request sent to ${childContext.parentName}!`, 'success');
+            // Refresh pending request state
+            supabase
+              .from('child_account_requests')
+              .select('*')
+              .eq('child_account_id', childContext.childAccountId)
+              .eq('status', 'pending')
+              .eq('document_id', document.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+              .then(({ data }) => setPendingRequest(data ?? null))
+              .catch(() => {});
+          }}
+        />
+      )}
     </div>
   );
 }

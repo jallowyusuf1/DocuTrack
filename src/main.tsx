@@ -38,6 +38,20 @@ if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then((registration) => {
           console.log('[SW] Registered successfully:', registration.scope);
+
+          // If a new SW is found, reload once it's installed so the user gets the latest bundles.
+          registration.addEventListener('updatefound', () => {
+            const installing = registration.installing;
+            if (!installing) return;
+
+            installing.addEventListener('statechange', () => {
+              // When installed and we already have a controller, this is an update.
+              if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[SW] Update installed. Reloading to pick up latest version...');
+                window.location.reload();
+              }
+            });
+          });
         })
         .catch((error) => {
           console.error('[SW] Registration failed:', error);
@@ -50,46 +64,25 @@ if ('serviceWorker' in navigator) {
       try {
         const registrations = await navigator.serviceWorker.getRegistrations();
         if (registrations.length > 0) {
-          console.log('[SW] Found', registrations.length, 'service worker(s) in development');
-          
+          // Only log if service workers are actually found
+          console.debug('[SW] Cleaning up', registrations.length, 'service worker(s) in development');
+
           for (const registration of registrations) {
-            try {
-              const unregistered = await registration.unregister();
-              if (unregistered) {
-                console.log('[SW] ✅ Unregistered:', registration.scope);
-              } else {
-                console.warn('[SW] ⚠️ Could not unregister:', registration.scope);
-              }
-            } catch (err) {
-              console.error('[SW] ❌ Error unregistering:', err);
-            }
+            await registration.unregister().catch(() => {});
           }
         }
-        
+
         // Clear all caches
         if ('caches' in window) {
-          try {
-            const cacheNames = await caches.keys();
-            if (cacheNames.length > 0) {
-              console.log('[SW] Found', cacheNames.length, 'cache(s)');
-              
-              for (const cacheName of cacheNames) {
-                try {
-                  await caches.delete(cacheName);
-                  console.log('[SW] ✅ Cache deleted:', cacheName);
-                } catch (err) {
-                  console.error('[SW] ❌ Error deleting cache:', cacheName, err);
-                }
-              }
+          const cacheNames = await caches.keys();
+          if (cacheNames.length > 0) {
+            for (const cacheName of cacheNames) {
+              await caches.delete(cacheName).catch(() => {});
             }
-          } catch (err) {
-            console.error('[SW] ❌ Error accessing caches:', err);
           }
         }
-        
-        console.log('[SW] ✅ Development cleanup complete');
       } catch (error) {
-        console.error('[SW] ❌ Cleanup error:', error);
+        // Silently handle cleanup errors - not critical for app functionality
       }
     };
     

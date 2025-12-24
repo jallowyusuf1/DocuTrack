@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type MouseEvent as React
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, ArrowRight, Check, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { triggerHaptic, prefersReducedMotion } from '../../utils/animations';
 import { useAuth } from '../../hooks/useAuth';
 import { validateEmail, validatePassword } from '../../utils/validation';
@@ -12,9 +12,14 @@ import NetworkStatusBanner from '../../components/NetworkStatusBanner';
 import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { GlassButton, GlassCard, GlassPill, GlassTile } from '../../components/ui/glass/Glass';
 import AuthGlassNav from '../../components/layout/AuthGlassNav';
+import { calculateAgeYears } from '../../utils/age';
+import BrandLogo from '../../components/ui/BrandLogo';
+import SocialAuthButtons from '../../components/auth/SocialAuthButtons';
 
 interface SignupFormData {
   fullName: string;
+  dateOfBirth: string;
+  accountRole: 'user' | 'parent';
   email: string;
   password: string;
   confirmPassword: string;
@@ -45,14 +50,28 @@ export default function Signup() {
   } = useForm<SignupFormData>({
     mode: 'onSubmit',
     reValidateMode: 'onBlur',
-    defaultValues: { acceptedTerms: false },
+    defaultValues: { acceptedTerms: false, accountRole: 'user' },
   });
 
   const password = watch('password');
   const email = watch('email');
+  const dateOfBirth = watch('dateOfBirth');
+  const accountRole = watch('accountRole');
   const fullNameReg = register('fullName', {
     required: 'Full name is required',
     minLength: { value: 2, message: 'Full name must be at least 2 characters' },
+  });
+  const dobReg = register('dateOfBirth', {
+    required: 'Date of birth is required',
+    validate: (value) => {
+      if (!value) return 'Date of birth is required';
+      // Must be 13+ for compliance
+      const age = calculateAgeYears(value);
+      if (Number.isNaN(age)) return 'Invalid date of birth';
+      if (age < 13) return 'You must be at least 13 years old';
+      if (age > 120) return 'Please enter a valid age';
+      return true;
+    },
   });
 
   useEffect(() => {
@@ -94,6 +113,8 @@ export default function Signup() {
         email: data.email,
         password: data.password,
         fullName: data.fullName,
+        dateOfBirth: data.dateOfBirth,
+        accountRole: data.accountRole,
       });
 
       if (result?.session && result.user?.id) {
@@ -144,9 +165,15 @@ export default function Signup() {
           >
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">D</span>
-                </div>
+                <img
+                  src="/assets/logo.svg"
+                  alt="DocuTrackr Logo"
+                  className="hidden"
+                  style={{
+                    filter: 'drop-shadow(0 8px 24px rgba(139,92,246,0.35))',
+                  }}
+                />
+                <BrandLogo className="w-8 h-8" alt="DocuTrackr Logo" />
                 <span className="text-white font-semibold text-sm">DocuTrackr</span>
               </div>
               <div className="h-4 w-px bg-white/20" />
@@ -166,23 +193,24 @@ export default function Signup() {
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-4 overflow-y-auto">
-          <div className="w-full max-w-md py-20">
+        <div className="flex-1 flex items-center justify-center px-4 py-8 overflow-y-auto">
+          <div className="w-full max-w-md">
             <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
-              <GlassCard
-                elevated
-                className="p-6 md:p-8"
+              <div
+                className="p-6 md:p-8 overflow-y-auto"
                 style={{
+                  maxHeight: 'calc(100vh - 180px)',
                   borderRadius: 30,
                   background:
                     'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(139,92,246,0.10) 100%)',
                   border: '1px solid rgba(255,255,255,0.14)',
+                  backdropFilter: 'blur(34px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+                  boxShadow:
+                    '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
                 }}
               >
-                <GlassPill className="text-white/85">
-                  <Sparkles className="w-4 h-4 text-white/70" />
-                  Create your account
-                </GlassPill>
+                <GlassPill className="text-white/85">Create your account</GlassPill>
 
                 <h1 className="mt-4 text-white font-semibold tracking-tight text-2xl">Start tracking in minutes</h1>
                 <p className="mt-2 text-white/65 text-sm leading-relaxed">
@@ -190,6 +218,53 @@ export default function Signup() {
                 </p>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+                  {/* Account type */}
+                  <div>
+                    <label className="block text-white/70 text-sm mb-2">Account type</label>
+                    <div
+                      className="rounded-2xl p-1 flex items-center gap-1"
+                      style={{
+                        background: 'rgba(42, 38, 64, 0.55)',
+                        border: '1px solid rgba(255, 255, 255, 0.10)',
+                        backdropFilter: 'blur(14px)',
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setValue('accountRole', 'user')}
+                        className="flex-1 h-11 rounded-xl text-sm font-semibold transition-colors"
+                        style={{
+                          background:
+                            accountRole === 'user'
+                              ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))'
+                              : 'transparent',
+                          color: accountRole === 'user' ? '#fff' : 'rgba(255,255,255,0.75)',
+                        }}
+                      >
+                        User
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setValue('accountRole', 'parent')}
+                        className="flex-1 h-11 rounded-xl text-sm font-semibold transition-colors"
+                        style={{
+                          background:
+                            accountRole === 'parent'
+                              ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))'
+                              : 'transparent',
+                          color: accountRole === 'parent' ? '#fff' : 'rgba(255,255,255,0.75)',
+                        }}
+                      >
+                        Parent
+                      </button>
+                      {/* Hidden input for RHF */}
+                      <input type="hidden" {...register('accountRole')} />
+                    </div>
+                    <p className="mt-2 text-xs text-white/60">
+                      Parents can create and manage supervised child accounts. Children are created by a parent/guardian.
+                    </p>
+                  </div>
+
                   <div>
                     <label className="block text-white/70 text-sm mb-2" htmlFor="fullName">
                       Full name
@@ -211,6 +286,40 @@ export default function Signup() {
                       <div className="mt-2 text-sm text-red-300 flex items-center gap-2">
                         <AlertCircle className="w-4 h-4" />
                         <span>{errors.fullName.message}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-white/70 text-sm mb-2" htmlFor="dateOfBirth">
+                      Date of birth
+                    </label>
+                    <input
+                      id="dateOfBirth"
+                      type="date"
+                      autoComplete="bday"
+                      className="glass-input w-full h-12 px-4 text-white placeholder:text-white/45"
+                      {...dobReg}
+                      aria-invalid={errors.dateOfBirth && touchedFields.dateOfBirth ? 'true' : 'false'}
+                    />
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs text-white/60">Age</span>
+                      <span
+                        className="text-xs font-semibold"
+                        style={{
+                          color:
+                            dateOfBirth && typeof errors.dateOfBirth?.message === 'string'
+                              ? '#FCA5A5'
+                              : '#A78BFA',
+                        }}
+                      >
+                        {dateOfBirth ? `${Math.max(0, calculateAgeYears(dateOfBirth))} years old` : '—'}
+                      </span>
+                    </div>
+                    {errors.dateOfBirth && touchedFields.dateOfBirth && (
+                      <div className="mt-2 text-sm text-red-300 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.dateOfBirth.message}</span>
                       </div>
                     )}
                   </div>
@@ -424,6 +533,13 @@ export default function Signup() {
                     )}
                   </GlassButton>
 
+                  <SocialAuthButtons
+                    mode="signup"
+                    onAuthError={(provider, error) => {
+                      setSubmitError(`Failed to connect with ${provider}. ${error}`);
+                    }}
+                  />
+
                   <div className="pt-2 text-center text-white/70 text-sm">
                     Already have an account?{' '}
                     <Link to="/login" className="text-white font-semibold hover:opacity-90">
@@ -431,7 +547,7 @@ export default function Signup() {
                     </Link>
                   </div>
                 </form>
-              </GlassCard>
+              </div>
             </motion.div>
           </div>
         </div>

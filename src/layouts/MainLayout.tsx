@@ -6,13 +6,15 @@ import DesktopNav from '../components/layout/DesktopNav';
 import BottomNav from '../components/layout/BottomNav';
 import FABContainer from '../components/layout/FABContainer';
 import OfflineIndicator from '../components/shared/OfflineIndicator';
-import { GradientOrbs } from '../components/ui/GradientOrbs';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAutoSync } from '../hooks/useAutoSync';
 import { fadeIn, getTransition, transitions, prefersReducedMotion } from '../utils/animations';
 import { IdleTimeoutProvider, useIdleTimeout } from '../contexts/IdleTimeoutContext';
 import IdleCountdownModal from '../components/security/IdleCountdownModal';
 import AppLockOverlay from '../components/security/AppLockOverlay';
+import SupervisionBanner from '../components/child/SupervisionBanner';
+import { useAuth } from '../hooks/useAuth';
+import { childAccountsService } from '../services/childAccounts';
 
 function IdleCountdownMount() {
   const { warningOpen, countdownSeconds, acknowledgeWarning, lockNow, settings } = useIdleTimeout();
@@ -49,6 +51,7 @@ export default function MainLayout() {
 
   const location = useLocation();
   const navigationType = useNavigationType();
+  const { accountType, user, childContext } = useAuth();
   
   // Check if desktop
   const [isDesktop, setIsDesktop] = useState(() => {
@@ -70,6 +73,28 @@ export default function MainLayout() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.pathname, navigationType]);
+
+  // Child: log page views + update last_active every 5 minutes
+  useEffect(() => {
+    if (accountType !== 'child' || !childContext?.childAccountId || !user?.id) return;
+
+    // Page view log (best-effort)
+    childAccountsService
+      .logActivity({
+        child_account_id: childContext.childAccountId,
+        action_type: 'page_view',
+        status: 'success',
+        details: { path: location.pathname },
+      })
+      .catch(() => {});
+
+    // Touch last active every 5 min
+    const interval = window.setInterval(() => {
+      childAccountsService.touchLastActive(user.id).catch(() => {});
+    }, 5 * 60 * 1000);
+
+    return () => window.clearInterval(interval);
+  }, [accountType, childContext?.childAccountId, location.pathname, user?.id]);
   const mainRef = useRef<HTMLElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -105,8 +130,7 @@ export default function MainLayout() {
 
   return (
     <IdleTimeoutProvider>
-      <div className="flex flex-col h-screen relative">
-        <GradientOrbs />
+      <div className="flex flex-col h-screen relative liquid-dashboard-bg">
         <OfflineIndicator />
         <IdleCountdownMount />
         <AppLockMount />
@@ -117,13 +141,15 @@ export default function MainLayout() {
           style={
             isDesktop
               ? {
-                  // DesktopNav is fixed; reserve enough top space so content starts below it,
-                  // but can scroll under it (behind the glass) without overlapping.
-                  paddingTop: 'calc(var(--app-desktop-nav-h, 0px) + 16px)',
+                  // DesktopNav is fixed and offset downward; reserve enough top space so
+                  // NOTHING can appear behind it.
+                  paddingTop: 'calc(var(--app-desktop-nav-h, 0px) + 44px)',
+                  scrollPaddingTop: 'calc(var(--app-desktop-nav-h, 0px) + 44px)',
                 }
               : undefined
           }
         >
+          <SupervisionBanner />
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

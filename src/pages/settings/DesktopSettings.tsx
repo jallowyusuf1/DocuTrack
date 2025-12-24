@@ -16,7 +16,6 @@ import {
   Users,
   HelpCircle,
   Mail as ContactIcon,
-  Sparkles,
   FileText,
   Eye,
   ChevronRight,
@@ -189,7 +188,7 @@ export default function DesktopSettings() {
       items: [
         { id: 'help-center', label: 'Help Center', icon: HelpCircle, hasChevron: true },
         { id: 'contact-support', label: 'Contact Support', icon: ContactIcon, hasChevron: true },
-        { id: 'whats-new', label: "What's New", icon: Sparkles, hasChevron: true },
+        { id: 'whats-new', label: "What's New", icon: FileText, hasChevron: true },
       ],
     },
     {
@@ -316,14 +315,22 @@ export default function DesktopSettings() {
           {/* Sign Out Button */}
           <div className="p-6 border-t border-white/10">
             <button
+              type="button"
               onClick={async () => {
                 if (confirm('Sign out of DocuTrackr?')) {
                   await logout();
-                  localStorage.clear();
                   navigate('/signin');
                 }
               }}
-              className="w-full py-3 px-4 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30 transition-all flex items-center justify-center gap-2"
+              className="w-full h-12 px-5 rounded-full transition-all flex items-center justify-center gap-2"
+              style={{
+                background: 'rgba(255, 69, 58, 0.10)',
+                border: '1px solid rgba(255, 69, 58, 0.24)',
+                backdropFilter: 'blur(28px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+                boxShadow: '0 22px 74px rgba(0,0,0,0.50), 0 0 42px rgba(255,69,58,0.18), inset 0 1px 0 rgba(255,255,255,0.10)',
+                color: 'rgba(255,255,255,0.92)',
+              }}
             >
               <LogOut className="w-4 h-4" />
               Sign Out

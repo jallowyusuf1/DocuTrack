@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Fingerprint, Lock, LogOut, ShieldCheck, ShieldX } from 'lucide-react';
+import { Eye, EyeOff, Fingerprint, Lock, LogOut, ShieldCheck, ShieldX } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../../config/supabase';
 import { useAuthStore } from '../../store/authStore';
@@ -34,6 +34,9 @@ export default function AppLockOverlay({
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [wiping, setWiping] = useState(false);
@@ -53,6 +56,9 @@ export default function AppLockOverlay({
     setPassword('');
     setNewPassword('');
     setConfirmNewPassword('');
+    setShowPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
     setError(null);
     setWiping(false);
     setWipeCountdown(8);
@@ -313,53 +319,104 @@ export default function AppLockOverlay({
                         <label className="block text-sm text-white/70" htmlFor="idle-lock-password">
                           Idle lock password
                         </label>
-                        <input
-                          id="idle-lock-password"
-                          type="password"
-                          value={password}
-                          onChange={(e) => {
-                            inputTouchedRef.current = true;
-                            setPassword(e.target.value);
-                          }}
-                          onFocus={() => {
-                            inputTouchedRef.current = true;
-                          }}
-                          autoFocus
-                          className="glass-input w-full h-12 px-4 text-white placeholder:text-white/45"
-                          placeholder="••••••••"
-                          disabled={loading || isLockedOut}
-                        />
+                        <div className="relative">
+                          <input
+                            id="idle-lock-password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => {
+                              inputTouchedRef.current = true;
+                              setPassword(e.target.value);
+                            }}
+                            onFocus={() => {
+                              inputTouchedRef.current = true;
+                            }}
+                            autoFocus
+                            className="glass-input w-full h-12 pl-4 pr-11 text-white placeholder:text-white/45"
+                            placeholder="••••••••"
+                            disabled={loading || isLockedOut}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic('light');
+                              setShowPassword(!showPassword);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                            style={{
+                              background: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.10)',
+                            }}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="text-white/70 text-sm">
                           No idle lock password is set yet. Create one now to unlock.
                         </div>
-                        <input
-                          type="password"
-                          value={newPassword}
-                          onChange={(e) => {
-                            inputTouchedRef.current = true;
-                            setNewPassword(e.target.value);
-                          }}
-                          onFocus={() => {
-                            inputTouchedRef.current = true;
-                          }}
-                          className="glass-input w-full h-12 px-4 text-white placeholder:text-white/45"
-                          placeholder="Create a password"
-                          disabled={loading}
-                        />
-                        <input
-                          type="password"
-                          value={confirmNewPassword}
-                          onChange={(e) => {
-                            inputTouchedRef.current = true;
-                            setConfirmNewPassword(e.target.value);
-                          }}
-                          className="glass-input w-full h-12 px-4 text-white placeholder:text-white/45"
-                          placeholder="Confirm password"
-                          disabled={loading}
-                        />
+                        <div className="relative">
+                          <input
+                            type={showNewPassword ? 'text' : 'password'}
+                            value={newPassword}
+                            onChange={(e) => {
+                              inputTouchedRef.current = true;
+                              setNewPassword(e.target.value);
+                            }}
+                            onFocus={() => {
+                              inputTouchedRef.current = true;
+                            }}
+                            className="glass-input w-full h-12 pl-4 pr-11 text-white placeholder:text-white/45"
+                            placeholder="Create a password"
+                            disabled={loading}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic('light');
+                              setShowNewPassword(!showNewPassword);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                            style={{
+                              background: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.10)',
+                            }}
+                            aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            value={confirmNewPassword}
+                            onChange={(e) => {
+                              inputTouchedRef.current = true;
+                              setConfirmNewPassword(e.target.value);
+                            }}
+                            className="glass-input w-full h-12 pl-4 pr-11 text-white placeholder:text-white/45"
+                            placeholder="Confirm password"
+                            disabled={loading}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic('light');
+                              setShowConfirmPassword(!showConfirmPassword);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                            style={{
+                              background: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.10)',
+                            }}
+                            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

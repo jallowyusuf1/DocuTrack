@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { prefersReducedMotion } from '../../utils/animations';
+import { TopNav } from './sections/Hero';
 
 const Hero = lazy(() => import('./sections/Hero'));
 const HowItWorks = lazy(() => import('./sections/HowItWorks'));
@@ -114,26 +115,54 @@ export default function Landing() {
   const reduced = prefersReducedMotion();
   const anchorSelector = useMemo(() => 'a[href^="#"]', []);
 
-  // Smooth scrolling for in-page anchors (and offset for sticky nav)
+  // Smooth scrolling for in-page anchors (and offset for fixed nav)
   useEffect(() => {
     const getHeaderOffset = () => {
       const nav = document.querySelector<HTMLElement>('[data-landing-nav]');
       const h = nav?.offsetHeight ?? 96;
-      // add a little breathing room for glass shadow
-      return h + 18;
+      // add extra breathing room for glass shadow and proper spacing
+      return h + 32;
     };
 
     const scrollToId = (id: string) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
-      window.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
+      // Try immediate scroll first
+      const performScroll = () => {
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY - getHeaderOffset();
+          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+          return true;
+        }
+        return false;
+      };
+
+      if (performScroll()) {
+        return;
+      }
+
+      // If not found, wait for lazy-loaded sections
+      let attempts = 0;
+      const maxAttempts = 30;
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (performScroll() || attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          if (attempts >= maxAttempts) {
+            console.warn(`Section with id "${id}" not found after ${maxAttempts} attempts`);
+          }
+        }
+      }, 100);
     };
 
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       const link = target?.closest?.(anchorSelector) as HTMLAnchorElement | null;
       if (!link) return;
+      
+      // Skip if link is inside the TopNav (it has its own handler)
+      const isInTopNav = link.closest('[data-landing-nav]');
+      if (isInTopNav) return;
+      
       const href = link.getAttribute('href');
       if (!href || href === '#') return;
       const id = href.slice(1);
@@ -155,14 +184,14 @@ export default function Landing() {
     // If user loads directly with a hash, smooth scroll after paint.
     const initialHash = window.location.hash?.replace('#', '');
     if (initialHash) {
-      window.setTimeout(() => scrollToId(initialHash), 0);
+      window.setTimeout(() => scrollToId(initialHash), 200);
     }
 
     return () => {
       document.removeEventListener('click', onClick, { capture: true } as any);
       window.removeEventListener('hashchange', onHashChange);
     };
-  }, [anchorSelector, reduced]);
+  }, [anchorSelector]);
 
   return (
     <motion.div
@@ -173,7 +202,8 @@ export default function Landing() {
       transition={{ duration: 0.35 }}
     >
       <GlassBackground />
-      <main className="relative z-10">
+      <TopNav />
+      <main className="relative z-10 pt-24">
         <Suspense fallback={<SectionFallback tall />}>
           <Hero />
         </Suspense>

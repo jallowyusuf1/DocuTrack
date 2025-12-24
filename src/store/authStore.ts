@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { authService, type SignupData, type LoginData, type UserProfile } from '../services/authService';
 import { supabase } from '../config/supabase';
+import type { AccountRole, AccountType, ChildSessionContext } from '../services/childSession';
+import { clearAccountSession, hydrateAccountType } from '../services/childSession';
 
 interface AuthState {
   user: SupabaseUser | null;
@@ -11,6 +13,9 @@ interface AuthState {
   isLoading: boolean;
   hasCheckedAuth: boolean;
   error: string | null;
+  accountType: AccountType;
+  accountRole: AccountRole;
+  childContext: ChildSessionContext | null;
   
   // Actions
   signup: (data: SignupData) => Promise<{ user: SupabaseUser; session: Session | null; profile: UserProfile | null } | undefined>;
@@ -28,6 +33,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   hasCheckedAuth: false,
   error: null,
+  accountType: 'adult',
+  accountRole: 'user',
+  childContext: null,
 
   signup: async (data: SignupData) => {
     set({ isLoading: true, error: null });
@@ -45,6 +53,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         hasCheckedAuth: true,
         error: null,
       });
+
+      // Only hydrate child/adult when we actually have a session.
+      if (result.session?.user?.id) {
+        try {
+          const detected = await hydrateAccountType(result.session.user.id);
+          set({ accountType: detected.accountType, accountRole: detected.role, childContext: detected.child });
+        } catch {
+          set({ accountType: 'adult', accountRole: 'user', childContext: null });
+        }
+      }
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Signup failed';
@@ -56,6 +74,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         hasCheckedAuth: true,
         error: errorMessage,
+        accountType: 'adult',
+        accountRole: 'user',
+        childContext: null,
       });
       throw error;
     }
@@ -74,6 +95,14 @@ export const useAuthStore = create<AuthState>((set) => ({
         hasCheckedAuth: true,
         error: null,
       });
+
+      // Detect child vs adult and store session context.
+      try {
+        const detected = await hydrateAccountType(result.user.id);
+        set({ accountType: detected.accountType, accountRole: detected.role, childContext: detected.child });
+      } catch {
+        set({ accountType: 'adult', accountRole: 'user', childContext: null });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       set({
@@ -84,6 +113,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         hasCheckedAuth: true,
         error: errorMessage,
+        accountType: 'adult',
+        accountRole: 'user',
+        childContext: null,
       });
       throw error;
     }
@@ -93,6 +125,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       await authService.logout();
+      clearAccountSession();
       set({
         user: null,
         profile: null,
@@ -101,6 +134,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         hasCheckedAuth: true,
         error: null,
+        accountType: 'adult',
+        accountRole: 'user',
+        childContext: null,
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Logout failed';
@@ -147,6 +183,14 @@ export const useAuthStore = create<AuthState>((set) => ({
             hasCheckedAuth: true,
             error: null,
           });
+
+          // Hydrate child/adult in background (do not fail auth if it errors)
+          try {
+            const detected = await hydrateAccountType(user.id);
+            set({ accountType: detected.accountType, accountRole: detected.role, childContext: detected.child });
+          } catch {
+            set({ accountType: 'adult', accountRole: 'user', childContext: null });
+          }
         } else {
           // Token expired - Supabase should auto-refresh, but if it doesn't, clear state
           // Try to refresh the session
@@ -169,8 +213,16 @@ export const useAuthStore = create<AuthState>((set) => ({
               hasCheckedAuth: true,
               error: null,
             });
+
+            try {
+              const detected = await hydrateAccountType(user.id);
+              set({ accountType: detected.accountType, accountRole: detected.role, childContext: detected.child });
+            } catch {
+              set({ accountType: 'adult', accountRole: 'user', childContext: null });
+            }
           } else {
             // No valid session
+            clearAccountSession();
             set({
               user: null,
               profile: null,
@@ -179,11 +231,15 @@ export const useAuthStore = create<AuthState>((set) => ({
               isLoading: false,
               hasCheckedAuth: true,
               error: null,
+              accountType: 'adult',
+              accountRole: 'user',
+              childContext: null,
             });
           }
         }
       } else {
         // No session - clear auth state
+        clearAccountSession();
         set({
           user: null,
           profile: null,
@@ -192,11 +248,18 @@ export const useAuthStore = create<AuthState>((set) => ({
           isLoading: false,
           hasCheckedAuth: true,
           error: null,
+          accountType: 'adult',
+          accountRole: 'user',
+          childContext: null,
         });
       }
     } catch (error) {
       // Don't set error for auth check failures - just mark as not authenticated
-      console.warn('Auth check failed:', error);
+      // Only log in development to reduce console noise
+      if (import.meta.env.MODE === 'development') {
+        console.debug('[Auth] Check failed (non-critical):', error instanceof Error ? error.message : error);
+      }
+      clearAccountSession();
       set({
         user: null,
         profile: null,
@@ -205,6 +268,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         hasCheckedAuth: true,
         error: null, // Don't show error for failed auth check
+        accountType: 'adult',
+        accountRole: 'user',
+        childContext: null,
       });
     }
   },

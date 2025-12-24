@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { RefreshCw, XCircle, Search, X } from 'lucide-react';
+import { RefreshCw, XCircle, Search, X, Filter, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { dateService } from '../../services/dateService';
 import { useDebounce } from '../../hooks/useDebounce';
+import { matchesSearch, getSearchSuggestions } from '../../utils/searchUtils';
+import { useSearchHistory } from '../../hooks/useSearch';
 import type { ImportantDate } from '../../types';
 import CalendarView from '../../components/dates/CalendarView';
 import ListView from '../../components/dates/ListView';
@@ -25,26 +27,47 @@ export default function Dates() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const { history: searchHistory, addToHistory } = useSearchHistory();
 
-  // Filter dates by search query
+  // Filter dates by search query using enhanced search utility
   const filteredDates = useMemo(() => {
     if (!debouncedSearchQuery.trim()) {
       return dates;
     }
 
-    const query = debouncedSearchQuery.toLowerCase();
     return dates.filter((date) => {
-      const titleMatch = date.title.toLowerCase().includes(query);
-      const descriptionMatch = date.description?.toLowerCase().includes(query);
-      const categoryMatch = date.category?.toLowerCase().includes(query);
-      return titleMatch || descriptionMatch || categoryMatch;
+      const searchableText = [
+        date.title,
+        date.description,
+        date.category,
+      ].filter(Boolean).join(' ');
+
+      return matchesSearch(searchableText, debouncedSearchQuery);
     });
   }, [dates, debouncedSearchQuery]);
+
+  // Get search suggestions
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return [];
+
+    const titles = dates.map(d => d.title);
+    const categories = [...new Set(dates.map(d => d.category).filter(Boolean))];
+    const allSuggestions = [...titles, ...categories as string[]];
+
+    return allSuggestions
+      .filter(suggestion =>
+        matchesSearch(suggestion, searchQuery) &&
+        suggestion.toLowerCase() !== searchQuery.toLowerCase()
+      )
+      .slice(0, 5);
+  }, [dates, searchQuery]);
 
   // Fetch all important dates
   const fetchDates = async (showRefreshing = false) => {
@@ -138,7 +161,7 @@ export default function Dates() {
   // Loading skeleton
   if (loading && dates.length === 0) {
     return (
-      <div className="pb-[72px] min-h-screen">
+      <div className="pb-[72px] min-h-screen liquid-dashboard-bg">
         {/* Header */}
         <div className="px-5 py-4">
           <h1 className="text-2xl font-bold text-white mb-1">Important Dates</h1>

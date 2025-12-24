@@ -129,10 +129,11 @@ export default function DatePickerModal({
             transition={getTransition(transitions.spring)}
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[90vh] overflow-hidden"
             style={{
-              background: 'rgba(42, 38, 64, 0.85)',
-              backdropFilter: 'blur(25px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(139,92,246,0.10) 100%)',
+              backdropFilter: 'blur(34px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.14)',
+              boxShadow: '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
               maxWidth: '100%',
             }}
             data-tablet-date-modal="true"
@@ -273,9 +274,9 @@ export default function DatePickerModal({
                               border: '1px solid rgba(59, 130, 246, 0.3)',
                             }
                           : {
-                              background: 'rgba(35, 29, 51, 0.3)',
+                              background: 'rgba(42, 38, 64, 0.4)',
                               color: '#FFFFFF',
-                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
                             })
                       }}
                       data-tablet-date-value="true"

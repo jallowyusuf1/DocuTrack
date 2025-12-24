@@ -1,0 +1,80 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Main purple gradient -->
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A78BFA;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6D28D9;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Dark background -->
+    <linearGradient id="darkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E1B4B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F172A;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Glass shine effect -->
+    <linearGradient id="glassShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.3" />
+      <stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </linearGradient>
+
+    <!-- Subtle shadow -->
+    <filter id="softGlow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background (dark) -->
+  <rect x="32" y="32" width="448" height="448" rx="96" ry="96" fill="url(#darkBg)"/>
+
+  <!-- Glass overlay on background -->
+  <rect x="32" y="32" width="448" height="448" rx="96" ry="96" fill="url(#glassShine)" opacity="0.4"/>
+
+  <!-- Letter "D" - Modern flat style -->
+  <path
+    d="M 180 140 L 180 372 L 280 372 C 340 372 380 332 380 256 C 380 180 340 140 280 140 Z M 220 180 L 280 180 C 318 180 340 202 340 256 C 340 310 318 332 280 332 L 220 332 Z"
+    fill="url(#purpleGradient)"
+    filter="url(#softGlow)"
+  />
+
+  <!-- Subtle highlight on D -->
+  <path
+    d="M 220 180 L 280 180 C 300 180 318 188 330 202"
+    stroke="rgba(255,255,255,0.4)"
+    stroke-width="3"
+    fill="none"
+    stroke-linecap="round"
+  />
+
+  <!-- Inner counter glow -->
+  <ellipse
+    cx="290"
+    cy="256"
+    rx="35"
+    ry="60"
+    fill="rgba(255,255,255,0.15)"
+  />
+
+  <!-- Border on rounded square -->
+  <rect
+    x="32"
+    y="32"
+    width="448"
+    height="448"
+    rx="96"
+    ry="96"
+    fill="none"
+    stroke="rgba(139,92,246,0.5)"
+    stroke-width="2"
+  />
+</svg>

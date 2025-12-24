@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Camera, Folder, Bell, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Camera, Folder, Bell, FileText } from 'lucide-react';
 import DesktopModal from '../ui/DesktopModal';
 import { triggerHaptic } from '../../utils/animations';
 
@@ -22,7 +22,7 @@ interface Screen {
 const SCREENS: Screen[] = [
   {
     id: 1,
-    icon: Sparkles,
+    icon: FileText,
     title: 'Welcome to DocuTrack',
     description: 'Your personal document management system',
     features: [
@@ -70,7 +70,7 @@ const SCREENS: Screen[] = [
   },
   {
     id: 5,
-    icon: Sparkles,
+    icon: FileText,
     title: 'Ready to Get Started?',
     description: 'Start managing your documents today',
     features: [

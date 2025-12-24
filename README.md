@@ -41,28 +41,28 @@ A modern, feature-rich document tracking and management application built with R
 - Auto (follows system preference)
 
 ### Authentication
-- Email/Password authentication
-- Google OAuth integration
-- Password reset functionality
-- Protected routes and secure session management
+- Email/Password authentication.
+- Google OAuth integration.
+- Password reset functionality.
+- Protected routes and secure session management.
 
 ## Tech Stack
 
 ### Frontend
-- **React 19.2** - Latest React with improved performance
-- **TypeScript** - Type-safe development
-- **Vite 7.2** - Lightning-fast build tool
-- **Framer Motion** - Smooth animations and transitions
-- **React Router 7** - Client-side routing
-- **Lucide React** - Modern icon library
+- **React 19.2** - Latest React with improved performance.
+- **TypeScript** - Type-safe development.
+- **Vite 7.2** - Lightning-fast build tool.
+- **Framer Motion** - Smooth animations and transitions.
+- **React Router 7** - Client-side routing.
+- **Lucide React** - Modern icon library.
 
 ### Backend & Database
-- **Supabase** - Backend-as-a-Service
-  - PostgreSQL database
-  - Authentication
-  - Real-time subscriptions
-  - Storage for document images
-  - Row-level security
+- **Supabase** - Backend-as-a-Service.
+  - PostgreSQL database.
+  - Authentication.
+  - Real-time subscriptions.
+  - Storage for document images.
+  - Row-level security.
 
 ### State Management & Storage
 - **Zustand** - Lightweight state management

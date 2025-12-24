@@ -1,10 +1,15 @@
-import { forwardRef, type CSSProperties, type ReactNode } from 'react';
+import { forwardRef, type CSSProperties, type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes } from 'react';
 import { motion } from 'framer-motion';
 import { prefersReducedMotion } from '../../../utils/animations';
 
 function cn(...parts: Array<string | undefined | false>) {
   return parts.filter(Boolean).join(' ');
 }
+
+/* ========================================
+   MODERN APPLE GLASSMORPHISM COMPONENTS
+   iOS 18 / macOS 15 Style
+   ======================================== */
 
 export const GlassBackgroundGrid = ({ opacity = 0.12 }: { opacity?: number }) => (
   <div
@@ -136,11 +141,11 @@ export function GlassButton({
       style={{
         ...(variant === 'ghost'
           ? {
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              backdropFilter: 'blur(18px)',
-              WebkitBackdropFilter: 'blur(18px)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.10)',
+              background: 'var(--glass-bg-medium)',
+              border: '1px solid var(--glass-border-subtle)',
+              backdropFilter: `blur(var(--glass-blur-light)) saturate(var(--glass-saturation))`,
+              WebkitBackdropFilter: `blur(var(--glass-blur-light)) saturate(var(--glass-saturation))`,
+              boxShadow: 'var(--shadow-glass-sm), inset 0 1px 0 var(--glass-highlight-subtle)',
             }
           : null),
         ...style,
@@ -151,6 +156,279 @@ export function GlassButton({
     >
       {children}
     </motion.button>
+  );
+}
+
+/* ========================================
+   ENHANCED GLASS COMPONENTS
+   ======================================== */
+
+// Glass Input Field
+export const GlassInput = forwardRef<
+  HTMLInputElement,
+  InputHTMLAttributes<HTMLInputElement> & {
+    className?: string;
+    error?: boolean;
+  }
+>(function GlassInput({ className, error, ...props }, ref) {
+  return (
+    <input
+      ref={ref}
+      className={cn('glass-input', error && 'glass-input-error', className)}
+      {...props}
+    />
+  );
+});
+
+// Glass Textarea
+export const GlassTextarea = forwardRef<
+  HTMLTextAreaElement,
+  React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+    className?: string;
+    error?: boolean;
+  }
+>(function GlassTextarea({ className, error, ...props }, ref) {
+  return (
+    <textarea
+      ref={ref}
+      className={cn('glass-input', error && 'glass-input-error', className)}
+      style={{
+        minHeight: '100px',
+        resize: 'vertical',
+      }}
+      {...props}
+    />
+  );
+});
+
+// Glass Select/Dropdown
+export const GlassSelect = forwardRef<
+  HTMLSelectElement,
+  React.SelectHTMLAttributes<HTMLSelectElement> & {
+    className?: string;
+    error?: boolean;
+  }
+>(function GlassSelect({ className, error, children, ...props }, ref) {
+  return (
+    <select
+      ref={ref}
+      className={cn('glass-input', error && 'glass-input-error', className)}
+      {...props}
+    >
+      {children}
+    </select>
+  );
+});
+
+// Glass Modal/Dialog Container
+export const GlassModal = forwardRef<
+  HTMLDivElement,
+  {
+    children: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+    size?: 'sm' | 'md' | 'lg' | 'xl';
+  }
+>(function GlassModal({ children, className, style, size = 'md' }, ref) {
+  const sizeClasses = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={cn('glass-modal', sizeClasses[size], className)}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Glass Badge/Tag
+export function GlassBadge({
+  children,
+  className,
+  style,
+  variant = 'default',
+}: {
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+}) {
+  const variantStyles: Record<typeof variant, CSSProperties> = {
+    default: {
+      background: 'var(--glass-bg-strong)',
+      border: '1px solid var(--glass-border-light)',
+    },
+    success: {
+      background: 'rgba(34, 197, 94, 0.15)',
+      border: '1px solid rgba(34, 197, 94, 0.30)',
+      color: 'rgba(134, 239, 172, 0.95)',
+    },
+    warning: {
+      background: 'rgba(251, 191, 36, 0.15)',
+      border: '1px solid rgba(251, 191, 36, 0.30)',
+      color: 'rgba(253, 224, 71, 0.95)',
+    },
+    error: {
+      background: 'rgba(239, 68, 68, 0.15)',
+      border: '1px solid rgba(239, 68, 68, 0.30)',
+      color: 'rgba(252, 165, 165, 0.95)',
+    },
+    info: {
+      background: 'rgba(59, 130, 246, 0.15)',
+      border: '1px solid rgba(59, 130, 246, 0.30)',
+      color: 'rgba(147, 197, 253, 0.95)',
+    },
+  };
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
+        className
+      )}
+      style={{
+        backdropFilter: `blur(var(--glass-blur-light))`,
+        WebkitBackdropFilter: `blur(var(--glass-blur-light))`,
+        boxShadow: 'inset 0 1px 0 var(--glass-highlight-subtle)',
+        ...variantStyles[variant],
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+// Glass Divider
+export function GlassDivider({
+  className,
+  style,
+  label,
+}: {
+  className?: string;
+  style?: CSSProperties;
+  label?: string;
+}) {
+  if (label) {
+    return (
+      <div className={cn('flex items-center gap-4 my-4', className)} style={style}>
+        <div
+          className="h-px flex-1"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent 0%, var(--glass-border-light) 30%, var(--glass-border-medium) 55%, var(--glass-border-light) 80%, transparent 100%)',
+          }}
+        />
+        <span
+          className="text-white/70 text-xs md:text-sm px-3 py-1.5 rounded-full"
+          style={{
+            background: 'var(--glass-bg-medium)',
+            border: '1px solid var(--glass-border-light)',
+            backdropFilter: `blur(var(--glass-blur-light))`,
+            WebkitBackdropFilter: `blur(var(--glass-blur-light))`,
+          }}
+        >
+          {label}
+        </span>
+        <div
+          className="h-px flex-1"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent 0%, var(--glass-border-light) 20%, var(--glass-border-medium) 45%, var(--glass-border-light) 70%, transparent 100%)',
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn('h-px my-4', className)}
+      style={{
+        background: 'var(--glass-border-light)',
+        ...style,
+      }}
+    />
+  );
+}
+
+// Glass Tooltip Container
+export const GlassTooltip = forwardRef<
+  HTMLDivElement,
+  {
+    children: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+  }
+>(function GlassTooltip({ children, className, style }, ref) {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'px-3 py-2 rounded-xl text-xs font-medium text-white/90',
+        className
+      )}
+      style={{
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: `blur(var(--glass-blur-medium)) saturate(var(--glass-saturation))`,
+        WebkitBackdropFilter: `blur(var(--glass-blur-medium)) saturate(var(--glass-saturation))`,
+        border: '1px solid var(--glass-border-strong)',
+        boxShadow: 'var(--shadow-glass-md), inset 0 1px 0 var(--glass-highlight-light)',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Glass Progress Bar
+export function GlassProgressBar({
+  progress,
+  className,
+  style,
+  showLabel = false,
+}: {
+  progress: number; // 0-100
+  className?: string;
+  style?: CSSProperties;
+  showLabel?: boolean;
+}) {
+  const clampedProgress = Math.min(100, Math.max(0, progress));
+
+  return (
+    <div className={cn('relative', className)} style={style}>
+      <div
+        className="h-2 rounded-full overflow-hidden"
+        style={{
+          background: 'var(--glass-bg-strong)',
+          border: '1px solid var(--glass-border-subtle)',
+          backdropFilter: `blur(var(--glass-blur-light))`,
+          WebkitBackdropFilter: `blur(var(--glass-blur-light))`,
+        }}
+      >
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${clampedProgress}%`,
+            background: 'linear-gradient(90deg, var(--accent-purple-start) 0%, var(--accent-purple-end) 100%)',
+            boxShadow: '0 0 12px rgba(139, 92, 246, 0.6)',
+          }}
+        />
+      </div>
+      {showLabel && (
+        <span className="absolute right-0 top-0 -translate-y-5 text-xs text-white/70 font-medium tabular-nums">
+          {clampedProgress}%
+        </span>
+      )}
+    </div>
   );
 }
 

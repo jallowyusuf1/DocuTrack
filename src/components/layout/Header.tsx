@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, FileText, Lock as LockIcon } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NotificationBell from './NotificationBell';
+// NotificationBell removed from header (too busy / AI-feel)
 import NotificationPermissionStatus from '../shared/NotificationPermissionStatus';
 import { useAuth } from '../../hooks/useAuth';
 import QuickAddModal from '../documents/QuickAddModal';
 import AddImportantDateModal from '../dates/AddImportantDateModal';
 import SearchOverlay from '../search/SearchOverlay';
 import { triggerHaptic } from '../../utils/animations';
+import BrandLogo from '../ui/BrandLogo';
 import { useOptionalIdleTimeout } from '../../contexts/IdleTimeoutContext';
 
 export default function Header() {
@@ -38,7 +39,8 @@ export default function Header() {
   const showAddButton = !isAuthPage && !isAddDocumentPage && !isProfilePage;
 
   // Determine current page
-  const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
+  const isDashboard = location.pathname === '/dashboard';
+  const isExpireSoonPage = location.pathname === '/expire-soon';
   const isDatesPage = location.pathname === '/dates';
 
   const showIdleIndicator =
@@ -62,8 +64,10 @@ export default function Header() {
       setIsQuickAddOpen(true);
     } else if (isDatesPage) {
       setIsImportantDateOpen(true);
+    } else if (isExpireSoonPage) {
+      navigate('/add-document?scope=expire_soon');
     } else {
-      navigate('/add-document');
+      navigate('/add-document?scope=dashboard');
     }
   };
 
@@ -99,16 +103,22 @@ export default function Header() {
           >
             <motion.button
               onClick={() => navigate('/dashboard')}
-              className="w-12 h-12 rounded-3xl flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(59,130,246,0.85))',
-                boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
-                border: '1px solid rgba(255,255,255,0.20)',
-              }}
+              className="w-12 h-12 flex items-center justify-center"
               whileTap={{ scale: 0.98 }}
               aria-label="Go to dashboard"
             >
-              <FileText className="w-6 h-6 text-white" />
+              <img
+                src="/assets/logo.svg"
+                alt="DocuTrackr Logo"
+                className="hidden"
+                style={{
+                  filter: 'drop-shadow(0 18px 55px rgba(139,92,246,0.35))',
+                }}
+              />
+              <BrandLogo
+                className="w-12 h-12"
+                alt="DocuTrackr Logo"
+              />
             </motion.button>
 
             <div className="flex items-center gap-3">
@@ -148,7 +158,7 @@ export default function Header() {
                 <Plus className="w-5 h-5 text-white" />
               </motion.button>
             )}
-            <NotificationBell />
+            {/* Notification bell removed */}
             </div>
           </div>
         </div>

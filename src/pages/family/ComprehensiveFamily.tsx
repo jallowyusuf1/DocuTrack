@@ -49,7 +49,7 @@ export default function ComprehensiveFamily() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1625] via-[#2d1b4e] to-[#1a1625] pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 p-4 border-b border-white/10 backdrop-blur-lg bg-[rgba(26,22,37,0.8)]">
         <div className="max-w-7xl mx-auto">

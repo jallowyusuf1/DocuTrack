@@ -2,14 +2,17 @@ import { useEffect, useState, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Loader2, ArrowRight, Check } from 'lucide-react';
 import { triggerHaptic, prefersReducedMotion } from '../../utils/animations';
 import { useAuth } from '../../hooks/useAuth';
+import { useAuthStore } from '../../store/authStore';
 import { validateEmail } from '../../utils/validation';
 import NetworkStatusBanner from '../../components/NetworkStatusBanner';
 import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { GlassButton, GlassCard, GlassPill } from '../../components/ui/glass/Glass';
 import AuthGlassNav from '../../components/layout/AuthGlassNav';
+import BrandLogo from '../../components/ui/BrandLogo';
+import SocialAuthButtons from '../../components/auth/SocialAuthButtons';
 
 interface LoginFormData {
   email: string;
@@ -18,7 +21,7 @@ interface LoginFormData {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading, accountType, logout } = useAuth();
   const reduced = prefersReducedMotion();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -61,8 +64,11 @@ export default function Login() {
   });
 
   useEffect(() => {
-    if (isAuthenticated) navigate('/dashboard', { replace: true });
-  }, [isAuthenticated, navigate]);
+    if (!isAuthenticated) return;
+    // Child accounts go to the same routes but with supervision UI enabled everywhere.
+    // Keeping path stable avoids duplicating dashboards.
+    navigate('/dashboard', { replace: true });
+  }, [isAuthenticated, accountType, navigate]);
 
   useEffect(() => {
     if (!isLocked) return;
@@ -97,7 +103,14 @@ export default function Login() {
       return;
     }
 
+    // Store "Remember Me" preference before login
     localStorage.setItem('rememberMe', rememberMe.toString());
+    
+    // If "Remember Me" is false, clear any existing session from localStorage
+    if (!rememberMe) {
+      // Clear session from localStorage (will use sessionStorage instead)
+      localStorage.removeItem('supabase.auth.token');
+    }
 
     try {
       await login({ email: data.email, password: data.password });
@@ -107,7 +120,7 @@ export default function Login() {
       localStorage.removeItem('lastLoginAttempt');
 
       triggerHaptic('medium');
-      navigate('/dashboard', { replace: true });
+      // Navigation handled by effect (waits for child/adult detection too).
     } catch (error) {
       triggerHaptic('heavy');
 
@@ -160,9 +173,15 @@ export default function Login() {
           >
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">D</span>
-                </div>
+                <img
+                  src="/assets/logo.svg"
+                  alt="DocuTrackr Logo"
+                  className="hidden"
+                  style={{
+                    filter: 'drop-shadow(0 8px 24px rgba(139,92,246,0.35))',
+                  }}
+                />
+                <BrandLogo className="w-8 h-8" alt="DocuTrackr Logo" />
                 <span className="text-white font-semibold text-sm">DocuTrackr</span>
               </div>
               <div className="h-4 w-px bg-white/20" />
@@ -205,7 +224,7 @@ export default function Login() {
                   Your deadlines, organized — across all your devices.
                 </p>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-4">
                   <div>
                     <label className="block text-white/70 text-sm mb-2" htmlFor="email">
                       Email
@@ -269,14 +288,43 @@ export default function Login() {
                   </div>
 
                   <div className="flex items-center justify-between gap-4">
-                    <label className="flex items-center gap-2 text-white/70 text-sm cursor-pointer">
+                    <label className="flex items-center gap-2 text-white/75 text-sm cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setRememberMe(e.target.checked)}
-                        style={{ accentColor: '#8B5CF6' }}
+                        className="sr-only"
                       />
-                      Remember me
+                      <span
+                        className="relative w-5 h-5 rounded-md flex items-center justify-center"
+                        style={{
+                          background: rememberMe ? 'rgba(139,92,246,0.22)' : 'rgba(255,255,255,0.06)',
+                          border: rememberMe ? '1px solid rgba(167,139,250,0.55)' : '1px solid rgba(255,255,255,0.14)',
+                          boxShadow: rememberMe
+                            ? '0 10px 30px rgba(139,92,246,0.22), inset 0 1px 0 rgba(255,255,255,0.20)'
+                            : 'inset 0 1px 0 rgba(255,255,255,0.14)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          transition: 'all 160ms ease',
+                        }}
+                        aria-hidden="true"
+                      >
+                        <AnimatePresence initial={false}>
+                          {rememberMe && (
+                            <motion.span
+                              key="check"
+                              initial={{ scale: 0.8, opacity: 0, y: 1 }}
+                              animate={{ scale: 1, opacity: 1, y: 0 }}
+                              exit={{ scale: 0.8, opacity: 0, y: 1 }}
+                              transition={{ duration: 0.16 }}
+                              className="text-white"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </span>
+                      <span className="leading-none">Remember me</span>
                     </label>
                     <Link to="/forgot-password" className="text-white/70 hover:text-white text-sm">
                       Forgot password?
@@ -318,6 +366,13 @@ export default function Login() {
                       </>
                     )}
                   </GlassButton>
+
+                  <SocialAuthButtons
+                    mode="login"
+                    onAuthError={(provider, error) => {
+                      setSubmitError(`Failed to connect with ${provider}. ${error}`);
+                    }}
+                  />
 
                   <div className="pt-2 text-center text-white/70 text-sm">
                     New here?{' '}

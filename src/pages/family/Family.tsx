@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Share2, Home, UserPlus, Clock, Search, SlidersHorizontal, AlertCircle, ChevronRight } from 'lucide-react';
+import { Users, Share2, Home, UserPlus, Clock, Search, SlidersHorizontal, AlertCircle, ChevronRight, BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getConnections, getPendingConnections, getSharedDocuments, getHouseholds } from '../../services/social';
 import type { Connection, SharedDocument } from '../../types';
@@ -10,11 +10,24 @@ import ShareDocumentModal from '../../components/family/ShareDocumentModal';
 import ConnectionRequestCard from '../../components/family/ConnectionRequestCard';
 import ConnectionCard from '../../components/family/ConnectionCard';
 import SharedDocumentCard from '../../components/family/SharedDocumentCard';
+import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../config/supabase';
 
-type TabType = 'connections' | 'shared' | 'households';
+type TabType = 'connections' | 'shared' | 'households' | 'analytics';
+
+type AnalyticsMetrics = {
+  connectionsCount: number;
+  pendingConnectionRequests: number;
+  sharedDocsCount: number;
+  householdsCount: number;
+  pendingChildRequests?: number;
+  childAccountsCount?: number;
+  last7dChildActivity?: number;
+};
 
 export default function Family() {
   const { t } = useTranslation();
+  const { user, accountType, accountRole } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('connections');
   const [connections, setConnections] = useState<Connection[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
@@ -23,6 +36,7 @@ export default function Family() {
   const [loading, setLoading] = useState(true);
   const [showAddConnection, setShowAddConnection] = useState(false);
   const [showShareDocument, setShowShareDocument] = useState(false);
+  const [analytics, setAnalytics] = useState<AnalyticsMetrics | null>(null);
 
   useEffect(() => {
     loadData();
@@ -45,6 +59,62 @@ export default function Family() {
       } else if (activeTab === 'households') {
         const householdsData = await getHouseholds();
         setHouseholds(householdsData);
+      } else if (activeTab === 'analytics') {
+        // Basic family analytics (frosted glass tile)
+        const [connectionsData, pendingData, sharedData, householdsData] = await Promise.all([
+          getConnections(),
+          getPendingConnections(),
+          getSharedDocuments(),
+          getHouseholds(),
+        ]);
+
+        const base: AnalyticsMetrics = {
+          connectionsCount: connectionsData.length,
+          pendingConnectionRequests: pendingData.length,
+          sharedDocsCount: sharedData.length,
+          householdsCount: householdsData.length,
+        };
+
+        // Parent/Child specific additions
+        if (user?.id) {
+          if (accountType === 'child') {
+            const { count: pendingChildRequests } = await supabase
+              .from('child_account_requests')
+              .select('id', { count: 'exact', head: true })
+              .eq('child_id', user.id)
+              .eq('status', 'pending');
+            setAnalytics({ ...base, pendingChildRequests: pendingChildRequests ?? 0 });
+          } else if (accountRole === 'parent') {
+            const [{ count: childAccountsCount }, { count: pendingChildRequests }, { count: last7dChildActivity }] =
+              await Promise.all([
+                supabase
+                  .from('child_accounts')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('parent_id', user.id)
+                  .neq('status', 'deleted'),
+                supabase
+                  .from('child_account_requests')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('parent_id', user.id)
+                  .eq('status', 'pending'),
+                supabase
+                  .from('child_account_activity_logs')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('parent_id', user.id)
+                  .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+              ]);
+            setAnalytics({
+              ...base,
+              childAccountsCount: childAccountsCount ?? 0,
+              pendingChildRequests: pendingChildRequests ?? 0,
+              last7dChildActivity: last7dChildActivity ?? 0,
+            });
+          } else {
+            setAnalytics(base);
+          }
+        } else {
+          setAnalytics(base);
+        }
       }
     } catch (error) {
       console.error('Error loading family data:', error);
@@ -53,14 +123,17 @@ export default function Family() {
     }
   };
 
+  const showAnalytics = accountType === 'child' || accountRole === 'parent';
+
   const tabs = [
     { id: 'connections' as TabType, label: t('family.connections'), icon: Users },
     { id: 'shared' as TabType, label: t('family.sharedWithMe'), icon: Share2 },
     { id: 'households' as TabType, label: t('family.households'), icon: Home },
+    ...(showAnalytics ? [{ id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 }] : []),
   ];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
+    <div className="min-h-screen flex flex-col">
       <main className="flex-1 pb-20 pt-4 md:pt-6 px-4 md:px-5 safe-area-bottom">
         <div className="max-w-4xl mx-auto md:max-w-[700px] md:mx-auto">
           {/* Header Section */}
@@ -138,6 +211,9 @@ export default function Family() {
                 {activeTab === 'households' && (
                   <HouseholdsTab households={households} onRefresh={loadData} />
                 )}
+                {activeTab === 'analytics' && (
+                  <FamilyAnalyticsTab metrics={analytics} isChild={accountType === 'child'} />
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -165,6 +241,81 @@ export default function Family() {
         }}
       />
     </div>
+  );
+}
+
+function FamilyAnalyticsTab({ metrics, isChild }: { metrics: AnalyticsMetrics | null; isChild: boolean }) {
+  const stat = (label: string, value: string, accent: string) => (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        background: 'rgba(26, 22, 37, 0.55)',
+        border: '1px solid rgba(255, 255, 255, 0.10)',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 40px rgba(0,0,0,0.35)',
+      }}
+    >
+      <div className="text-xs text-white/60">{label}</div>
+      <div className="mt-2 text-2xl font-bold text-white">{value}</div>
+      <div className="mt-2 h-1.5 rounded-full" style={{ background: accent, opacity: 0.55 }} />
+    </div>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-3xl p-5 md:p-6 relative overflow-hidden"
+      style={{
+        background: 'rgba(42, 38, 64, 0.42)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        backdropFilter: 'blur(26px)',
+        WebkitBackdropFilter: 'blur(26px)',
+        boxShadow: '0 26px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.10)',
+      }}
+    >
+      <motion.div
+        className="absolute -top-10 -right-10 w-44 h-44 rounded-full opacity-15 blur-[70px]"
+        style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
+        animate={{ x: [0, 18, 0], y: [0, -12, 0], scale: [1, 1.15, 1] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold text-white">Family Analytics</h2>
+            <p className="text-sm text-white/60 mt-1">
+              {isChild ? 'Your supervised account activity & family access' : 'A quick overview of your family sharing'}
+            </p>
+          </div>
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center"
+            style={{
+              background: 'rgba(139, 92, 246, 0.18)',
+              border: '1px solid rgba(139, 92, 246, 0.28)',
+            }}
+          >
+            <BarChart3 className="w-6 h-6 text-purple-300" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-6">
+          {stat('Connections', String(metrics?.connectionsCount ?? 0), 'linear-gradient(90deg, rgba(139,92,246,1), rgba(59,130,246,1))')}
+          {stat('Shared docs', String(metrics?.sharedDocsCount ?? 0), 'linear-gradient(90deg, rgba(236,72,153,1), rgba(139,92,246,1))')}
+          {stat('Households', String(metrics?.householdsCount ?? 0), 'linear-gradient(90deg, rgba(34,197,94,1), rgba(59,130,246,1))')}
+          {stat('Pending', String((metrics?.pendingChildRequests ?? 0) + (metrics?.pendingConnectionRequests ?? 0)), 'linear-gradient(90deg, rgba(245,158,11,1), rgba(234,88,12,1))')}
+        </div>
+
+        {!isChild && metrics?.childAccountsCount !== undefined && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            {stat('Child accounts', String(metrics.childAccountsCount ?? 0), 'linear-gradient(90deg, rgba(139,92,246,1), rgba(109,40,217,1))')}
+            {stat('Child activity (7d)', String(metrics.last7dChildActivity ?? 0), 'linear-gradient(90deg, rgba(59,130,246,1), rgba(14,165,233,1))')}
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
 

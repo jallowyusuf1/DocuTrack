@@ -168,7 +168,7 @@ export const UnlockAnimation: React.FC<UnlockAnimationProps> = ({ onComplete }) 
                 <Key className="w-12 h-12 text-yellow-900" />
               </div>
 
-              {/* Sparkles */}
+              {/* (Removed sparkles decoration) */}
               {stage === 'key-appear' && (
                 <>
                   <div className="absolute -top-2 -right-2 w-3 h-3 bg-yellow-200 rounded-full animate-sparkle-1" />

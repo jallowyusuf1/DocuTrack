@@ -24,7 +24,7 @@ export default function DesktopCalendar() {
   // Desktop layout
   if (isDesktop) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
+      <div className="min-h-screen flex flex-col">
         <Header />
 
         <main className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 70px)' }}>

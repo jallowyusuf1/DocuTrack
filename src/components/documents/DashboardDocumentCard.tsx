@@ -51,6 +51,7 @@ export default function DashboardDocumentCard({ document }: DashboardDocumentCar
   const daysUntil = getDaysUntil(document.expiration_date);
   const urgency = getUrgencyLevel(document.expiration_date);
   const urgencyColor = getUrgencyColor(urgency, daysUntil);
+  const isExpired = daysUntil < 0;
 
   const typeLabel = formatDocumentType(document.document_type);
   const Icon = DOCUMENT_TYPE_ICONS[document.document_type] || FileText;
@@ -143,22 +144,52 @@ export default function DashboardDocumentCard({ document }: DashboardDocumentCar
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
         <LiquidPill
           interactive
-          tone="milky"
-          glowColor={urgencyColor}
+          tone="clear"
           onClick={handleOpen}
           className="px-4 py-3 md:px-5 md:py-4"
-          style={{ fontFamily: 'SF Pro Text, -apple-system, sans-serif' }}
+          style={{
+            fontFamily: 'SF Pro Text, -apple-system, sans-serif',
+            // Dark glass - matte, blurred
+            background: isExpired ? 'rgba(255, 69, 58, 0.08)' : 'rgba(18, 14, 28, 0.55)',
+            backdropFilter: 'blur(30px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(30px) saturate(150%)',
+            border: isExpired ? '1px solid rgba(255, 69, 58, 0.30)' : '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+          }}
         >
+          {/* Expired overlay to make it unmistakable (still glass) */}
+          {isExpired && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'repeating-linear-gradient(135deg, rgba(255,69,58,0.14) 0px, rgba(255,69,58,0.14) 10px, rgba(255,255,255,0.00) 10px, rgba(255,255,255,0.00) 22px)',
+                opacity: 0.55,
+                mixBlendMode: 'overlay',
+              }}
+            />
+          )}
           <div className="flex items-center gap-4">
-            <LiquidPillMedia className="w-[66px] h-[66px] md:w-[72px] md:h-[72px] flex-shrink-0" glowColor={urgencyColor}>
+            <LiquidPillMedia className="w-[80px] h-[80px] md:w-[88px] md:h-[88px] flex-shrink-0">
               {imageLoading && !imageError ? (
                 <div className="w-full h-full bg-white/5 animate-pulse" />
               ) : imageUrl && !imageError ? (
                 <img
                   src={imageUrl}
                   alt={document.document_name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full"
                   onError={() => setImageError(true)}
+                  loading="eager"
+                  decoding="async"
+                  style={{
+                    objectFit: 'contain',
+                    objectPosition: 'center',
+                    padding: '8px',
+                    filter: isExpired ? 'grayscale(1) contrast(1.05) brightness(0.85)' : undefined,
+                    opacity: isExpired ? 0.88 : 1,
+                    imageRendering: 'high-quality',
+                    WebkitFontSmoothing: 'antialiased',
+                  }}
                 />
               ) : (
                 <div
@@ -191,6 +222,21 @@ export default function DashboardDocumentCard({ document }: DashboardDocumentCar
                 <div className="text-xs font-semibold" style={{ color: urgencyColor, textShadow: `0 0 12px ${urgencyColor}55` }}>
                   {daysText}
                 </div>
+                {isExpired && (
+                  <span
+                    className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-[0.16em]"
+                    style={{
+                      background: 'rgba(255,69,58,0.14)',
+                      border: '1px solid rgba(255,69,58,0.30)',
+                      color: 'rgba(255, 205, 210, 0.95)',
+                      textTransform: 'uppercase',
+                      backdropFilter: 'blur(16px)',
+                      WebkitBackdropFilter: 'blur(16px)',
+                    }}
+                  >
+                    Expired
+                  </span>
+                )}
               </div>
             </div>
 

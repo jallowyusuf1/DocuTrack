@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Check, X, Lock, Mail, User, Shield, ChevronLeft } from 'lucide-react';
+import { Eye, EyeOff, Check, X, Lock, Mail, User, Shield, ChevronLeft, Calendar } from 'lucide-react';
 import { supabase } from '../../config/supabase';
+import { calculateAgeYears } from '../../utils/age';
 
 // Password strength calculation
 const calculatePasswordStrength = (password: string): { score: number; label: string; color: string } => {
@@ -33,6 +34,8 @@ export default function AppleSignUp() {
   // Form data
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [accountRole, setAccountRole] = useState<'user' | 'parent'>('user');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -88,7 +91,9 @@ export default function AppleSignUp() {
 
   const allPasswordRequirementsMet = passwordRequirements.every(req => req.met);
 
-  const canContinueStep1 = fullName.length > 0 && emailValid === true;
+  const ageYears = dateOfBirth ? calculateAgeYears(dateOfBirth) : null;
+  const ageValid = ageYears !== null && ageYears >= 13 && ageYears <= 120;
+  const canContinueStep1 = fullName.length > 0 && emailValid === true && ageValid;
   const canContinueStep2 = allPasswordRequirementsMet && passwordsMatch === true;
   const canContinueStep3 = agreeToTerms;
 
@@ -116,12 +121,22 @@ export default function AppleSignUp() {
         options: {
           data: {
             full_name: fullName,
+            date_of_birth: dateOfBirth,
+            account_role: accountRole,
             email_updates: emailUpdates,
           },
         },
       });
 
       if (error) throw error;
+
+      // Best-effort: if session exists, backfill user_profiles DOB (RLS requires auth)
+      if (data?.session?.user?.id) {
+        await supabase
+          .from('user_profiles')
+          .update({ full_name: fullName, date_of_birth: dateOfBirth, account_role: accountRole })
+          .eq('user_id', data.session.user.id);
+      }
 
       setCurrentStep('success');
 
@@ -234,6 +249,73 @@ export default function AppleSignUp() {
                     autoFocus
                   />
                 </div>
+              </div>
+
+              {/* Account type */}
+              <div className="mb-5">
+                <label className="block text-[13px] text-gray-600 mb-2 ml-1">Account type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAccountRole('user')}
+                    className={`h-12 rounded-xl font-semibold text-[15px] transition-all ${
+                      accountRole === 'user'
+                        ? 'bg-[#0071E3] text-white shadow-lg shadow-blue-500/30'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    User
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccountRole('parent')}
+                    className={`h-12 rounded-xl font-semibold text-[15px] transition-all ${
+                      accountRole === 'parent'
+                        ? 'bg-[#0071E3] text-white shadow-lg shadow-blue-500/30'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Parent
+                  </button>
+                </div>
+                <p className="text-[13px] text-gray-500 mt-2 ml-1">
+                  Parents can create supervised child accounts.
+                </p>
+              </div>
+
+              {/* Date of Birth */}
+              <div className="mb-5">
+                <label htmlFor="dateOfBirth" className="block text-[13px] text-gray-600 mb-2 ml-1">
+                  Date of Birth
+                </label>
+                <div className="relative">
+                  <Calendar
+                    size={20}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    id="dateOfBirth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className={`w-full h-14 pl-12 pr-4 text-[17px] border rounded-xl focus:outline-none transition-all ${
+                      dateOfBirth.length === 0
+                        ? 'border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100'
+                        : ageValid
+                        ? 'border-green-500 focus:border-green-500 focus:ring-4 focus:ring-green-100'
+                        : 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+                    }`}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-2 ml-1">
+                  <span className="text-[13px] text-gray-500">Age</span>
+                  <span className="text-[13px]" style={{ color: dateOfBirth && !ageValid ? '#EF4444' : '#8B5CF6' }}>
+                    {dateOfBirth ? `${Math.max(0, ageYears ?? 0)} years old` : '—'}
+                  </span>
+                </div>
+                {dateOfBirth && !ageValid && (
+                  <p className="text-[13px] text-red-500 mt-2 ml-1">You must be at least 13 years old</p>
+                )}
               </div>
 
               {/* Email */}

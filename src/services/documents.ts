@@ -18,7 +18,12 @@ export const documentService = {
   /**
    * Create a new document
    */
-  async createDocument(formData: DocumentFormData, userId: string): Promise<Document> {
+  async createDocument(
+    formData: DocumentFormData,
+    userId: string,
+    // Default to the main Documents library unless explicitly adding to Expiring Soon.
+    scope: Document['scope'] = 'dashboard'
+  ): Promise<Document> {
     // Upload image first
     let imageUrl = '';
     
@@ -53,6 +58,7 @@ export const documentService = {
     // Create document record (no auto-lock - user must manually lock)
     const documentData = {
       user_id: userId,
+      scope,
       document_type: formData.document_type,
       document_name: formData.document_name,
       document_number: formData.document_number || null,
@@ -129,15 +135,18 @@ export const documentService = {
   /**
    * Get all documents for the current user
    */
-  async getDocuments(userId: string): Promise<Document[]> {
+  async getDocuments(userId: string, scope?: Document['scope']): Promise<Document[]> {
     console.log('Fetching documents for user:', userId);
     
-    const { data, error } = await supabase
+    let q = supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
-      .is('deleted_at', null)
-      .order('expiration_date', { ascending: true });
+      .is('deleted_at', null);
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { data, error } = await q.order('expiration_date', { ascending: true });
 
     if (error) {
       console.error('Error fetching documents:', error);
@@ -269,19 +278,26 @@ export const documentService = {
   /**
    * Get documents expiring within X days
    */
-  async getExpiringDocuments(userId: string, days: number = 30): Promise<Document[]> {
+  async getExpiringDocuments(
+    userId: string,
+    days: number = 30,
+    scope?: Document['scope']
+  ): Promise<Document[]> {
     const today = new Date();
     const futureDate = new Date();
     futureDate.setDate(today.getDate() + days);
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
       .is('deleted_at', null)
       .gte('expiration_date', today.toISOString().split('T')[0])
-      .lte('expiration_date', futureDate.toISOString().split('T')[0])
-      .order('expiration_date', { ascending: true });
+      .lte('expiration_date', futureDate.toISOString().split('T')[0]);
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { data, error } = await q.order('expiration_date', { ascending: true });
 
     if (error) {
       throw new Error(`Failed to fetch expiring documents: ${error.message}`);
@@ -293,16 +309,19 @@ export const documentService = {
   /**
    * Get expired documents
    */
-  async getExpiredDocuments(userId: string): Promise<Document[]> {
+  async getExpiredDocuments(userId: string, scope?: Document['scope']): Promise<Document[]> {
     const today = new Date().toISOString().split('T')[0];
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
       .is('deleted_at', null)
-      .lt('expiration_date', today)
-      .order('expiration_date', { ascending: false });
+      .lt('expiration_date', today);
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { data, error } = await q.order('expiration_date', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch expired documents: ${error.message}`);
@@ -352,13 +371,16 @@ export const documentService = {
   /**
    * Get all documents for a user
    */
-  async getAllDocuments(userId: string): Promise<Document[]> {
-    const { data, error } = await supabase
+  async getAllDocuments(userId: string, scope?: Document['scope']): Promise<Document[]> {
+    let q = supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+      .is('deleted_at', null);
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { data, error } = await q.order('created_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch documents: ${error.message}`);
@@ -370,14 +392,16 @@ export const documentService = {
   /**
    * Get recent documents (sorted by date added DESC, limited)
    */
-  async getRecentDocuments(userId: string, limit: number = 4): Promise<Document[]> {
-    const { data, error } = await supabase
+  async getRecentDocuments(userId: string, limit: number = 4, scope?: Document['scope']): Promise<Document[]> {
+    let q = supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+      .is('deleted_at', null);
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { data, error } = await q.order('created_at', { ascending: false }).limit(limit);
 
     if (error) {
       throw new Error(`Failed to fetch recent documents: ${error.message}`);
@@ -389,21 +413,29 @@ export const documentService = {
   /**
    * Get documents by urgency level
    */
-  async getDocumentsByUrgency(userId: string, minDays: number, maxDays: number): Promise<Document[]> {
+  async getDocumentsByUrgency(
+    userId: string,
+    minDays: number,
+    maxDays: number,
+    scope?: Document['scope']
+  ): Promise<Document[]> {
     const today = new Date();
     const minDate = new Date();
     minDate.setDate(today.getDate() + minDays);
     const maxDate = new Date();
     maxDate.setDate(today.getDate() + maxDays);
 
-    const { data, error } = await supabase
+    let q = supabase
       .from('documents')
       .select('*')
       .eq('user_id', userId)
       .is('deleted_at', null)
       .gte('expiration_date', minDate.toISOString().split('T')[0])
-      .lte('expiration_date', maxDate.toISOString().split('T')[0])
-      .order('expiration_date', { ascending: true });
+      .lte('expiration_date', maxDate.toISOString().split('T')[0]);
+
+    if (scope) q = q.eq('scope', scope);
+
+    const { data, error } = await q.order('expiration_date', { ascending: true });
 
     if (error) {
       throw new Error(`Failed to fetch documents by urgency: ${error.message}`);
@@ -415,14 +447,14 @@ export const documentService = {
   /**
    * Get document statistics
    */
-  async getDocumentStats(userId: string): Promise<{
+  async getDocumentStats(userId: string, scope?: Document['scope']): Promise<{
     total: number;
     onTimeRate: number;
     urgent: number;
     soon: number;
     upcoming: number;
   }> {
-    const allDocs = await this.getAllDocuments(userId);
+    const allDocs = await this.getAllDocuments(userId, scope);
     const today = new Date();
     
     const total = allDocs.length;
