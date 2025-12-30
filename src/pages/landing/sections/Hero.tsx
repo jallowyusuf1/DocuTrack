@@ -270,71 +270,75 @@ function HeroShowcase() {
             {slide.icon}
             <span className="font-medium">{slide.title}</span>
           </GlassPill>
-          <div className="flex items-center gap-2">
-            {/* Pause/Play Button - Smaller and nicer */}
-            <motion.button
-              onClick={() => setIsPaused(!isPaused)}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="flex items-center justify-center"
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                color: 'rgba(255, 255, 255, 0.85)',
-                transition: 'all 0.2s ease',
-              }}
-              aria-label={isPaused ? 'Resume slideshow' : 'Pause slideshow'}
-            >
-              {isPaused ? (
-                <Play className="w-3.5 h-3.5 ml-0.5" />
-              ) : (
-                <Pause className="w-3.5 h-3.5" />
-              )}
-            </motion.button>
-            {/* Slide Indicators */}
-            <div className="hidden sm:flex items-center gap-2">
-              {slides.map((s, i) => (
-                <button
-                  key={s.key}
-                  onClick={() => setIdx(i)}
-                  className="w-2.5 h-2.5 rounded-full transition-all"
-                  style={{
-                    background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
-                    boxShadow: i === idx ? '0 0 0 6px rgba(139,92,246,0.12)' : 'none',
-                  }}
-                  aria-label={`Show ${s.title}`}
-                />
-              ))}
-            </div>
+          {/* Slide Indicators */}
+          <div className="hidden sm:flex items-center gap-2">
+            {slides.map((s, i) => (
+              <button
+                key={s.key}
+                onClick={() => setIdx(i)}
+                className="w-2.5 h-2.5 rounded-full transition-all"
+                style={{
+                  background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
+                  boxShadow: i === idx ? '0 0 0 6px rgba(139,92,246,0.12)' : 'none',
+                }}
+                aria-label={`Show ${s.title}`}
+              />
+            ))}
           </div>
         </div>
 
-        <p className="text-white/70 text-sm mb-4 leading-relaxed">{slide.subtitle}</p>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-white/70 text-sm leading-relaxed flex-1">{slide.subtitle}</p>
+          {/* Pause/Play Button - Moved to bottom right of subtitle */}
+          <motion.button
+            onClick={() => setIsPaused(!isPaused)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="flex items-center justify-center flex-shrink-0 ml-3"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              color: 'rgba(255, 255, 255, 0.85)',
+              transition: 'all 0.2s ease',
+            }}
+            aria-label={isPaused ? 'Resume slideshow' : 'Pause slideshow'}
+          >
+            {isPaused ? (
+              <Play className="w-4 h-4 ml-0.5" />
+            ) : (
+              <Pause className="w-4 h-4" />
+            )}
+          </motion.button>
+        </div>
 
         <div className="relative overflow-hidden" style={{ minHeight: '380px', height: '380px' }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={slide.key}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ 
-                duration: 0.5, 
-                ease: [0.4, 0, 0.2, 1],
-                opacity: { duration: 0.3 }
-              }}
-              className="absolute inset-0 overflow-hidden"
-              style={{ width: '100%', height: '100%' }}
-            >
-              <div className="h-full overflow-y-auto" style={{ paddingRight: '4px' }}>
-                {slide.content}
-              </div>
-            </motion.div>
+          <AnimatePresence initial={false}>
+            {slides.map((s, i) => {
+              if (i !== idx) return null;
+              return (
+                <motion.div
+                  key={s.key}
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ 
+                    duration: 0.5, 
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  <div className="h-full overflow-y-auto" style={{ paddingRight: '4px' }}>
+                    {s.content}
+                  </div>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       </div>
