@@ -323,9 +323,9 @@ function HeroShowcase() {
               return (
                 <motion.div
                   key={s.key}
-                  initial={{ opacity: 0, x: 100 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
+                  initial={{ x: 100 }}
+                  animate={{ x: 0 }}
+                  exit={{ x: -100 }}
                   transition={{ 
                     duration: 0.5, 
                     ease: [0.22, 1, 0.36, 1],
