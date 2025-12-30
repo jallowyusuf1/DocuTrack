@@ -136,27 +136,39 @@ export default function Login() {
     } catch (error) {
       triggerHaptic('heavy');
 
-      const newAttempts = loginAttempts + 1;
-      setLoginAttempts(newAttempts);
-      localStorage.setItem('loginAttempts', newAttempts.toString());
-      localStorage.setItem('lastLoginAttempt', Date.now().toString());
-
-      if (newAttempts >= 5) {
-        setIsLocked(true);
-        setSubmitError('Too many login attempts. Please try again in 15 minutes.');
-        return;
-      }
-
+      // Check if this is a network error first
       let errorMessage = 'Incorrect email or password';
+      let isNetworkError = false;
+
       if (error instanceof Error) {
         if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
           errorMessage = 'Please confirm your email address before signing in.';
         } else if (error.message) {
           errorMessage = error.message;
+          // Check if this is a network error
+          isNetworkError = errorMessage.includes('Network') ||
+                          errorMessage.includes('network') ||
+                          errorMessage.includes('Failed to fetch') ||
+                          errorMessage.includes('connection failed');
         }
       }
 
-      errorMessage += ` (${5 - newAttempts} attempts remaining)`;
+      // Only increment attempts and show countdown for authentication errors, NOT network errors
+      if (!isNetworkError) {
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        localStorage.setItem('loginAttempts', newAttempts.toString());
+        localStorage.setItem('lastLoginAttempt', Date.now().toString());
+
+        if (newAttempts >= 5) {
+          setIsLocked(true);
+          setSubmitError('Too many login attempts. Please try again in 15 minutes.');
+          return;
+        }
+
+        errorMessage += ` (${5 - newAttempts} attempts remaining)`;
+      }
+
       setSubmitError(errorMessage);
     }
   };
