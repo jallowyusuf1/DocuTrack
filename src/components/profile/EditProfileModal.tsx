@@ -194,7 +194,7 @@ export default function EditProfileModal({
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-800/20 active:bg-blue-800/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -222,7 +222,7 @@ export default function EditProfileModal({
                     disabled={isUploadingAvatar}
                     className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center"
                     style={{
-                      background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                      background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                       border: '3px solid rgba(42, 38, 64, 0.85)',
                     }}
                   >
@@ -233,7 +233,7 @@ export default function EditProfileModal({
                     )}
                   </motion.button>
                 </div>
-                <p className="text-xs text-center" style={{ color: '#A78BFA' }}>
+                <p className="text-xs text-center" style={{ color: '#60A5FA' }}>
                   Tap camera icon to change avatar
                 </p>
               </div>
@@ -267,7 +267,7 @@ export default function EditProfileModal({
                     border: '1px solid rgba(255, 255, 255, 0.15)',
                   }}
                 />
-                <p className="mt-1 text-xs" style={{ color: '#A78BFA' }}>
+                <p className="mt-1 text-xs" style={{ color: '#60A5FA' }}>
                   Email cannot be changed
                 </p>
               </div>

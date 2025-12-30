@@ -1,7 +1,47 @@
-// Document types
+// Document types - Expanded to 35+ types
 export type DocumentType = 
+  // Identity Documents
   | 'passport' 
+  | 'national_id' 
+  | 'driver_license' 
+  | 'social_security_card' 
+  | 'voter_id'
+  // Travel Documents
   | 'visa' 
+  | 'residence_permit' 
+  | 'work_permit' 
+  | 'student_visa' 
+  | 'travel_pass'
+  // Certificates
+  | 'birth_certificate' 
+  | 'marriage_certificate' 
+  | 'divorce_decree' 
+  | 'death_certificate'
+  | 'adoption_certificate' 
+  | 'name_change_certificate'
+  // Insurance & Financial
+  | 'health_insurance' 
+  | 'auto_insurance' 
+  | 'home_insurance' 
+  | 'life_insurance'
+  | 'bank_statement' 
+  | 'credit_card'
+  // Professional & Academic
+  | 'professional_license' 
+  | 'academic_transcript' 
+  | 'degree_certificate'
+  | 'employment_contract' 
+  | 'tax_return'
+  // Property & Legal
+  | 'property_deed' 
+  | 'vehicle_registration' 
+  | 'lease_agreement' 
+  | 'power_of_attorney'
+  // Medical
+  | 'vaccination_card' 
+  | 'medical_record' 
+  | 'prescription'
+  // Legacy/Other
   | 'id_card' 
   | 'insurance' 
   | 'subscription' 
@@ -14,6 +54,7 @@ export type DocumentType =
   | 'membership'
   | 'certification'
   | 'food'
+  | 'custom_document'
   | 'other';
 
 export interface Document {
@@ -31,6 +72,12 @@ export interface Document {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  // Multi-language fields
+  ocr_language?: string;
+  ocr_confidence?: number;
+  original_text?: Record<string, string>;
+  has_translation?: boolean;
+  is_locked?: boolean;
 }
 
 export interface DocumentFormData {
@@ -195,4 +242,185 @@ export interface FamilyInvitation {
 export interface FamilyMemberWithStats extends Connection {
   shared_documents_count: number;
   last_active?: string;
+}
+
+// Multi-language OCR types
+export type DetectionMethod = 'auto' | 'manual' | 'mixed';
+export type TranslationService = 'google' | 'deepl' | 'manual' | 'azure';
+export type ConfidenceLevel = 'high' | 'medium' | 'low';
+
+export interface DocumentLanguage {
+  id: string;
+  document_id: string;
+  language_code: string;
+  language_name: string;
+  is_primary: boolean;
+  confidence_score?: number;
+  detection_method?: DetectionMethod;
+  detected_at: string;
+  created_at: string;
+}
+
+export interface DocumentTranslation {
+  id: string;
+  document_id: string;
+  source_language: string;
+  target_language: string;
+  translated_fields: Record<string, string>;
+  translation_service?: TranslationService;
+  quality_score?: number;
+  translated_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserLanguagePreferences {
+  id: string;
+  user_id: string;
+  preferred_ocr_languages: string[];
+  auto_detect_language: boolean;
+  auto_translate: boolean;
+  default_translation_language: string;
+  use_eastern_arabic_numerals: boolean;
+  use_rtl_layout: boolean;
+  preferred_translation_service: TranslationService;
+  show_translation_confidence: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OCRResult {
+  text: string;
+  confidence: number;
+  language?: string;
+  fields?: {
+    documentNumber?: string;
+    expirationDate?: string;
+    issueDate?: string;
+    name?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+export interface LanguageDetectionResult {
+  languageCode: string;
+  languageName: string;
+  confidence: number;
+  confidenceLevel: ConfidenceLevel;
+  detectionMethod: DetectionMethod;
+}
+
+export interface TranslationRequest {
+  documentId: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  fields: Record<string, string>;
+  service?: TranslationService;
+}
+
+export interface TranslationResult {
+  translatedFields: Record<string, string>;
+  service: TranslationService;
+  qualityScore: number;
+  errors?: string[];
+}
+
+// Intelligent Document Type System Types
+
+export type FieldType = 
+  | 'text' 
+  | 'number' 
+  | 'date' 
+  | 'dropdown' 
+  | 'checkbox' 
+  | 'radio' 
+  | 'textarea' 
+  | 'address' 
+  | 'phone' 
+  | 'email' 
+  | 'currency' 
+  | 'vin'
+  | 'mrz';
+
+export interface ValidationRules {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  min?: number;
+  max?: number;
+  format?: string;
+  custom?: (value: any) => boolean | string; // Custom validation function
+}
+
+export interface DropdownOption {
+  value: string;
+  label: string;
+  icon?: string;
+  flag?: string; // For country options
+}
+
+export interface FieldDefinition {
+  id: string;
+  field_key: string;
+  field_type: FieldType;
+  label: string;
+  description?: string;
+  validation_rules?: ValidationRules;
+  default_options?: DropdownOption[];
+  is_repeatable?: boolean;
+  placeholder?: string;
+  help_text?: string;
+}
+
+export interface ConditionalLogic {
+  field_key: string;
+  operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+  value: any;
+  show_if?: boolean; // true = show when condition met, false = hide when condition met
+}
+
+export interface DocumentTypeField {
+  id: string;
+  document_type_id: string;
+  field_definition: FieldDefinition;
+  is_required: boolean;
+  section: string;
+  display_order: number;
+  conditional_logic?: ConditionalLogic;
+}
+
+export interface DocumentTypeTemplate {
+  id: string;
+  type_key: DocumentType;
+  name: string;
+  category: string;
+  icon?: string;
+  description?: string;
+  is_system: boolean;
+  fields: DocumentTypeField[];
+}
+
+export interface DocumentFieldValue {
+  id: string;
+  document_id: string;
+  field_definition_id: string;
+  value: string; // JSON string for complex values
+  value_type: 'string' | 'number' | 'date' | 'json' | 'boolean';
+  created_at: string;
+  updated_at: string;
+  field_definition?: FieldDefinition;
+}
+
+export interface CustomTemplate {
+  id: string;
+  user_id: string;
+  template_name: string;
+  field_config: FieldDefinition[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DocumentWithFields extends Document {
+  field_values?: DocumentFieldValue[];
 }

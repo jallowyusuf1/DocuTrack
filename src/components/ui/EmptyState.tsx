@@ -20,11 +20,11 @@ export default function EmptyState({ icon, title, description, action }: EmptySt
         style={{
           width: '120px',
           height: '120px',
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)',
+          boxShadow: '0 8px 32px rgba(37, 99, 235, 0.3)',
         }}
       >
         <div className="text-white [&>svg]:w-20 [&>svg]:h-20 md:[&>svg]:w-[100px] md:[&>svg]:h-[100px]">
@@ -32,7 +32,7 @@ export default function EmptyState({ icon, title, description, action }: EmptySt
         </div>
       </motion.div>
       <h3 className="text-xl font-bold text-white mb-2 md:text-[24px] md:mb-3">{title}</h3>
-      <p className="text-sm text-center mb-6 md:text-base md:mb-8" style={{ color: '#A78BFA' }}>
+      <p className="text-sm text-center mb-6 md:text-base md:mb-8" style={{ color: '#60A5FA' }}>
         {description}
       </p>
       {action && (

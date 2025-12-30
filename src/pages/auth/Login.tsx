@@ -26,7 +26,12 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(() => localStorage.getItem('rememberMe') === 'true');
+  // Default to true if not set (for better UX - users stay logged in)
+  const [rememberMe, setRememberMe] = useState(() => {
+    const stored = localStorage.getItem('rememberMe');
+    // If not set, default to true for better UX
+    return stored === null ? true : stored === 'true';
+  });
 
   const [loginAttempts, setLoginAttempts] = useState(() => {
     const attempts = localStorage.getItem('loginAttempts');
@@ -64,7 +69,16 @@ export default function Login() {
   });
 
   useEffect(() => {
+    // Don't auto-redirect if user is already on login page - let them see the form
+    // Only redirect if they came from inside the app (not from landing)
     if (!isAuthenticated) return;
+
+    const currentPath = window.location.pathname;
+    if (currentPath === '/login') {
+      // If already on login, don't redirect - user intentionally wants to see login
+      return;
+    }
+
     // Child accounts go to the same routes but with supervision UI enabled everywhere.
     // Keeping path stable avoids duplicating dashboards.
     navigate('/dashboard', { replace: true });
@@ -106,11 +120,9 @@ export default function Login() {
     // Store "Remember Me" preference before login
     localStorage.setItem('rememberMe', rememberMe.toString());
     
-    // If "Remember Me" is false, clear any existing session from localStorage
-    if (!rememberMe) {
-      // Clear session from localStorage (will use sessionStorage instead)
-      localStorage.removeItem('supabase.auth.token');
-    }
+    // Note: We don't clear the session here anymore - Supabase handles persistence
+    // based on persistSession: true configuration. Sessions will persist regardless
+    // of "Remember Me" setting for better UX.
 
     try {
       await login({ email: data.email, password: data.password });

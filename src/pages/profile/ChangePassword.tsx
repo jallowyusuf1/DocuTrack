@@ -83,7 +83,7 @@ export default function ChangePassword() {
         <div
           className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.6) 0%, rgba(37, 99, 235, 0) 70%)',
             transform: 'translate(-50%, -50%)',
           }}
         />
@@ -156,7 +156,7 @@ export default function ChangePassword() {
                 error={errors.newPassword?.message}
                 className="h-[52px]"
               />
-              <p className="mt-1 text-xs" style={{ color: '#A78BFA' }}>
+              <p className="mt-1 text-xs" style={{ color: '#60A5FA' }}>
                 Must be at least 8 characters long
               </p>
             </div>
@@ -186,7 +186,7 @@ export default function ChangePassword() {
               <h3 className="text-sm font-semibold text-white mb-2">
                 Password Requirements:
               </h3>
-              <ul className="text-xs space-y-1" style={{ color: '#A78BFA' }}>
+              <ul className="text-xs space-y-1" style={{ color: '#60A5FA' }}>
                 <li>• At least 8 characters long</li>
                 <li>• Mix of letters and numbers recommended</li>
                 <li>• Avoid common words or personal information</li>

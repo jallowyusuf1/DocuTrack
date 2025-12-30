@@ -33,7 +33,7 @@ export default function Avatar({
         rounded-full
         flex items-center justify-center
         font-bold text-white
-        bg-gradient-to-br from-purple-600 to-purple-700
+        bg-gradient-to-br from-blue-800 to-blue-800
         overflow-hidden
         flex-shrink-0
         ${className}

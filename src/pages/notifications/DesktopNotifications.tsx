@@ -25,6 +25,8 @@ import {
 } from '../../services/notifications';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, isToday, isThisWeek } from 'date-fns';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 type NotificationGroup = 'all' | 'unread' | 'expiry' | 'renewal' | 'family' | 'system' | 'archived';
 type DateFilter = 'today' | 'this_week' | 'all';
@@ -59,6 +61,10 @@ interface DesktopNotificationsProps {
 export default function DesktopNotifications({ onNotificationClick, variant = 'page' }: DesktopNotificationsProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('notifications');
+
   const [notifications, setNotifications] = useState<NotificationWithDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState<NotificationGroup>('all');
@@ -250,14 +256,23 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
   };
 
   const Minimal = () => (
-    <div className="h-full flex flex-col">
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Notifications"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
+
+      <div className="h-full flex flex-col">
       {/* Search */}
       <div className="px-5 pt-4 pb-3">
         <motion.div
           className="relative rounded-2xl overflow-hidden"
           animate={{
             boxShadow: isSearchFocused
-              ? '0 18px 55px rgba(139, 92, 246, 0.22), 0 0 0 1px rgba(139, 92, 246, 0.35)'
+              ? '0 18px 55px rgba(37, 99, 235, 0.22), 0 0 0 1px rgba(37, 99, 235, 0.35)'
               : '0 12px 40px rgba(0, 0, 0, 0.35)',
           }}
           transition={{ duration: 0.2 }}
@@ -273,7 +288,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
             className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
             style={{
               background:
-                'linear-gradient(90deg, rgba(139, 92, 246, 0.0), rgba(139, 92, 246, 0.55), rgba(34, 211, 238, 0.30), rgba(139, 92, 246, 0.0))',
+                'linear-gradient(90deg, rgba(37, 99, 235, 0.0), rgba(37, 99, 235, 0.55), rgba(34, 211, 238, 0.30), rgba(37, 99, 235, 0.0))',
               opacity: isSearchFocused ? 1 : 0.55,
             }}
           />
@@ -290,7 +305,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
             }}
           />
 
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#60A5FA' }} />
           <input
             ref={searchInputRef}
             value={searchQuery}
@@ -374,7 +389,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                 boxShadow: '0 18px 50px rgba(0,0,0,0.45), 0 0 60px rgba(139,92,246,0.22)',
               }}
             >
-              <Bell className="w-8 h-8 text-purple-300" />
+              <Bell className="w-8 h-8 text-blue-300" />
             </div>
             <div
               className="text-white text-xl font-bold mb-1"
@@ -433,7 +448,8 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 
   if (variant === 'modal') {
@@ -457,7 +473,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
           >
             <div className="px-5 py-4 border-b border-white/10">
               <div className="text-white text-2xl font-bold">Notifications</div>
-              <div className="text-xs mt-1" style={{ color: '#A78BFA' }}>
+              <div className="text-xs mt-1" style={{ color: '#60A5FA' }}>
                 Everything important, nothing extra.
               </div>
             </div>
@@ -479,13 +495,13 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
           <div className="fixed inset-0 -z-10" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
             <motion.div
               className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-15 blur-[120px]"
-              style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
+              style={{ background: 'linear-gradient(135deg, #2563EB, #1E40AF)' }}
               animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
               transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
             />
             <motion.div
               className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full opacity-15 blur-[120px]"
-              style={{ background: 'linear-gradient(135deg, #EC4899, #8B5CF6)' }}
+              style={{ background: 'linear-gradient(135deg, #EC4899, #2563EB)' }}
               animate={{ x: [0, -40, 0], y: [0, -50, 0] }}
               transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
             />
@@ -506,7 +522,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllRead}
-                      className="text-xs text-purple-400 hover:text-purple-300 font-medium"
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium"
                     >
                       Mark All Read
                     </button>
@@ -529,7 +545,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                       key={group}
                       onClick={() => setSelectedGroup(group)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
-                        isActive ? 'bg-purple-500/20 text-white' : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                        isActive ? 'bg-blue-600/20 text-white' : 'text-white/60 hover:text-white/80 hover:bg-white/5'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -538,7 +554,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                       </div>
                       {count > 0 && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          isActive ? 'bg-purple-500/30 text-purple-200' : 'bg-white/10 text-white/60'
+                          isActive ? 'bg-blue-600/30 text-blue-200' : 'bg-white/10 text-white/60'
                         }`}>
                           {count}
                         </span>
@@ -557,7 +573,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                       key={group}
                       onClick={() => setSelectedGroup(group)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
-                        isActive ? 'bg-purple-500/20 text-white' : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                        isActive ? 'bg-blue-600/20 text-white' : 'text-white/60 hover:text-white/80 hover:bg-white/5'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -566,7 +582,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                       </div>
                       {count > 0 && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          isActive ? 'bg-purple-500/30 text-purple-200' : 'bg-white/10 text-white/60'
+                          isActive ? 'bg-blue-600/30 text-blue-200' : 'bg-white/10 text-white/60'
                         }`}>
                           {count}
                         </span>
@@ -584,7 +600,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                       key={group}
                       onClick={() => setSelectedGroup(group)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
-                        isActive ? 'bg-purple-500/20 text-white' : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+                        isActive ? 'bg-blue-600/20 text-white' : 'text-white/60 hover:text-white/80 hover:bg-white/5'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -603,7 +619,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                 border: '1px solid rgba(255, 255, 255, 0.1)',
               }}>
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-purple-400" />
+                  <Filter className="w-4 h-4 text-blue-400" />
                   Filters
                 </h3>
 
@@ -617,7 +633,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                         onClick={() => setDateFilter(filter)}
                         className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
                           dateFilter === filter
-                            ? 'bg-purple-500/20 text-white'
+                            ? 'bg-blue-600/20 text-white'
                             : 'text-white/60 hover:text-white/80'
                         }`}
                       >
@@ -637,7 +653,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                         onClick={() => setTypeFilter(filter)}
                         className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
                           typeFilter === filter
-                            ? 'bg-purple-500/20 text-white'
+                            ? 'bg-blue-600/20 text-white'
                             : 'text-white/60 hover:text-white/80'
                         }`}
                       >
@@ -660,7 +676,7 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                       type="checkbox"
                       checked={selectedIds.size === filteredNotifications.length && filteredNotifications.length > 0}
                       onChange={handleSelectAll}
-                      className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+                      className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-600 focus:ring-blue-600"
                     />
                     <span className="text-sm text-white/70">Select All</span>
                   </label>
@@ -670,8 +686,8 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                         onClick={handleBulkMarkRead}
                         className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
                         style={{
-                          background: 'rgba(139, 92, 246, 0.2)',
-                          border: '1px solid rgba(139, 92, 246, 0.4)',
+                          background: 'rgba(37, 99, 235, 0.2)',
+                          border: '1px solid rgba(37, 99, 235, 0.4)',
                         }}
                       >
                         Mark Read
@@ -704,8 +720,8 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                   animate={{ opacity: 1, scale: 1 }}
                   className="py-20 text-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-6">
-                    <Bell className="w-10 h-10 text-purple-400" />
+                  <div className="w-20 h-20 rounded-full bg-blue-600/10 flex items-center justify-center mx-auto mb-6">
+                    <Bell className="w-10 h-10 text-blue-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">No notifications</h3>
                   <p className="text-white/60">You're all caught up!</p>
@@ -755,8 +771,8 @@ export default function DesktopNotifications({ onNotificationClick, variant = 'p
                   onClick={handleBulkMarkRead}
                   className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
                   style={{
-                    background: 'rgba(139, 92, 246, 0.3)',
-                    border: '1px solid rgba(139, 92, 246, 0.5)',
+                    background: 'rgba(37, 99, 235, 0.3)',
+                    border: '1px solid rgba(37, 99, 235, 0.5)',
                   }}
                 >
                   Mark Read
@@ -828,7 +844,7 @@ function NotificationCard({
           : 'rgba(255, 255, 255, 0.05)',
         backdropFilter: 'blur(20px)',
         border: isSelected
-          ? '2px solid rgba(139, 92, 246, 0.6)'
+          ? '2px solid rgba(37, 99, 235, 0.6)'
           : notification.is_read
           ? '1px solid rgba(255, 255, 255, 0.05)'
           : '1px solid rgba(255, 255, 255, 0.1)',
@@ -851,11 +867,11 @@ function NotificationCard({
         }}
         className="absolute top-3 right-3 w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
         style={{
-          borderColor: isSelected ? 'rgba(139, 92, 246, 0.8)' : 'rgba(255, 255, 255, 0.2)',
-          background: isSelected ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
+          borderColor: isSelected ? 'rgba(37, 99, 235, 0.8)' : 'rgba(255, 255, 255, 0.2)',
+          background: isSelected ? 'rgba(37, 99, 235, 0.2)' : 'transparent',
         }}
       >
-        {isSelected && <Check className="w-3 h-3 text-purple-400" />}
+        {isSelected && <Check className="w-3 h-3 text-blue-400" />}
       </button>
 
       <div className="flex items-start gap-4 h-full">
@@ -949,7 +965,7 @@ function NotificationRow({
 
   const tone = message.urgent
     ? { ring: 'rgba(239, 68, 68, 0.45)', bg: 'rgba(239, 68, 68, 0.10)' }
-    : { ring: 'rgba(139, 92, 246, 0.35)', bg: 'rgba(139, 92, 246, 0.08)' };
+    : { ring: 'rgba(37, 99, 235, 0.35)', bg: 'rgba(37, 99, 235, 0.08)' };
 
   return (
     <motion.button
@@ -997,12 +1013,12 @@ function NotificationRow({
             }}
             className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{
-              background: 'rgba(139, 92, 246, 0.18)',
-              border: '1px solid rgba(139, 92, 246, 0.28)',
+              background: 'rgba(37, 99, 235, 0.18)',
+              border: '1px solid rgba(37, 99, 235, 0.28)',
             }}
             aria-label="Mark read"
           >
-            <Check className="w-4 h-4 text-purple-200" />
+            <Check className="w-4 h-4 text-blue-200" />
           </button>
         )}
         <button
@@ -1057,6 +1073,6 @@ function getNotificationIconColor(type: string): string {
     case 'invitation_accepted':
       return 'bg-blue-500/20 border-blue-500 text-blue-300';
     default:
-      return 'bg-purple-500/20 border-purple-500 text-purple-300';
+      return 'bg-blue-600/20 border-blue-600 text-blue-300';
   }
 }

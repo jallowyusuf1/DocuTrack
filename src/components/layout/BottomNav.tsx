@@ -87,9 +87,9 @@ export default function BottomNav() {
 
   const navItems: NavItem[] = [
     {
-      path: '/expire-soon',
+      path: '/dashboard',
       icon: Clock,
-      label: 'Expiring Soon',
+      label: 'Dashboard',
       badge: expiringCount,
     },
     {
@@ -125,18 +125,16 @@ export default function BottomNav() {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/expire-soon') {
-      return location.pathname === '/expire-soon';
-    }
     return location.pathname.startsWith(path);
   };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom" style={{
-      background: 'rgba(35, 29, 51, 0.8)',
-      backdropFilter: 'blur(25px)',
-      WebkitBackdropFilter: 'blur(25px)',
+      background: 'rgba(26, 26, 26, 0.8)',
+      backdropFilter: 'blur(40px) saturate(120%)',
+      WebkitBackdropFilter: 'blur(40px) saturate(120%)',
       borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+      boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
       height: '80px',
     }}>
       <div className="flex justify-around items-start h-[72px] px-2 pb-safe pt-2">
@@ -158,8 +156,8 @@ export default function BottomNav() {
                   flex flex-col items-center justify-center
                   min-h-[48px]
                   select-none touch-manipulation
-                  ${active ? 'text-purple-400' : 'text-glass-disabled'}
                 `}
+                style={{ color: active ? '#60A5FA' : 'rgba(255, 255, 255, 0.4)' }}
               >
                 <div className="relative flex items-center justify-center">
                   {item.path === '/dashboard' ? (
@@ -176,15 +174,13 @@ export default function BottomNav() {
                     >
                       {isDocumentsActive ? (
                         <FolderOpen
-                          className={`w-6 h-6 transition-colors duration-200 ${
-                            active ? 'text-purple-400' : 'text-glass-disabled'
-                          }`}
+                          className="w-6 h-6 transition-colors duration-200"
+                          style={{ color: active ? '#60A5FA' : 'rgba(255, 255, 255, 0.4)' }}
                         />
                       ) : (
                         <FolderClosed
-                          className={`w-6 h-6 transition-colors duration-200 ${
-                            active ? 'text-purple-400' : 'text-glass-disabled'
-                          }`}
+                          className="w-6 h-6 transition-colors duration-200"
+                          style={{ color: active ? '#60A5FA' : 'rgba(255, 255, 255, 0.4)' }}
                         />
                       )}
                     </motion.div>
@@ -200,9 +196,8 @@ export default function BottomNav() {
                       }}
                     >
                       <Icon
-                        className={`w-6 h-6 transition-colors duration-200 ${
-                          active ? 'text-purple-400' : 'text-glass-disabled'
-                        }`}
+                        className="w-6 h-6 transition-colors duration-200"
+                        style={{ color: active ? '#60A5FA' : 'rgba(255, 255, 255, 0.4)' }}
                       />
                     </motion.div>
                   ) : item.path === '/profile' ? (
@@ -219,9 +214,8 @@ export default function BottomNav() {
                             style={{ transformStyle: 'preserve-3d' }}
                           >
                             <DoorOpen
-                              className={`w-6 h-6 transition-colors duration-200 ${
-                                active ? 'text-purple-400' : 'text-glass-disabled'
-                              }`}
+                              className="w-6 h-6 transition-colors duration-200"
+                              style={{ color: '#60A5FA' }}
                             />
                           </motion.div>
                         ) : null}
@@ -242,7 +236,8 @@ export default function BottomNav() {
                             className="absolute"
                           >
                             <Icon
-                              className={`w-6 h-6 transition-colors duration-200 text-purple-400`}
+                              className="w-6 h-6 transition-colors duration-200"
+                              style={{ color: '#60A5FA' }}
                             />
                           </motion.div>
                         )}
@@ -250,15 +245,15 @@ export default function BottomNav() {
                       {/* Default icon when not active */}
                       {!active && (
                         <Icon
-                          className={`w-6 h-6 transition-colors duration-200 text-glass-disabled`}
+                          className="w-6 h-6 transition-colors duration-200"
+                          style={{ color: 'rgba(255, 255, 255, 0.4)' }}
                         />
                       )}
                     </div>
                   ) : (
                     <Icon
-                      className={`w-6 h-6 transition-colors duration-200 ${
-                        active ? 'text-purple-400' : 'text-glass-disabled'
-                      }`}
+                      className="w-6 h-6 transition-colors duration-200"
+                      style={{ color: active ? '#60A5FA' : 'rgba(255, 255, 255, 0.4)' }}
                     />
                   )}
                   {showBadge && (
@@ -288,21 +283,19 @@ export default function BottomNav() {
                       className="
                         absolute -top-0.5 left-1/2 -translate-x-1/2
                         w-1.5 h-1.5
-                        bg-purple-500
                         rounded-full
-                        shadow-[0_0_8px_rgba(139,92,246,0.6)]
                       "
+                      style={{
+                        background: '#60A5FA',
+                        boxShadow: '0 0 8px rgba(96, 165, 250, 0.6)',
+                      }}
                     />
                   )}
                 </div>
                 <motion.span
                   animate={{ fontWeight: active ? 600 : 500 }}
-                  className={`
-                    text-[11px] mt-1
-                    transition-colors duration-200
-                    ${active ? 'text-purple-400' : 'text-glass-disabled'}
-                    whitespace-nowrap
-                  `}
+                  className="text-[11px] mt-1 transition-colors duration-200 whitespace-nowrap"
+                  style={{ color: active ? '#60A5FA' : 'rgba(255, 255, 255, 0.4)' }}
                 >
                   {item.label}
                 </motion.span>

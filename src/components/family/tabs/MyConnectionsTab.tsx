@@ -90,14 +90,14 @@ export default function MyConnectionsTab({ onInviteSent }: MyConnectionsTabProps
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full h-12 pl-10 pr-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-purple-500"
+            className="w-full h-12 pl-10 pr-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-600"
           />
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowInviteModal(true)}
-          className="px-6 h-12 rounded-xl bg-purple-600 text-white font-medium flex items-center gap-2"
+          className="px-6 h-12 rounded-xl bg-blue-800 text-white font-medium flex items-center gap-2"
         >
           <UserPlus className="w-5 h-5" />
           Add Member
@@ -116,7 +116,7 @@ export default function MyConnectionsTab({ onInviteSent }: MyConnectionsTabProps
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowInviteModal(true)}
-              className="px-6 py-3 rounded-xl bg-purple-600 text-white font-medium"
+              className="px-6 py-3 rounded-xl bg-blue-800 text-white font-medium"
             >
               Invite Family Member
             </motion.button>
@@ -142,8 +142,8 @@ export default function MyConnectionsTab({ onInviteSent }: MyConnectionsTabProps
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <span className="text-xl text-purple-300">
+                    <div className="w-12 h-12 rounded-full bg-blue-600/20 flex items-center justify-center">
+                      <span className="text-xl text-blue-300">
                         {(member.connected_user?.full_name || member.connected_user?.email || 'U').charAt(0).toUpperCase()}
                       </span>
                     </div>

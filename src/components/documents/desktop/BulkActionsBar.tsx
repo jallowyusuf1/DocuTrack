@@ -38,14 +38,14 @@ export default function BulkActionsBar({
               background: 'rgba(26, 22, 37, 0.95)',
               backdropFilter: 'blur(30px)',
               WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.3)',
+              border: '1px solid rgba(37, 99, 235, 0.3)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(37, 99, 235, 0.3)',
             }}
           >
             {/* Selected Count */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <span className="text-purple-300 font-bold text-sm">{selectedCount}</span>
+              <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
+                <span className="text-blue-300 font-bold text-sm">{selectedCount}</span>
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">

@@ -163,9 +163,9 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
           <div className="w-[500px] p-6 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
             {/* Master Toggle */}
             <div className="mb-8">
-              <label className="flex items-center justify-between p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/20 cursor-pointer group hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+              <label className="flex items-center justify-between p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 cursor-pointer group hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Bell size={24} className="text-purple-500" />
+                  <Bell size={24} className="text-blue-600" />
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       Enable Reminders
@@ -184,7 +184,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                   />
                   <div
                     className={`w-14 h-8 rounded-full transition-colors ${
-                      settings.enabled ? 'bg-purple-500' : 'bg-gray-300 dark:bg-gray-600'
+                      settings.enabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
                     <div
@@ -223,7 +223,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                       })
                     }
                     disabled={!settings.enabled}
-                    className="w-7 h-7 rounded border-gray-300 text-purple-500 focus:ring-purple-500 disabled:opacity-50 cursor-pointer"
+                    className="w-7 h-7 rounded border-gray-300 text-blue-600 focus:ring-blue-600 disabled:opacity-50 cursor-pointer"
                   />
                   <span className="text-base text-gray-700 dark:text-gray-300">{label}</span>
                 </label>
@@ -245,7 +245,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                       })
                     }
                     disabled={!settings.enabled}
-                    className="w-7 h-7 rounded border-gray-300 text-purple-500 focus:ring-purple-500 disabled:opacity-50 cursor-pointer"
+                    className="w-7 h-7 rounded border-gray-300 text-blue-600 focus:ring-blue-600 disabled:opacity-50 cursor-pointer"
                   />
                   <span className="text-base text-gray-700 dark:text-gray-300">Custom reminder</span>
                 </label>
@@ -266,7 +266,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                             },
                           })
                         }
-                        className="w-24 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-24 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                       />
                       <select
                         value={settings.reminders.custom.unit}
@@ -279,7 +279,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                             },
                           })
                         }
-                        className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                       >
                         <option value="days">Days</option>
                         <option value="hours">Hours</option>
@@ -302,7 +302,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                             },
                           })
                         }
-                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                       />
                     </div>
                   </div>
@@ -314,7 +314,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <label className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-4">
                 <div className="flex items-center gap-3">
-                  <Moon size={20} className="text-purple-500" />
+                  <Moon size={20} className="text-blue-600" />
                   <span className="text-base font-semibold text-gray-900 dark:text-white">Quiet Hours</span>
                 </div>
                 <div className="relative">
@@ -332,7 +332,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                   />
                   <div
                     className={`w-12 h-7 rounded-full transition-colors ${
-                      settings.quietHours.enabled ? 'bg-purple-500' : 'bg-gray-300 dark:bg-gray-600'
+                      settings.quietHours.enabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
                     <div
@@ -360,7 +360,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                           quietHours: { ...settings.quietHours, start: e.target.value },
                         })
                       }
-                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
                   <div className="flex-1">
@@ -376,7 +376,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                           quietHours: { ...settings.quietHours, end: e.target.value },
                         })
                       }
-                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
                 </div>
@@ -394,12 +394,12 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
                 Reminder Timeline
               </h4>
               <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-purple-500 to-red-500" />
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-600 to-red-500" />
 
                 {timelinePoints.map((point, index) => (
                   <div key={index} className="relative pl-12 pb-8 last:pb-0 group">
                     <div
-                      className="absolute left-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center shadow-lg animate-pulse"
+                      className="absolute left-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg animate-pulse"
                       style={{ animationDelay: `${index * 0.2}s` }}
                     >
                       <Bell size={16} className="text-white" />
@@ -431,8 +431,8 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
               </h4>
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-5 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Bell size={24} className="text-purple-500" />
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Bell size={24} className="text-blue-600" />
                   </div>
                   <div className="flex-1">
                     <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
@@ -487,7 +487,7 @@ export const ReminderSettings: React.FC<ReminderSettingsProps> = ({
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 px-6 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 transition-colors font-medium"
+              className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 transition-colors font-medium"
             >
               Save Settings
             </button>

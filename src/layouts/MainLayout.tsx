@@ -70,7 +70,10 @@ export default function MainLayout() {
   // Scroll to top on page change (but not on back/forward)
   useEffect(() => {
     if (navigationType === 'PUSH' || navigationType === 'REPLACE') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll the main element, not window
+      if (mainRef.current) {
+        mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   }, [location.pathname, navigationType]);
 
@@ -130,14 +133,14 @@ export default function MainLayout() {
 
   return (
     <IdleTimeoutProvider>
-      <div className="flex flex-col h-screen relative liquid-dashboard-bg">
+      <div className="flex flex-col h-screen relative liquid-dashboard-bg overflow-hidden">
         <OfflineIndicator />
         <IdleCountdownMount />
         <AppLockMount />
         {isDesktop ? <DesktopNav /> : <Header />}
         <main
           ref={mainRef}
-          className="flex-1 overflow-y-auto pb-[72px] relative z-10"
+          className="flex-1 overflow-y-scroll overflow-x-hidden pb-[72px] relative z-10"
           style={
             isDesktop
               ? {
@@ -145,8 +148,18 @@ export default function MainLayout() {
                   // NOTHING can appear behind it.
                   paddingTop: 'calc(var(--app-desktop-nav-h, 0px) + 44px)',
                   scrollPaddingTop: 'calc(var(--app-desktop-nav-h, 0px) + 44px)',
+                  minHeight: 0, // Critical for flex scrolling
+                  WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+                  overscrollBehavior: 'contain', // Prevent scroll chaining
                 }
-              : undefined
+              : {
+                  // Mobile: Minimal padding - header is sticky, content should be visible
+                  paddingTop: '60px',
+                  scrollPaddingTop: '60px',
+                  minHeight: 0, // Critical for flex scrolling
+                  WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
+                  overscrollBehavior: 'contain', // Prevent scroll chaining
+                }
           }
         >
           <SupervisionBanner />
@@ -158,6 +171,7 @@ export default function MainLayout() {
               exit="exit"
               variants={prefersReducedMotion() ? { initial: {}, animate: {}, exit: {} } : fadeIn}
               transition={getTransition(transitions.normal)}
+              style={{ minHeight: '100%' }} // Ensure content can be taller than viewport
             >
               <Outlet />
             </motion.div>

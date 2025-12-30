@@ -176,7 +176,7 @@ export default function SetProfileLockModal({
             backdropFilter: 'blur(30px)',
             WebkitBackdropFilter: 'blur(30px)',
             border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(37, 99, 235, 0.3)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -186,17 +186,17 @@ export default function SetProfileLockModal({
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center"
                 style={{
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  border: '1px solid rgba(139, 92, 246, 0.4)',
+                  background: 'rgba(37, 99, 235, 0.2)',
+                  border: '1px solid rgba(37, 99, 235, 0.4)',
                 }}
               >
-                <Lock className="w-6 h-6 text-purple-400" />
+                <Lock className="w-6 h-6 text-blue-400" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">
                   {isEnabled ? 'Disable Profile Lock' : 'Set Profile Lock'}
                 </h2>
-                <p className="text-sm" style={{ color: '#A78BFA' }}>
+                <p className="text-sm" style={{ color: '#60A5FA' }}>
                   {isEnabled ? 'Remove password protection' : 'Protect your profile with a password'}
                 </p>
               </div>
@@ -260,7 +260,7 @@ export default function SetProfileLockModal({
                     Create 8-Digit Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#60A5FA' }} />
                     <input
                       type={secureInputType}
                       maxLength={8}
@@ -271,7 +271,7 @@ export default function SetProfileLockModal({
                         setError(null);
                       }}
                       placeholder="ABCD1234"
-                      className="w-full h-[52px] pl-12 pr-12 rounded-xl text-white placeholder:text-purple-300/50 text-center text-2xl tracking-widest font-mono"
+                      className="w-full h-[52px] pl-12 pr-12 rounded-xl text-white placeholder:text-blue-300/50 text-center text-2xl tracking-widest font-mono"
                       style={{
                         background: 'rgba(35, 29, 51, 0.6)',
                         backdropFilter: 'blur(10px)',
@@ -292,7 +292,7 @@ export default function SetProfileLockModal({
                     Confirm Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#60A5FA' }} />
                     <input
                       type={secureInputType}
                       maxLength={8}
@@ -308,7 +308,7 @@ export default function SetProfileLockModal({
                         }
                       }}
                       placeholder="ABCD1234"
-                      className="w-full h-[52px] pl-12 pr-12 rounded-xl text-white placeholder:text-purple-300/50 text-center text-2xl tracking-widest font-mono"
+                      className="w-full h-[52px] pl-12 pr-12 rounded-xl text-white placeholder:text-blue-300/50 text-center text-2xl tracking-widest font-mono"
                       style={{
                         background: 'rgba(35, 29, 51, 0.6)',
                         backdropFilter: 'blur(10px)',
@@ -345,7 +345,7 @@ export default function SetProfileLockModal({
                       <span
                         className="text-xs"
                         style={{
-                          color: req.met ? '#10B981' : '#A78BFA',
+                          color: req.met ? '#10B981' : '#60A5FA',
                         }}
                       >
                         {req.text}

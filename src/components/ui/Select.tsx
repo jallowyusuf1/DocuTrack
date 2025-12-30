@@ -160,7 +160,7 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 ? 'border-2 border-red-500' 
                 : 'border border-gray-300'
               }
-              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-purple-400'}
+              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400'}
             `}
             style={error ? {
               background: '#FFFFFF',
@@ -181,7 +181,7 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 {selectedOption?.label || placeholder}
               </span>
             </span>
-            <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform pointer-events-none ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#8B5CF6' }} />
+            <ChevronDown className={`w-5 h-5 flex-shrink-0 transition-transform pointer-events-none ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#2563EB' }} />
           </button>
           {error && (
             <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-red-400 animate-slide-down-fade-in">
@@ -224,13 +224,13 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               {searchable && (
                 <div className="px-6 py-4 border-b border-white/10">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#60A5FA' }} />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search..."
-                      className="w-full h-10 pl-10 pr-10 rounded-lg text-sm text-white placeholder:text-glass-secondary focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                      className="w-full h-10 pl-10 pr-10 rounded-lg text-sm text-white placeholder:text-glass-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                       style={{
                         background: 'rgba(35, 29, 51, 0.6)',
                         backdropFilter: 'blur(10px)',
@@ -241,7 +241,7 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                       <button
                         onClick={() => setSearchQuery('')}
                         className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity"
-                        style={{ color: '#A78BFA' }}
+                        style={{ color: '#60A5FA' }}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -253,7 +253,7 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
               {/* Options list */}
               <div className="flex-1 overflow-y-auto">
                 {filteredOptions.length === 0 ? (
-                  <div className="px-6 py-8 text-center" style={{ color: '#A78BFA' }}>
+                  <div className="px-6 py-8 text-center" style={{ color: '#60A5FA' }}>
                     No options found
                   </div>
                 ) : (
@@ -272,18 +272,18 @@ const Select = forwardRef<HTMLButtonElement, SelectProps>(
                         ${value === option.value ? '' : 'hover:bg-white/5'}
                       `}
                       style={value === option.value ? {
-                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
-                        borderLeft: '3px solid rgba(139, 92, 246, 0.5)',
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(30, 64, 175, 0.3))',
+                        borderLeft: '3px solid rgba(37, 99, 235, 0.5)',
                       } : {
                         background: 'transparent',
                       }}
                     >
                       <span className="flex items-center gap-3 flex-1 min-w-0">
-                        {option.icon && <span className="flex-shrink-0" style={{ color: '#A78BFA' }}>{option.icon}</span>}
+                        {option.icon && <span className="flex-shrink-0" style={{ color: '#60A5FA' }}>{option.icon}</span>}
                         <span className="text-white truncate">{option.label}</span>
                       </span>
                       {value === option.value && (
-                        <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#A78BFA' }} />
+                        <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#60A5FA' }} />
                       )}
                     </button>
                   ))

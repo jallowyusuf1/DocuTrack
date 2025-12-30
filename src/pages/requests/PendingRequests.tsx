@@ -213,7 +213,7 @@ export default function PendingRequests() {
     if (type.includes('delete')) return 'text-red-400 bg-red-400/10 border-red-400/20';
     if (type.includes('share')) return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
     if (type.includes('edit')) return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
-    return 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+    return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
   };
 
   const filteredRequests = useMemo(() => {
@@ -337,9 +337,9 @@ export default function PendingRequests() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-6 py-3 border-b border-purple-500/30 sticky top-[240px] z-10"
+          className="px-6 py-3 border-b border-blue-600/30 sticky top-[240px] z-10"
           style={{
-            background: 'rgba(139, 92, 246, 0.1)',
+            background: 'rgba(37, 99, 235, 0.1)',
             backdropFilter: 'blur(20px)',
           }}
         >
@@ -419,11 +419,11 @@ export default function PendingRequests() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: isProcessing ? 0.5 : 1, y: 0 }}
                   className={`relative rounded-2xl p-6 transition-all cursor-pointer ${
-                    isSelected ? 'border-2 border-purple-500' : 'border border-white/10'
+                    isSelected ? 'border-2 border-blue-600' : 'border border-white/10'
                   }`}
                   style={{
                     background: isSelected 
-                      ? 'rgba(139, 92, 246, 0.15)' 
+                      ? 'rgba(37, 99, 235, 0.15)' 
                       : 'rgba(255, 255, 255, 0.03)',
                     backdropFilter: 'blur(20px)',
                   }}
@@ -453,8 +453,8 @@ export default function PendingRequests() {
                             className="w-16 h-16 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-16 h-16 rounded-full flex items-center justify-center bg-purple-500/20">
-                            <User className="w-8 h-8 text-purple-400" />
+                          <div className="w-16 h-16 rounded-full flex items-center justify-center bg-blue-600/20">
+                            <User className="w-8 h-8 text-blue-400" />
                           </div>
                         )}
                       </div>
@@ -482,7 +482,7 @@ export default function PendingRequests() {
                       {request.message && (
                         <div className="p-4 rounded-xl mb-3 border-l-4" style={{
                           background: 'rgba(255, 255, 255, 0.05)',
-                          borderLeftColor: 'rgba(139, 92, 246, 0.5)',
+                          borderLeftColor: 'rgba(37, 99, 235, 0.5)',
                         }}>
                           <p className="text-sm italic text-white/70">{request.message}</p>
                         </div>

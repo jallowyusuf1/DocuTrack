@@ -140,12 +140,12 @@ export const DocumentLockOverlay: React.FC<DocumentLockOverlayProps> = ({ onUnlo
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center">
-      {/* Dark purple gradient background */}
+      {/* Dark blue gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#1A0B2E] to-[#2D1B4E]" />
 
       {/* Blurred content preview */}
       <div className="absolute inset-0 opacity-40 blur-[30px]">
-        <div className="absolute inset-0 bg-purple-500/15" />
+        <div className="absolute inset-0 bg-blue-800/15" />
       </div>
 
       {/* Content container */}
@@ -156,17 +156,17 @@ export const DocumentLockOverlay: React.FC<DocumentLockOverlayProps> = ({ onUnlo
             {/* Folder */}
             <div className="relative w-48 h-32 md:w-56 md:h-40 lg:w-[200px] lg:h-[160px]">
               {/* Folder back */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg transform perspective-1000 rotate-y-3"
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-800 rounded-lg transform perspective-1000 rotate-y-3"
                    style={{
-                     boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)',
-                     background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)'
+                     boxShadow: '0 20px 60px rgba(37, 99, 235, 0.4)',
+                     background: 'linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)'
                    }}>
                 {/* Folder tab */}
-                <div className="absolute -top-3 left-4 w-24 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-t-lg" />
+                <div className="absolute -top-3 left-4 w-24 h-6 bg-gradient-to-br from-blue-400 to-blue-800 rounded-t-lg" />
 
                 {/* Folder details */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-3/4 h-1/2 border-2 border-purple-300/30 rounded-md" />
+                  <div className="w-3/4 h-1/2 border-2 border-blue-300/30 rounded-md" />
                 </div>
               </div>
 
@@ -220,7 +220,7 @@ export const DocumentLockOverlay: React.FC<DocumentLockOverlayProps> = ({ onUnlo
               </div>
 
               {/* Contact support link */}
-              <button className="w-full text-sm text-purple-400 hover:text-purple-300 transition-colors text-center mt-4">
+              <button className="w-full text-sm text-blue-400 hover:text-blue-300 transition-colors text-center mt-4">
                 Contact Support
               </button>
             </>
@@ -243,9 +243,9 @@ export const DocumentLockOverlay: React.FC<DocumentLockOverlayProps> = ({ onUnlo
                     w-full h-14 px-12 pr-14
                     bg-white/12 border rounded-2xl
                     text-lg text-white placeholder:text-white/50
-                    focus:outline-none focus:ring-4 focus:ring-purple-500/30
+                    focus:outline-none focus:ring-4 focus:ring-blue-800/30
                     transition-all duration-200
-                    ${error ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-purple-500'}
+                    ${error ? 'border-red-500 focus:border-red-500' : 'border-white/20 focus:border-blue-800'}
                     disabled:opacity-50 disabled:cursor-not-allowed
                   `}
                   autoFocus
@@ -284,7 +284,7 @@ export const DocumentLockOverlay: React.FC<DocumentLockOverlayProps> = ({ onUnlo
                 disabled={isUnlocking || !password}
                 className={`
                   w-full h-14 mt-4 rounded-2xl
-                  bg-gradient-to-br from-purple-500 to-purple-700
+                  bg-gradient-to-br from-blue-800 to-blue-800
                   text-white text-lg font-semibold
                   shadow-[0_8px_24px_rgba(139,92,246,0.5)]
                   hover:brightness-110 hover:scale-[1.02]

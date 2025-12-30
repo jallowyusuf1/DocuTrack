@@ -14,7 +14,7 @@ const relationships = [
   { value: 'spouse', icon: Heart, label: 'Spouse', color: 'from-pink-500 to-rose-500', glowColor: 'rgba(236, 72, 153, 0.4)' },
   { value: 'parent', icon: UserCheck, label: 'Parent', color: 'from-blue-500 to-indigo-500', glowColor: 'rgba(59, 130, 246, 0.4)' },
   { value: 'child', icon: Baby, label: 'Child', color: 'from-green-500 to-emerald-500', glowColor: 'rgba(34, 197, 94, 0.4)' },
-  { value: 'sibling', icon: UsersIcon, label: 'Sibling', color: 'from-purple-500 to-violet-500', glowColor: 'rgba(139, 92, 246, 0.4)' },
+  { value: 'sibling', icon: UsersIcon, label: 'Sibling', color: 'from-blue-600 to-violet-500', glowColor: 'rgba(37, 99, 235, 0.4)' },
   { value: 'friend', icon: UserPlus, label: 'Friend', color: 'from-orange-500 to-amber-500', glowColor: 'rgba(251, 146, 60, 0.4)' },
   { value: 'other', icon: UserCheck, label: 'Other', color: 'from-gray-500 to-slate-500', glowColor: 'rgba(148, 163, 184, 0.4)' },
 ];
@@ -83,8 +83,8 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                 background: 'rgba(26, 22, 37, 0.85)',
                 backdropFilter: 'blur(50px)',
                 WebkitBackdropFilter: 'blur(50px)',
-                border: '2px solid rgba(139, 92, 246, 0.3)',
-                boxShadow: '0 30px 100px rgba(0, 0, 0, 0.9), 0 0 80px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                border: '2px solid rgba(37, 99, 235, 0.3)',
+                boxShadow: '0 30px 100px rgba(0, 0, 0, 0.9), 0 0 80px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                 maxHeight: '90vh',
               }}
             >
@@ -92,7 +92,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
               <motion.div
                 className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full opacity-20 blur-[100px]"
                 style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
+                  background: 'linear-gradient(135deg, #2563EB, #EC4899)',
                 }}
                 animate={{
                   x: [0, 30, 0],
@@ -129,10 +129,10 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                 <div className="flex items-center justify-between mb-6 md:mb-8">
                   <div className="flex items-center gap-3 md:gap-4">
                     <motion.div
-                      className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center relative"
+                      className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center relative"
                       whileHover={{ scale: 1.05, rotate: 5 }}
                       style={{
-                        boxShadow: '0 10px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                        boxShadow: '0 10px 40px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                       }}
                     >
                       <UserPlus className="w-6 h-6 md:w-7 md:h-7 text-white" />
@@ -140,7 +140,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                       <motion.div
                         className="absolute inset-0 rounded-2xl"
                         style={{
-                          boxShadow: '0 0 30px rgba(139, 92, 246, 0.6)',
+                          boxShadow: '0 0 30px rgba(37, 99, 235, 0.6)',
                         }}
                         animate={{
                           opacity: [0.5, 1, 0.5],
@@ -180,7 +180,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                   {/* Email Input - Liquid Glass Style */}
                   <div>
                     <label className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-purple-400" />
+                      <Mail className="w-4 h-4 text-blue-400" />
                       <span>Email Address</span>
                     </label>
                     <div className="relative group">
@@ -197,8 +197,8 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                           boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3)',
                         }}
                         onFocus={(e) => {
-                          e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
-                          e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
+                          e.target.style.border = '1px solid rgba(37, 99, 235, 0.5)';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
                         }}
                         onBlur={(e) => {
                           e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
@@ -210,7 +210,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                       <motion.div
                         className="absolute inset-0 rounded-xl md:rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"
                         style={{
-                          boxShadow: '0 0 30px rgba(139, 92, 246, 0.3)',
+                          boxShadow: '0 0 30px rgba(37, 99, 235, 0.3)',
                         }}
                       />
                     </div>
@@ -219,7 +219,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                   {/* Relationship Selector - Redesigned Liquid Glass Cards */}
                   <div>
                     <label className="block text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                      <Check className="w-4 h-4 text-purple-400" />
+                      <Check className="w-4 h-4 text-blue-400" />
                       <span>Relationship Type</span>
                     </label>
                     <div className="grid grid-cols-3 gap-3 md:gap-4">
@@ -237,11 +237,11 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                             className="relative rounded-2xl md:rounded-3xl transition-all duration-500 overflow-hidden group"
                             style={{
                               background: isSelected
-                                ? 'rgba(139, 92, 246, 0.15)'
+                                ? 'rgba(37, 99, 235, 0.15)'
                                 : 'rgba(42, 38, 64, 0.3)',
                               backdropFilter: 'blur(15px)',
                               border: isSelected
-                                ? '2px solid rgba(139, 92, 246, 0.6)'
+                                ? '2px solid rgba(37, 99, 235, 0.6)'
                                 : '1px solid rgba(255, 255, 255, 0.08)',
                               padding: '16px 12px',
                               boxShadow: isSelected
@@ -319,9 +319,9 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                                 <motion.div
                                   initial={{ scale: 0 }}
                                   animate={{ scale: 1 }}
-                                  className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center"
+                                  className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center"
                                   style={{
-                                    boxShadow: '0 4px 15px rgba(139, 92, 246, 0.6)',
+                                    boxShadow: '0 4px 15px rgba(37, 99, 235, 0.6)',
                                   }}
                                 >
                                   <motion.div
@@ -387,8 +387,8 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                     whileTap={{ scale: loading ? 1 : 0.98 }}
                     className="w-full h-14 md:h-16 rounded-2xl font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group text-base md:text-lg"
                     style={{
-                      background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
-                      boxShadow: '0 15px 50px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                      background: 'linear-gradient(135deg, #2563EB 0%, #EC4899 100%)',
+                      boxShadow: '0 15px 50px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                     }}
                   >
                     {/* Animated Shimmer Effect */}
@@ -411,7 +411,7 @@ export default function AddConnectionModal({ isOpen, onClose, onSuccess }: AddCo
                     <motion.div
                       className="absolute inset-0 rounded-2xl"
                       style={{
-                        boxShadow: '0 0 40px rgba(139, 92, 246, 0.6)',
+                        boxShadow: '0 0 40px rgba(37, 99, 235, 0.6)',
                       }}
                       animate={{
                         opacity: [0.5, 1, 0.5],

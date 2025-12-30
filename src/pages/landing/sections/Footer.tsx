@@ -12,7 +12,6 @@ const languages = [
   { code: 'fr', flag: '🇫🇷', name: 'French', nativeName: 'Français' },
   { code: 'es', flag: '🇪🇸', name: 'Spanish', nativeName: 'Español' },
   { code: 'ar', flag: '🇸🇦', name: 'Arabic', nativeName: 'العربية' },
-  { code: 'ur', flag: '🇵🇰', name: 'Urdu', nativeName: 'اردو' },
 ];
 
 export default function Footer() {
@@ -60,7 +59,7 @@ export default function Footer() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
                 <div className="space-y-2">
                   <div className="text-white/85 font-semibold">Product</div>
                   <a href="#overview" className="block text-white/65 hover:text-white transition-colors">
@@ -72,6 +71,27 @@ export default function Footer() {
                   <a href="#security" className="block text-white/65 hover:text-white transition-colors">
                     Security
                   </a>
+                  <a href="#how-it-works" className="block text-white/65 hover:text-white transition-colors">
+                    How it works
+                  </a>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-white/85 font-semibold">Resources</div>
+                  <Link to="/info/features" className="block text-white/65 hover:text-white transition-colors">
+                    Features Guide
+                  </Link>
+                  <Link to="/info/security" className="block text-white/65 hover:text-white transition-colors">
+                    Security Info
+                  </Link>
+                  <Link to="/info/family-sharing" className="block text-white/65 hover:text-white transition-colors">
+                    Family Sharing
+                  </Link>
+                  <Link to="/help" className="block text-white/65 hover:text-white transition-colors">
+                    Help Center
+                  </Link>
+                  <Link to="/faq" className="block text-white/65 hover:text-white transition-colors">
+                    FAQ
+                  </Link>
                 </div>
                 <div className="space-y-2">
                   <div className="text-white/85 font-semibold">Account</div>
@@ -88,10 +108,22 @@ export default function Footer() {
                 <div className="space-y-2">
                   <div className="text-white/85 font-semibold">Legal</div>
                   <Link to="/terms" className="block text-white/65 hover:text-white transition-colors">
-                    Terms
+                    Terms of Service
                   </Link>
                   <Link to="/privacy" className="block text-white/65 hover:text-white transition-colors">
-                    Privacy
+                    Privacy Policy
+                  </Link>
+                  <Link to="/cookies" className="block text-white/65 hover:text-white transition-colors">
+                    Cookie Policy
+                  </Link>
+                  <Link to="/security" className="block text-white/65 hover:text-white transition-colors">
+                    Security
+                  </Link>
+                  <Link to="/dpa" className="block text-white/65 hover:text-white transition-colors">
+                    Data Processing Agreement
+                  </Link>
+                  <Link to="/about" className="block text-white/65 hover:text-white transition-colors">
+                    About
                   </Link>
                 </div>
               </div>

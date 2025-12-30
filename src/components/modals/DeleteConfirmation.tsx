@@ -72,7 +72,7 @@ export const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
         <div className="flex gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-700/50 mb-6">
           {/* Thumbnail */}
           <div
-            className="flex-shrink-0 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-xl overflow-hidden"
+            className="flex-shrink-0 bg-gradient-to-br from-blue-100 to-blue-100 dark:from-blue-900 dark:to-blue-900 rounded-xl overflow-hidden"
             style={{ width: '160px', height: '213px' }}
           >
             {document.thumbnail ? (
@@ -83,7 +83,7 @@ export const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Trash2 size={48} className="text-purple-300 dark:text-purple-600" />
+                <Trash2 size={48} className="text-blue-300 dark:text-blue-800" />
               </div>
             )}
           </div>
@@ -120,7 +120,7 @@ export const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
             type="checkbox"
             checked={dontAskAgain}
             onChange={(e) => setDontAskAgain(e.target.checked)}
-            className="w-5 h-5 rounded border-gray-300 text-purple-500 focus:ring-purple-500 cursor-pointer"
+            className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
           />
           <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
             Don't ask again for this session

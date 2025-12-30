@@ -45,19 +45,19 @@ export default function ImageSourceSelectorModal({
           style={{
             width: '260px',
             height: '280px',
-            background: 'rgba(139, 92, 246, 0.1)',
-            border: '2px solid rgba(139, 92, 246, 0.3)',
+            background: 'rgba(37, 99, 235, 0.1)',
+            border: '2px solid rgba(37, 99, 235, 0.3)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 40px rgba(139, 92, 246, 0.5)';
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.6)';
+            e.currentTarget.style.boxShadow = '0 0 40px rgba(37, 99, 235, 0.5)';
+            e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.6)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+            e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.3)';
           }}
         >
-          <Camera className="w-24 h-24 text-purple-400" />
+          <Camera className="w-24 h-24 text-blue-400" />
           <div className="text-center">
             <h3 className="text-2xl font-bold text-white mb-2">Camera</h3>
             <p className="text-[17px] text-white/70">Take a photo</p>
@@ -77,19 +77,19 @@ export default function ImageSourceSelectorModal({
           style={{
             width: '260px',
             height: '280px',
-            background: 'rgba(139, 92, 246, 0.1)',
-            border: '2px solid rgba(139, 92, 246, 0.3)',
+            background: 'rgba(37, 99, 235, 0.1)',
+            border: '2px solid rgba(37, 99, 235, 0.3)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 40px rgba(139, 92, 246, 0.5)';
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.6)';
+            e.currentTarget.style.boxShadow = '0 0 40px rgba(37, 99, 235, 0.5)';
+            e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.6)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+            e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.3)';
           }}
         >
-          <Upload className="w-24 h-24 text-purple-400" />
+          <Upload className="w-24 h-24 text-blue-400" />
           <div className="text-center">
             <h3 className="text-2xl font-bold text-white mb-2">Upload</h3>
             <p className="text-[17px] text-white/70">Choose from files</p>

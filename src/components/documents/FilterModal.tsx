@@ -123,7 +123,7 @@ export default function FilterModal({
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -156,9 +156,9 @@ export default function FilterModal({
                           transition={{ duration: 0.2 }}
                           className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                           style={isChecked ? {
-                            background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                            border: '1px solid rgba(139, 92, 246, 0.5)',
-                            boxShadow: '0 0 12px rgba(139, 92, 246, 0.4)',
+                            background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                            border: '1px solid rgba(37, 99, 235, 0.5)',
+                            boxShadow: '0 0 12px rgba(37, 99, 235, 0.4)',
                           } : {
                             background: 'rgba(35, 29, 51, 0.5)',
                             backdropFilter: 'blur(10px)',
@@ -197,9 +197,9 @@ export default function FilterModal({
                     transition={{ duration: 0.2 }}
                     className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                     style={localFilters.hasNotes ? {
-                      background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      border: '1px solid rgba(139, 92, 246, 0.5)',
-                      boxShadow: '0 0 12px rgba(139, 92, 246, 0.4)',
+                      background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                      border: '1px solid rgba(37, 99, 235, 0.5)',
+                      boxShadow: '0 0 12px rgba(37, 99, 235, 0.4)',
                     } : {
                       background: 'rgba(35, 29, 51, 0.5)',
                       backdropFilter: 'blur(10px)',

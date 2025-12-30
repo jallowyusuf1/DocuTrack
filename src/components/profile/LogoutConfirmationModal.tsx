@@ -40,7 +40,7 @@ export default function LogoutConfirmationModal({
                 backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(30px)',
                 border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+                boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(37, 99, 235, 0.3)',
               }}
             >
               {/* Header */}
@@ -52,7 +52,7 @@ export default function LogoutConfirmationModal({
                     triggerHaptic('light');
                     onClose();
                   }}
-                  className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                  className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
                 >
                   <X className="w-5 h-5 text-white" />
                 </motion.button>

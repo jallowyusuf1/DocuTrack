@@ -72,7 +72,7 @@ export default function ComprehensiveFamily() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 font-medium transition-all ${
                   isActive
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-blue-800 text-white'
                     : 'text-white/60 hover:text-white/80'
                 }`}
               >

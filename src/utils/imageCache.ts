@@ -3,7 +3,7 @@
  * Stores images in IndexedDB for offline access and instant loading
  */
 
-const DB_NAME = 'DocuTrackImageCache';
+const DB_NAME = 'DocuTrackrImageCache';
 const STORE_NAME = 'images';
 const DB_VERSION = 1;
 

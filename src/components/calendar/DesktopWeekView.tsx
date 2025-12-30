@@ -50,7 +50,7 @@ export default function DesktopWeekView({
               onClick={() => onDateSelect(day)}
               className={`text-center py-2 rounded-lg transition-all ${
                 isSelected
-                  ? 'bg-purple-500/30 border-2 border-purple-500'
+                  ? 'bg-blue-600/30 border-2 border-blue-600'
                   : isTodayDate
                   ? 'bg-blue-500/20 border-2 border-blue-500'
                   : 'border border-white/10'
@@ -84,7 +84,7 @@ export default function DesktopWeekView({
                     {hour === 8 &&
                       hourDocuments.map((doc, idx) => {
                         const daysUntil = getDaysUntil(doc.expiration_date);
-                        let urgencyColor = '#8B5CF6'; // Default purple
+                        let urgencyColor = '#2563EB'; // Default blue
                         if (daysUntil <= 7) urgencyColor = '#EF4444'; // Red
                         else if (daysUntil <= 30) urgencyColor = '#F59E0B'; // Orange
                         else urgencyColor = '#10B981'; // Green

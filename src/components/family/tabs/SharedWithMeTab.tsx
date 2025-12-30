@@ -69,7 +69,7 @@ export default function SharedWithMeTab() {
           <select
             value={selectedSharer}
             onChange={(e) => setSelectedSharer(e.target.value)}
-            className="flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:border-purple-500"
+            className="flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:border-blue-600"
           >
             <option value="all">All Sharers</option>
             {uniqueSharers.map(sharerId => {

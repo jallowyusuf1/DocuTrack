@@ -51,7 +51,7 @@ export const GlassCardHeader: React.FC<GlassCardHeaderProps> = ({
 }) => {
   return (
     <div className={`flex items-center gap-3 mb-4 ${className}`}>
-      {icon && <div className="text-primary-purple">{icon}</div>}
+      {icon && <div className="text-primary-blue">{icon}</div>}
       <h3 className="text-xl font-semibold text-white">{children}</h3>
     </div>
   );

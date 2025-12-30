@@ -73,7 +73,7 @@ export default function LoadingOverlay({
             />
             <Loader2
               size={64}
-              className="relative text-purple-500"
+              className="relative text-blue-600"
               style={{
                 animation: 'spin 1s linear infinite',
               }}
@@ -91,7 +91,7 @@ export default function LoadingOverlay({
               {/* Progress Bar */}
               <div className="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-300 ease-out"
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 >
                   <div
@@ -105,7 +105,7 @@ export default function LoadingOverlay({
 
               {/* Percentage */}
               <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-purple-600 dark:text-purple-400">
+                <span className="font-semibold text-blue-800 dark:text-blue-400">
                   {Math.round(progress)}%
                 </span>
                 {speed && (

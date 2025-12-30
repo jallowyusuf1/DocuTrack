@@ -9,7 +9,6 @@ import {
   Trash2,
   Bell,
   Clock,
-  Moon,
   Globe,
   Database,
   Download,
@@ -323,10 +322,10 @@ export default function Settings() {
         className="relative w-[52px] h-[32px] rounded-full transition-all duration-300"
         style={{
           background: enabled
-            ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+            ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
             : 'rgba(107, 102, 126, 0.3)',
           boxShadow: enabled
-            ? '0 0 16px rgba(139, 92, 246, 0.6)'
+            ? '0 0 16px rgba(37, 99, 235, 0.6)'
             : 'none',
         }}
       >
@@ -376,7 +375,7 @@ export default function Settings() {
             style={{
               background: isDestructive
                 ? 'rgba(239, 68, 68, 0.2)'
-                : 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+                : 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
               borderRadius: '12px',
               padding: '8px',
             }}
@@ -384,7 +383,7 @@ export default function Settings() {
             <Icon
               className="w-6 h-6"
               style={{
-                color: isDestructive ? '#EF4444' : '#A78BFA',
+                color: isDestructive ? '#EF4444' : '#60A5FA',
               }}
             />
           </div>
@@ -398,7 +397,7 @@ export default function Settings() {
               {label}
             </div>
             {description && (
-              <div className="text-[13px] mt-0.5 truncate" style={{ color: '#A78BFA' }}>
+              <div className="text-[13px] mt-0.5 truncate" style={{ color: '#60A5FA' }}>
                 {description}
               </div>
             )}
@@ -406,13 +405,13 @@ export default function Settings() {
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           {value && (
-            <span className="text-sm" style={{ color: '#A78BFA' }}>
+            <span className="text-sm" style={{ color: '#60A5FA' }}>
               {value}
             </span>
           )}
           {rightElement}
           {onPress && !rightElement && (
-            <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
+            <ChevronRight className="w-5 h-5" style={{ color: '#60A5FA' }} />
           )}
         </div>
       </motion.div>
@@ -426,7 +425,7 @@ export default function Settings() {
     <div className="px-4 mt-8 mb-3">
       <h3
         className="text-xs font-bold uppercase tracking-wider"
-        style={{ color: '#A78BFA' }}
+        style={{ color: '#60A5FA' }}
       >
         {title}
       </h3>
@@ -451,10 +450,10 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pb-24" style={{ background: 'transparent' }}>
+      <div className="min-h-screen pb-24" style={{ background: '#000000' }}>
         <div className="fixed top-0 left-0 right-0 z-20 h-[70px] flex items-center px-4 border-b border-white/10"
           style={{
-            background: 'rgba(35, 29, 51, 0.8)',
+            background: 'rgba(0, 0, 0, 0.8)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
           }}
@@ -475,12 +474,12 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'transparent' }}>
+    <div className="min-h-screen pb-24" style={{ background: '#000000' }}>
       {/* Header */}
       <div
         className="fixed top-0 left-0 right-0 z-20 h-[70px] flex items-center px-4 border-b border-white/10"
         style={{
-          background: 'rgba(35, 29, 51, 0.8)',
+          background: 'rgba(0, 0, 0, 0.8)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
         }}
@@ -533,7 +532,7 @@ export default function Settings() {
               description="Lock the app after inactivity"
               rightElement={
                 <motion.div animate={{ rotate: isIdleSecurityExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronDown className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <ChevronDown className="w-5 h-5" style={{ color: '#60A5FA' }} />
                 </motion.div>
               }
               onPress={() => {
@@ -611,11 +610,11 @@ export default function Settings() {
                       style={{
                         background:
                           idleSecurity?.idleTimeoutMinutes === m
-                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(109, 40, 217, 0.35))'
+                            ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(109, 40, 217, 0.35))'
                             : 'rgba(35, 29, 51, 0.5)',
                         border:
                           idleSecurity?.idleTimeoutMinutes === m
-                            ? '1px solid rgba(139, 92, 246, 0.5)'
+                            ? '1px solid rgba(37, 99, 235, 0.5)'
                             : '1px solid rgba(255, 255, 255, 0.1)',
                         color: 'rgba(255,255,255,0.9)',
                       }}
@@ -637,7 +636,7 @@ export default function Settings() {
                       style={{
                         background:
                           idleSecurity?.maxUnlockAttempts === n
-                            ? 'linear-gradient(135deg, rgba(248, 113, 113, 0.28), rgba(139, 92, 246, 0.22))'
+                            ? 'linear-gradient(135deg, rgba(248, 113, 113, 0.28), rgba(37, 99, 235, 0.22))'
                             : 'rgba(35, 29, 51, 0.5)',
                         border:
                           idleSecurity?.maxUnlockAttempts === n
@@ -765,7 +764,7 @@ export default function Settings() {
                   animate={{ rotate: isIntervalsExpanded ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <ChevronDown className="w-5 h-5" style={{ color: '#60A5FA' }} />
                 </motion.div>
               }
               onPress={() => {
@@ -809,10 +808,10 @@ export default function Settings() {
                       className="w-6 h-6 rounded-lg flex items-center justify-center transition-all"
                       style={{
                         background: settings.notificationIntervals[interval.key as keyof NotificationIntervals]
-                          ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))'
+                          ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(109, 40, 217, 0.4))'
                           : 'rgba(35, 29, 51, 0.5)',
                         border: settings.notificationIntervals[interval.key as keyof NotificationIntervals]
-                          ? '1px solid rgba(139, 92, 246, 0.5)'
+                          ? '1px solid rgba(37, 99, 235, 0.5)'
                           : '1px solid rgba(255, 255, 255, 0.1)',
                       }}
                     >
@@ -826,7 +825,7 @@ export default function Settings() {
             )}
           </div>
           <SettingsRow
-            icon={Moon}
+            icon={Clock}
             label="Quiet Hours"
             value={settings.quietHours.enabled ? `${settings.quietHours.start} - ${settings.quietHours.end}` : 'Disabled'}
             onPress={() => setIsQuietHoursOpen(true)}
@@ -842,19 +841,6 @@ export default function Settings() {
             value={language === 'en' ? 'English' : language === 'ar' ? 'العربية' : language === 'es' ? 'Español' : language === 'fr' ? 'Français' : language === 'ur' ? 'اردو' : 'English'}
             onPress={() => setIsLanguagePickerOpen(true)}
           />
-          <SettingsRow
-            icon={Moon}
-            label="Dark Mode"
-            description="Always dark mode"
-            rightElement={
-              <ToggleSwitch
-                enabled={true}
-                onToggle={() => {
-                  showToast('Dark mode is always enabled', 'info');
-                }}
-              />
-            }
-          />
         </GlassCard>
 
         {/* SECTION 4: DATA & STORAGE */}
@@ -866,18 +852,18 @@ export default function Settings() {
                 <div
                   className="flex-shrink-0 mr-4"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+                    background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
                     borderRadius: '12px',
                     padding: '8px',
                   }}
                 >
-                  <Database className="w-6 h-6" style={{ color: '#A78BFA' }} />
+                  <Database className="w-6 h-6" style={{ color: '#60A5FA' }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-base font-medium text-white">Storage Used</div>
                 </div>
               </div>
-              <span className="text-sm flex-shrink-0" style={{ color: '#A78BFA' }}>
+              <span className="text-sm flex-shrink-0" style={{ color: '#60A5FA' }}>
                 {formatStorage()}
               </span>
             </div>
@@ -893,7 +879,7 @@ export default function Settings() {
                 transition={{ duration: 0.5 }}
                 className="h-full rounded-full"
                 style={{
-                  background: 'linear-gradient(90deg, #8B5CF6, #6D28D9)',
+                  background: 'linear-gradient(90deg, #2563EB, #1E40AF)',
                 }}
               />
             </div>

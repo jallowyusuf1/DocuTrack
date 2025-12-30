@@ -139,8 +139,8 @@ export default function ShareDocumentModal({
                 background: 'rgba(26, 22, 37, 0.85)',
                 backdropFilter: 'blur(50px)',
                 WebkitBackdropFilter: 'blur(50px)',
-                border: '2px solid rgba(139, 92, 246, 0.3)',
-                boxShadow: '0 30px 100px rgba(0, 0, 0, 0.9), 0 0 80px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                border: '2px solid rgba(37, 99, 235, 0.3)',
+                boxShadow: '0 30px 100px rgba(0, 0, 0, 0.9), 0 0 80px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                 maxHeight: '90vh',
               }}
             >
@@ -148,7 +148,7 @@ export default function ShareDocumentModal({
               <motion.div
                 className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full opacity-20 blur-[100px]"
                 style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
+                  background: 'linear-gradient(135deg, #2563EB, #EC4899)',
                 }}
                 animate={{
                   x: [0, 30, 0],
@@ -185,10 +185,10 @@ export default function ShareDocumentModal({
                 <div className="flex items-center justify-between mb-6 md:mb-8">
                   <div className="flex items-center gap-3 md:gap-4">
                     <motion.div
-                      className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center relative"
+                      className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center relative"
                       whileHover={{ scale: 1.05, rotate: 5 }}
                       style={{
-                        boxShadow: '0 10px 40px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                        boxShadow: '0 10px 40px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                       }}
                     >
                       <Share2 className="w-6 h-6 md:w-7 md:h-7 text-white" />
@@ -196,7 +196,7 @@ export default function ShareDocumentModal({
                       <motion.div
                         className="absolute inset-0 rounded-2xl"
                         style={{
-                          boxShadow: '0 0 30px rgba(139, 92, 246, 0.6)',
+                          boxShadow: '0 0 30px rgba(37, 99, 235, 0.6)',
                         }}
                         animate={{
                           opacity: [0.5, 1, 0.5],
@@ -242,10 +242,10 @@ export default function ShareDocumentModal({
                       className="h-2 md:h-2.5 flex-1 rounded-full transition-all duration-500 relative overflow-hidden"
                       style={{
                         background: s <= step
-                          ? 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)'
+                          ? 'linear-gradient(135deg, #2563EB 0%, #EC4899 100%)'
                           : 'rgba(42, 38, 64, 0.4)',
                         boxShadow: s <= step
-                          ? '0 4px 15px rgba(139, 92, 246, 0.3)'
+                          ? '0 4px 15px rgba(37, 99, 235, 0.3)'
                           : 'inset 0 1px 4px rgba(0, 0, 0, 0.3)',
                       }}
                     >
@@ -279,7 +279,7 @@ export default function ShareDocumentModal({
                   >
                     <div>
                       <label className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-purple-400" />
+                        <FileText className="w-4 h-4 text-blue-400" />
                         <span>Select Document</span>
                       </label>
                       <div className="relative mb-4 group">
@@ -297,8 +297,8 @@ export default function ShareDocumentModal({
                             boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3)',
                           }}
                           onFocus={(e) => {
-                            e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
+                            e.target.style.border = '1px solid rgba(37, 99, 235, 0.5)';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
                           }}
                           onBlur={(e) => {
                             e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
@@ -308,7 +308,7 @@ export default function ShareDocumentModal({
                         <motion.div
                           className="absolute inset-0 rounded-xl md:rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"
                           style={{
-                            boxShadow: '0 0 30px rgba(139, 92, 246, 0.3)',
+                            boxShadow: '0 0 30px rgba(37, 99, 235, 0.3)',
                           }}
                         />
                       </div>
@@ -329,14 +329,14 @@ export default function ShareDocumentModal({
                             className="w-full p-4 md:p-5 rounded-xl md:rounded-2xl text-left transition-all relative overflow-hidden group"
                             style={{
                               background: selectedDocument?.id === doc.id
-                                ? 'rgba(139, 92, 246, 0.15)'
+                                ? 'rgba(37, 99, 235, 0.15)'
                                 : 'rgba(42, 38, 64, 0.3)',
                               backdropFilter: 'blur(15px)',
                               border: selectedDocument?.id === doc.id
-                                ? '2px solid rgba(139, 92, 246, 0.6)'
+                                ? '2px solid rgba(37, 99, 235, 0.6)'
                                 : '1px solid rgba(255, 255, 255, 0.08)',
                               boxShadow: selectedDocument?.id === doc.id
-                                ? '0 0 30px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                                ? '0 0 30px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                                 : 'inset 0 1px 8px rgba(0, 0, 0, 0.3)',
                             }}
                           >
@@ -345,7 +345,7 @@ export default function ShareDocumentModal({
                                 layoutId="selectedDoc"
                                 className="absolute inset-0 rounded-xl md:rounded-2xl"
                                 style={{
-                                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), transparent)',
+                                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), transparent)',
                                   opacity: 0.3,
                                 }}
                                 animate={{
@@ -393,7 +393,7 @@ export default function ShareDocumentModal({
                   >
                     <div>
                       <label className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                        <Share2 className="w-4 h-4 text-purple-400" />
+                        <Share2 className="w-4 h-4 text-blue-400" />
                         <span>Select Connection</span>
                       </label>
                       <div className="relative mb-4 group">
@@ -411,8 +411,8 @@ export default function ShareDocumentModal({
                             boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3)',
                           }}
                           onFocus={(e) => {
-                            e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
+                            e.target.style.border = '1px solid rgba(37, 99, 235, 0.5)';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
                           }}
                           onBlur={(e) => {
                             e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
@@ -422,7 +422,7 @@ export default function ShareDocumentModal({
                         <motion.div
                           className="absolute inset-0 rounded-xl md:rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"
                           style={{
-                            boxShadow: '0 0 30px rgba(139, 92, 246, 0.3)',
+                            boxShadow: '0 0 30px rgba(37, 99, 235, 0.3)',
                           }}
                         />
                       </div>
@@ -443,14 +443,14 @@ export default function ShareDocumentModal({
                             className="w-full p-4 md:p-5 rounded-xl md:rounded-2xl text-left transition-all relative overflow-hidden group"
                             style={{
                               background: selectedConnection?.id === conn.id
-                                ? 'rgba(139, 92, 246, 0.15)'
+                                ? 'rgba(37, 99, 235, 0.15)'
                                 : 'rgba(42, 38, 64, 0.3)',
                               backdropFilter: 'blur(15px)',
                               border: selectedConnection?.id === conn.id
-                                ? '2px solid rgba(139, 92, 246, 0.6)'
+                                ? '2px solid rgba(37, 99, 235, 0.6)'
                                 : '1px solid rgba(255, 255, 255, 0.08)',
                               boxShadow: selectedConnection?.id === conn.id
-                                ? '0 0 30px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                                ? '0 0 30px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                                 : 'inset 0 1px 8px rgba(0, 0, 0, 0.3)',
                             }}
                           >
@@ -459,7 +459,7 @@ export default function ShareDocumentModal({
                                 layoutId="selectedConn"
                                 className="absolute inset-0 rounded-xl md:rounded-2xl"
                                 style={{
-                                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), transparent)',
+                                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), transparent)',
                                   opacity: 0.3,
                                 }}
                                 animate={{
@@ -509,7 +509,7 @@ export default function ShareDocumentModal({
                   >
                     <div>
                       <label className="block text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                        <Check className="w-4 h-4 text-purple-400" />
+                        <Check className="w-4 h-4 text-blue-400" />
                         <span>Permission Level</span>
                       </label>
                       <div className="grid grid-cols-2 gap-4">
@@ -529,11 +529,11 @@ export default function ShareDocumentModal({
                               className="relative rounded-2xl md:rounded-3xl transition-all duration-500 overflow-hidden group"
                               style={{
                                 background: isSelected
-                                  ? 'rgba(139, 92, 246, 0.15)'
+                                  ? 'rgba(37, 99, 235, 0.15)'
                                   : 'rgba(42, 38, 64, 0.3)',
                                 backdropFilter: 'blur(15px)',
                                 border: isSelected
-                                  ? '2px solid rgba(139, 92, 246, 0.6)'
+                                  ? '2px solid rgba(37, 99, 235, 0.6)'
                                   : '1px solid rgba(255, 255, 255, 0.08)',
                                 padding: '24px',
                                 boxShadow: isSelected
@@ -620,8 +620,8 @@ export default function ShareDocumentModal({
                           boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3)',
                         }}
                         onFocus={(e) => {
-                          e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
-                          e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
+                          e.target.style.border = '1px solid rgba(37, 99, 235, 0.5)';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1), inset 0 2px 8px rgba(0, 0, 0, 0.3)';
                         }}
                         onBlur={(e) => {
                           e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
@@ -700,8 +700,8 @@ export default function ShareDocumentModal({
                       whileTap={{ scale: (step === 1 && !selectedDocument) || (step === 2 && !selectedConnection) ? 1 : 0.98 }}
                       className="flex-1 h-12 md:h-14 rounded-xl md:rounded-2xl font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group text-sm md:text-base"
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
-                        boxShadow: '0 15px 50px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                        background: 'linear-gradient(135deg, #2563EB 0%, #EC4899 100%)',
+                        boxShadow: '0 15px 50px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                       }}
                     >
                       <motion.div
@@ -729,8 +729,8 @@ export default function ShareDocumentModal({
                       whileTap={{ scale: loading ? 1 : 0.98 }}
                       className="flex-1 h-12 md:h-14 rounded-xl md:rounded-2xl font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group text-sm md:text-base"
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
-                        boxShadow: '0 15px 50px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                        background: 'linear-gradient(135deg, #2563EB 0%, #EC4899 100%)',
+                        boxShadow: '0 15px 50px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                       }}
                     >
                       <motion.div
@@ -750,7 +750,7 @@ export default function ShareDocumentModal({
                       <motion.div
                         className="absolute inset-0 rounded-xl md:rounded-2xl"
                         style={{
-                          boxShadow: '0 0 40px rgba(139, 92, 246, 0.6)',
+                          boxShadow: '0 0 40px rgba(37, 99, 235, 0.6)',
                         }}
                         animate={{
                           opacity: [0.5, 1, 0.5],

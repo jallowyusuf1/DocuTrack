@@ -98,8 +98,8 @@ export default function ReminderCustomizationModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-              <Bell className="w-5 h-5 text-purple-400" />
+            <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
+              <Bell className="w-5 h-5 text-blue-400" />
             </div>
             <h2 className="text-xl font-bold text-white">Customize Reminders</h2>
           </div>
@@ -144,12 +144,12 @@ export default function ReminderCustomizationModal({
                 value={customReminderValue}
                 onChange={(e) => setCustomReminderValue(e.target.value)}
                 placeholder="Number"
-                className="flex-1 h-10 px-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-purple-500"
+                className="flex-1 h-10 px-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-600"
               />
               <select
                 value={customReminderUnit}
                 onChange={(e) => setCustomReminderUnit(e.target.value as 'days' | 'weeks' | 'months')}
-                className="h-10 px-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-purple-500"
+                className="h-10 px-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:border-blue-600"
               >
                 <option value="days">Days</option>
                 <option value="weeks">Weeks</option>
@@ -157,7 +157,7 @@ export default function ReminderCustomizationModal({
               </select>
               <button
                 onClick={handleAddCustomReminder}
-                className="px-4 py-2 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 transition-colors"
+                className="px-4 py-2 rounded-lg bg-blue-800 text-white font-medium hover:bg-blue-800 transition-colors"
               >
                 Add
               </button>
@@ -201,7 +201,7 @@ export default function ReminderCustomizationModal({
           <button
             onClick={handleSave}
             disabled={isSaving || reminderDays.length === 0}
-            className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3 rounded-xl bg-blue-800 text-white font-medium hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <>

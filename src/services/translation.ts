@@ -372,3 +372,127 @@ export function setCurrentLanguage(language: LanguageCode): void {
   localStorage.setItem('app_language', language);
 }
 
+// ===================================================================
+// Document Translation Functions (for multi-language OCR)
+// ===================================================================
+
+import type { TranslationRequest, TranslationResult, TranslationService as DocTranslationService } from '../types';
+
+/**
+ * Translate document fields (for OCR multi-language support)
+ */
+export async function translateDocumentFields(
+  request: TranslationRequest
+): Promise<TranslationResult> {
+  const { sourceLanguage, targetLanguage, fields, service = 'google' } = request;
+
+  console.log('[Document Translation] Translating fields from', sourceLanguage, 'to', targetLanguage);
+
+  const translatedFields: Record<string, string> = {};
+  const errors: string[] = [];
+  let successCount = 0;
+  const totalFields = Object.keys(fields).length;
+
+  // Translate each field
+  for (const [key, value] of Object.entries(fields)) {
+    if (!value || value.trim().length === 0) {
+      translatedFields[key] = value;
+      continue;
+    }
+
+    try {
+      // Use existing translateText function
+      const translated = await translateText(
+        value,
+        targetLanguage as LanguageCode,
+        sourceLanguage as LanguageCode
+      );
+      translatedFields[key] = translated;
+
+      if (translated !== value) {
+        successCount++;
+      }
+    } catch (error) {
+      console.error(`[Document Translation] Failed to translate ${key}:`, error);
+      translatedFields[key] = value; // Keep original
+      errors.push(`Failed to translate ${key}`);
+    }
+  }
+
+  // Calculate quality score
+  const qualityScore = totalFields > 0 ? (successCount / totalFields) * 100 : 0;
+
+  console.log(`[Document Translation] Completed: ${successCount}/${totalFields} fields`);
+
+  return {
+    translatedFields,
+    service: service as DocTranslationService,
+    qualityScore: Math.round(qualityScore),
+    errors: errors.length > 0 ? errors : undefined
+  };
+}
+
+/**
+ * Get translation quality level
+ */
+export function getTranslationQuality(
+  qualityScore: number
+): 'high' | 'medium' | 'low' {
+  if (qualityScore >= 90) return 'high';
+  if (qualityScore >= 75) return 'medium';
+  return 'low';
+}
+
+/**
+ * Get translation quality message
+ */
+export function getTranslationQualityMessage(qualityScore: number): string {
+  const quality = getTranslationQuality(qualityScore);
+
+  switch (quality) {
+    case 'high':
+      return '✓ High quality translation';
+    case 'medium':
+      return '⚠️ Medium quality - Please review';
+    case 'low':
+      return '⚠️ Low quality - Manual verification recommended';
+  }
+}
+
+/**
+ * Convert date format based on target language locale
+ */
+export function convertDateFormat(
+  date: string,
+  sourceLanguage: string,
+  targetLanguage: string
+): string {
+  try {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      return date;
+    }
+
+    const localeMap: Record<string, string> = {
+      'en': 'en-US',
+      'es': 'es-ES',
+      'fr': 'fr-FR',
+      'de': 'de-DE',
+      'pt': 'pt-BR',
+      'it': 'it-IT',
+      'ar': 'ar-SA',
+      'zh': 'zh-CN',
+      'zh-CN': 'zh-CN',
+      'zh-TW': 'zh-TW',
+      'ja': 'ja-JP',
+      'ko': 'ko-KR'
+    };
+
+    const locale = localeMap[targetLanguage] || 'en-US';
+    return dateObj.toLocaleDateString(locale);
+  } catch (error) {
+    console.error('[Date Format] Conversion failed:', error);
+    return date;
+  }
+}
+

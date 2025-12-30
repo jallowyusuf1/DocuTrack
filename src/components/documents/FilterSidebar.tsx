@@ -21,7 +21,7 @@ export interface FilterState {
 }
 
 const urgencyOptions = [
-  { value: 'all', label: 'All Documents', color: '#8B5CF6' },
+  { value: 'all', label: 'All Documents', color: '#2563EB' },
   { value: 'urgent', label: 'Urgent (< 7 days)', color: '#EF4444' },
   { value: 'soon', label: 'Expiring Soon (7-30 days)', color: '#F59E0B' },
   { value: 'valid', label: 'Valid (> 30 days)', color: '#10B981' },
@@ -93,7 +93,7 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
       {/* Search */}
       <div className="p-4 md:p-6 relative">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
           <input
             type="text"
             placeholder="Search documents..."
@@ -155,8 +155,8 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
                     <motion.div
                       animate={{
                         scale: isChecked ? 1 : 0.8,
-                        backgroundColor: isChecked ? 'rgba(139, 92, 246, 1)' : 'rgba(255, 255, 255, 0.1)',
-                        borderColor: isChecked ? 'rgba(139, 92, 246, 1)' : 'rgba(255, 255, 255, 0.2)',
+                        backgroundColor: isChecked ? 'rgba(37, 99, 235, 1)' : 'rgba(255, 255, 255, 0.1)',
+                        borderColor: isChecked ? 'rgba(37, 99, 235, 1)' : 'rgba(255, 255, 255, 0.2)',
                       }}
                       transition={{
                         duration: 0.2,
@@ -183,7 +183,7 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
                   </motion.div>
                   <span className="text-2xl">{category.icon}</span>
                   <span className="flex-1 text-white text-sm">{category.name}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-medium">
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-medium">
                     {category.count}
                   </span>
                 </motion.label>
@@ -279,7 +279,7 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
                 onClick={() => updateFilter({ dateRange: option.value })}
                 className={`w-full text-left py-2 px-3 rounded-lg text-sm transition-colors cursor-pointer focus:outline-none ${
                   currentFilters.dateRange === option.value
-                    ? 'bg-purple-500/20 text-purple-300 font-medium'
+                    ? 'bg-blue-500/20 text-blue-300 font-medium'
                     : 'text-white hover:bg-white/5'
                 }`}
               >
@@ -304,7 +304,7 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
             <select
               value={currentFilters.sortBy}
               onChange={(e) => updateFilter({ sortBy: e.target.value as FilterState['sortBy'] })}
-              className="w-full py-2 px-3 rounded-lg bg-[rgba(35,29,51,0.6)] border border-white/10 text-white text-sm focus:border-purple-500/50 focus:outline-none"
+              className="w-full py-2 px-3 rounded-lg bg-[rgba(35,29,51,0.6)] border border-white/10 text-white text-sm focus:border-blue-500/50 focus:outline-none"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -318,7 +318,7 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
                 onClick={() => updateFilter({ sortOrder: 'asc' })}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm transition-colors cursor-pointer focus:outline-none ${
                   currentFilters.sortOrder === 'asc'
-                    ? 'bg-purple-500/20 text-purple-300 font-medium'
+                    ? 'bg-blue-500/20 text-blue-300 font-medium'
                     : 'bg-white/5 text-white hover:bg-white/10'
                 }`}
               >
@@ -329,7 +329,7 @@ export default function FilterSidebar({ categories, onFilterChange, currentFilte
                 onClick={() => updateFilter({ sortOrder: 'desc' })}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm transition-colors cursor-pointer focus:outline-none ${
                   currentFilters.sortOrder === 'desc'
-                    ? 'bg-purple-500/20 text-purple-300 font-medium'
+                    ? 'bg-blue-500/20 text-blue-300 font-medium'
                     : 'bg-white/5 text-white hover:bg-white/10'
                 }`}
               >

@@ -189,7 +189,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               onClick={() => setViewMode('calendar')}
               className={`p-3 rounded-xl transition-all ${
                 viewMode === 'calendar'
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -199,7 +199,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               onClick={() => setViewMode('wheel')}
               className={`p-3 rounded-xl transition-all ${
                 viewMode === 'wheel'
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -256,8 +256,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                         relative rounded-xl transition-all duration-200
                         ${!date ? 'invisible' : ''}
                         ${date && isToday(date) ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400' : ''}
-                        ${date && isSelected(date) ? 'bg-purple-500 text-white' : ''}
-                        ${date && isInRange(date) && !isSelected(date) ? 'bg-purple-100 dark:bg-purple-900' : ''}
+                        ${date && isSelected(date) ? 'bg-blue-600 text-white' : ''}
+                        ${date && isInRange(date) && !isSelected(date) ? 'bg-blue-100 dark:bg-blue-900' : ''}
                         ${date && !isToday(date) && !isSelected(date) && !isInRange(date) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : ''}
                       `}
                       style={{
@@ -308,31 +308,31 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <div className="space-y-2">
               <button
                 onClick={handleToday}
-                className="w-full px-4 py-3 text-left rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="w-full px-4 py-3 text-left rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 Today
               </button>
               <button
                 onClick={() => handlePresetClick(30)}
-                className="w-full px-4 py-3 text-left rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="w-full px-4 py-3 text-left rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 1 month
               </button>
               <button
                 onClick={() => handlePresetClick(90)}
-                className="w-full px-4 py-3 text-left rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="w-full px-4 py-3 text-left rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 3 months
               </button>
               <button
                 onClick={() => handlePresetClick(180)}
-                className="w-full px-4 py-3 text-left rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="w-full px-4 py-3 text-left rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 6 months
               </button>
               <button
                 onClick={() => handlePresetClick(365)}
-                className="w-full px-4 py-3 text-left rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="w-full px-4 py-3 text-left rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 1 year
               </button>
@@ -357,7 +357,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             </button>
             <button
               onClick={handleDone}
-              className="px-6 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 transition-colors font-medium"
+              className="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 transition-colors font-medium"
             >
               Done
             </button>

@@ -22,7 +22,7 @@ const relationshipColors: Record<string, string> = {
   spouse: 'from-pink-500 to-rose-500',
   parent: 'from-blue-500 to-indigo-500',
   child: 'from-green-500 to-emerald-500',
-  sibling: 'from-purple-500 to-violet-500',
+  sibling: 'from-blue-600 to-violet-500',
   friend: 'from-orange-500 to-amber-500',
   other: 'from-gray-500 to-slate-500',
 };

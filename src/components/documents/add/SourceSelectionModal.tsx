@@ -109,14 +109,14 @@ export default function SourceSelectionModal({
                     onClick={handleCameraClick}
                     className="w-full p-6 rounded-2xl flex items-center gap-4 text-left transition-all"
                     style={{
-                      background: 'rgba(139, 92, 246, 0.2)',
-                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      background: 'rgba(37, 99, 235, 0.2)',
+                      border: '1px solid rgba(37, 99, 235, 0.3)',
                     }}
                   >
                     <div
                       className="w-14 h-14 rounded-xl flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                        background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                       }}
                     >
                       <Camera className="w-7 h-7 text-white" />

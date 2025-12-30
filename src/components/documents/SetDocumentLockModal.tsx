@@ -133,18 +133,18 @@ export default function SetDocumentLockModal({
             <div
               className="w-11 h-11 rounded-2xl flex items-center justify-center"
               style={{
-                background: 'rgba(139, 92, 246, 0.18)',
-                border: '1px solid rgba(139, 92, 246, 0.35)',
-                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.18)',
+                background: 'rgba(37, 99, 235, 0.18)',
+                border: '1px solid rgba(37, 99, 235, 0.35)',
+                boxShadow: '0 10px 30px rgba(37, 99, 235, 0.18)',
               }}
             >
-              <Lock className="w-5 h-5 text-purple-300" />
+              <Lock className="w-5 h-5 text-blue-300" />
             </div>
             <div>
               <div className="text-white text-xl font-bold leading-tight">
                 {mode === 'set' ? 'Set Document Lock' : 'Change Document Lock'}
               </div>
-              <div className="text-xs mt-0.5" style={{ color: '#A78BFA' }}>
+              <div className="text-xs mt-0.5" style={{ color: '#60A5FA' }}>
                 Protect your documents with a password
               </div>
             </div>
@@ -174,7 +174,7 @@ export default function SetDocumentLockModal({
               border: '1px solid rgba(255, 255, 255, 0.10)',
             }}
           >
-            <AlertCircle className="w-5 h-5 text-purple-300 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" />
             <p className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
               {mode === 'set'
                 ? "Create a password to secure your documents. You'll need it to unlock the Documents page."
@@ -207,10 +207,10 @@ export default function SetDocumentLockModal({
                   onClick={() => setShowOldPassword(!showOldPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
                   style={{
-                    color: '#A78BFA',
+                    color: '#60A5FA',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.18)';
+                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.18)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'transparent';
@@ -247,10 +247,10 @@ export default function SetDocumentLockModal({
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
                 style={{
-                  color: '#A78BFA',
+                  color: '#60A5FA',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(139, 92, 246, 0.18)';
+                  e.currentTarget.style.background = 'rgba(37, 99, 235, 0.18)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
@@ -319,10 +319,10 @@ export default function SetDocumentLockModal({
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors"
                 style={{
-                  color: '#A78BFA',
+                  color: '#60A5FA',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(139, 92, 246, 0.18)';
+                  e.currentTarget.style.background = 'rgba(37, 99, 235, 0.18)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';

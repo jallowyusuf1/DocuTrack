@@ -6,14 +6,46 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#8B5CF6" />
-    <!-- Favicons -->
+    <!-- Favicons - 3D Glass Purple/Pink D -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta name="description" content="Never miss a document expiration deadline. Track passports, IDs, insurance, and more with smart reminders." />
     <link rel="manifest" href="/manifest.json" />
-    <title>DocuTrack - Document Tracker</title>
+    <title>DocuTrackr - Document Tracker</title>
+    
+    <!-- CRITICAL: Apply theme immediately before React renders (prevents flash) -->
+    <script>
+      (function() {
+        'use strict';
+        try {
+          // Check stored preference first
+          var stored = localStorage.getItem('theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored);
+            document.body.setAttribute('data-theme', stored);
+            return;
+          }
+          // Check system preference
+          if (window.matchMedia) {
+            var systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', systemPreference);
+            document.body.setAttribute('data-theme', systemPreference);
+            return;
+          }
+          // Default to dark
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.setAttribute('data-theme', 'dark');
+        } catch (e) {
+          // Silently fail and default to dark
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     
     <!-- CRITICAL: Kill Service Workers IMMEDIATELY - runs in HEAD before body -->
     <script>

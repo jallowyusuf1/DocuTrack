@@ -56,7 +56,7 @@ export default function SharedDocumentCard({ sharedDoc, onUpdate }: SharedDocume
       `}</style>
       {/* Document Info */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center flex-shrink-0">
           <FileText className="w-6 h-6 text-white" />
         </div>
 
@@ -86,7 +86,7 @@ export default function SharedDocumentCard({ sharedDoc, onUpdate }: SharedDocume
 
       {/* Owner Info */}
       <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-white/5">
-        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-semibold">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-semibold">
           {sharedDoc.owner?.full_name?.[0] || sharedDoc.owner?.email?.[0] || '?'}
         </div>
         <p className="text-sm text-glass-secondary">

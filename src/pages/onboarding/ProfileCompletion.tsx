@@ -48,7 +48,6 @@ export default function ProfileCompletion() {
   const avatarPreviewUrl = useMemo(() => (avatarFile ? URL.createObjectURL(avatarFile) : null), [avatarFile]);
   const [phoneCountry, setPhoneCountry] = useState<string>('US');
   const [phoneNational, setPhoneNational] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
   const [countryCode, setCountryCode] = useState<string>('US');
   const [currency, setCurrency] = useState('USD');
   const [currencyTouched, setCurrencyTouched] = useState(false);
@@ -118,7 +117,6 @@ export default function ProfileCompletion() {
 
       const profileUpdates: any = {
         phone_number: phoneNational.trim() ? computedPhoneE164 : null,
-        date_of_birth: dateOfBirth || null,
         country_code: countryCode,
         onboarding_stage: 4,
         updated_at: new Date().toISOString(),
@@ -278,16 +276,6 @@ export default function ProfileCompletion() {
                     {computedPhoneE164} {isValidE164(computedPhoneE164) ? '✓' : '(invalid)'}
                   </div>
                 ) : null}
-              </div>
-              <div>
-                <div className="text-white/70 text-sm mb-2">{t('onboarding.stage3.dobLabel')}</div>
-                <input
-                  className="glass-input w-full h-12 px-4 text-white"
-                  type="date"
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                />
-                <div className="mt-1 text-xs text-white/45">{t('onboarding.stage3.dobHint')}</div>
               </div>
               <div>
                 <div className="text-white/70 text-sm mb-2">{t('onboarding.stage3.countryLabel')}</div>

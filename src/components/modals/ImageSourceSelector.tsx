@@ -59,23 +59,23 @@ export const ImageSourceSelector: React.FC<ImageSourceSelectorProps> = ({
             onMouseEnter={() => setHoveredOption('camera')}
             onMouseLeave={() => setHoveredOption(null)}
             onClick={onSelectCamera}
-            className="relative group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-3xl"
+            className="relative group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-3xl"
             style={{
               width: '260px',
               height: '280px',
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
-              border: '2px solid rgba(139, 92, 246, 0.2)',
+              background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)',
+              border: '2px solid rgba(37, 99, 235, 0.2)',
               borderRadius: '24px',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               transform: hoveredOption === 'camera' ? 'scale(1.05)' : 'scale(1)',
               boxShadow: hoveredOption === 'camera'
-                ? '0 20px 40px rgba(139, 92, 246, 0.4), 0 0 60px rgba(139, 92, 246, 0.2)'
+                ? '0 20px 40px rgba(37, 99, 235, 0.4), 0 0 60px rgba(37, 99, 235, 0.2)'
                 : '0 8px 16px rgba(0, 0, 0, 0.1)',
             }}
           >
             <div className="flex flex-col items-center justify-center h-full">
               <div
-                className="mb-6 text-purple-500 transition-transform duration-300"
+                className="mb-6 text-blue-600 transition-transform duration-300"
                 style={{
                   transform: hoveredOption === 'camera' ? 'translateY(-4px)' : 'translateY(0)',
                 }}
@@ -96,7 +96,7 @@ export const ImageSourceSelector: React.FC<ImageSourceSelectorProps> = ({
             onMouseEnter={() => setHoveredOption('gallery')}
             onMouseLeave={() => setHoveredOption(null)}
             onClick={onSelectGallery}
-            className="relative group focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-3xl"
+            className="relative group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-3xl"
             style={{
               width: '260px',
               height: '280px',

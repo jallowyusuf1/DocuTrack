@@ -14,6 +14,7 @@ import SetDocumentLockModal from '../../components/documents/SetDocumentLockModa
 import MFASetupModal from '../../components/auth/MFASetupModal';
 import { mfaService } from '../../services/mfaService';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../../hooks/useToast';
 
 export default function SecuritySetup() {
   const reduced = prefersReducedMotion();
@@ -21,6 +22,7 @@ export default function SecuritySetup() {
   const { user } = useAuth();
   const { language, changeLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [selectedLanguage, setSelectedLanguage] = useState(language || 'en');
   const [idleEnabled, setIdleEnabled] = useState(false);
@@ -60,7 +62,6 @@ export default function SecuritySetup() {
       { code: 'ar', flag: '🇸🇦', name: 'Arabic', native: 'العربية', rtl: true },
       { code: 'es', flag: '🇪🇸', name: 'Spanish', native: 'Español', rtl: false },
       { code: 'fr', flag: '🇫🇷', name: 'French', native: 'Français', rtl: false },
-      { code: 'ur', flag: '🇵🇰', name: 'Urdu', native: 'اردو', rtl: true },
     ],
     []
   );
@@ -109,6 +110,55 @@ export default function SecuritySetup() {
     run();
   }, [user?.id]);
 
+  // Auto-refresh settings every 30 seconds
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const refreshInterval = setInterval(() => {
+      // Silently refresh settings
+      const refreshSettings = async () => {
+        try {
+          const idle = await idleSecurityService.getSettings(user.id);
+          setIdleEnabled(!!idle.idleTimeoutEnabled);
+          setIdleMinutes(idle.idleTimeoutMinutes);
+          setIdleMaxAttempts(idle.maxUnlockAttempts);
+          setIdleWipeLocal(idle.wipeDataOnMaxAttempts);
+          setIdleBiometric(idle.biometricUnlockEnabled);
+          setIdleSoundAlerts(idle.idleSoundAlertsEnabled);
+        } catch {}
+        try {
+          const lock = await documentLockService.getLockSettings(user.id);
+          setDocLockEnabled(!!lock?.lockEnabled);
+          setDocLockTrigger(lock?.lockTrigger ?? 'always');
+          setDocLockHasPassword(!!lock?.lockPasswordHash);
+        } catch {}
+        try {
+          const { data } = await supabase
+            .from('user_settings')
+            .select('notifications_enabled, notifications_push, notifications_email, notifications_sms, analytics_enabled, face_detection_enabled, cloud_ocr_sync_enabled')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (data) {
+            setNotificationsEnabled(!!data.notifications_enabled);
+            setNotificationsPush(!!data.notifications_push);
+            setNotificationsEmail(!!data.notifications_email);
+            setNotificationsSms(!!data.notifications_sms);
+            setAnalyticsEnabled(!!data.analytics_enabled);
+            setFaceDetectionEnabled(!!data.face_detection_enabled);
+            setCloudOcrSyncEnabled(!!data.cloud_ocr_sync_enabled);
+          }
+        } catch {}
+        try {
+          const enabled = await mfaService.hasMFAEnabled();
+          setTwoFactorEnabled(enabled);
+        } catch {}
+      };
+      refreshSettings();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [user?.id]);
+
   const preview = useMemo(() => {
     const sampleName = 'Yusuf';
     const sample = {
@@ -132,15 +182,10 @@ export default function SecuritySetup() {
         cta: 'Ajouter un document',
         nav: ['Bientôt expiré', 'Documents', 'Dates', 'Famille', 'Profil'],
       },
-      ur: {
-        greeting: `صبح بخیر، ${sampleName}`,
-        cta: 'دستاویز شامل کریں',
-        nav: ['جلد ختم', 'دستاویزات', 'تاریخیں', 'خاندان', 'پروفائل'],
-      },
     } as const;
 
     const now = new Date();
-    const locale = selectedLanguage === 'ar' ? 'ar-SA' : selectedLanguage === 'ur' ? 'ur-PK' : selectedLanguage;
+    const locale = selectedLanguage === 'ar' ? 'ar-SA' : selectedLanguage;
     const dateLabel = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(now);
     const numLabel = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(1234.56);
 
@@ -253,7 +298,19 @@ export default function SecuritySetup() {
         face_detection_enabled: faceDetectionEnabled,
         cloud_ocr_sync_enabled: cloudOcrSyncEnabled,
       }, { onConflict: 'user_id' });
-      await supabase.from('user_profiles').update({ language: selectedLanguage }).eq('user_id', user.id);
+      
+      // Update user_profiles language (handle errors gracefully)
+      try {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update({ language: selectedLanguage })
+          .eq('user_id', user.id);
+        if (profileError) {
+          console.warn('Could not update user_profiles language:', profileError);
+        }
+      } catch (err) {
+        console.warn('Error updating user_profiles language:', err);
+      }
 
       // Apply language (may also persist via LanguageContext; we pass saveToDB=false to avoid duplicate writes)
       await changeLanguage(selectedLanguage, false);
@@ -289,11 +346,18 @@ export default function SecuritySetup() {
         documentLockService.setDocumentsLocked(false);
       }
 
-      // Mark onboarding complete
-      await supabase
-        .from('user_profiles')
-        .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString(), onboarding_stage: 4 })
-        .eq('user_id', user.id);
+      // Mark onboarding complete (handle errors gracefully)
+      try {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString(), onboarding_stage: 4 })
+          .eq('user_id', user.id);
+        if (profileError) {
+          console.warn('Could not update user_profiles onboarding status:', profileError);
+        }
+      } catch (err) {
+        console.warn('Error updating user_profiles onboarding status:', err);
+      }
 
       localStorage.removeItem('onboarding.active');
       navigate('/dashboard', { replace: true });
@@ -311,12 +375,18 @@ export default function SecuritySetup() {
       return;
     }
     try {
-      await supabase
+      const { error: profileError } = await supabase
         .from('user_profiles')
         .update({ onboarding_completed: true, onboarding_completed_at: new Date().toISOString(), onboarding_stage: 4 })
         .eq('user_id', user.id);
+      if (profileError) {
+        console.warn('Could not update user_profiles onboarding status:', profileError);
+      }
       localStorage.removeItem('onboarding.active');
-    } catch {}
+    } catch (err) {
+      console.warn('Error updating user_profiles onboarding status:', err);
+      localStorage.removeItem('onboarding.active');
+    }
     navigate('/dashboard', { replace: true });
   };
 
@@ -364,46 +434,11 @@ export default function SecuritySetup() {
                 id="language"
                 title="🌍 Language & Region"
                 subtitle="Choose your language (RTL supported)"
-                icon={<Globe className="w-5 h-5 text-purple-200" />}
+                icon={<Globe className="w-5 h-5 text-blue-200" />}
               >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {languages.map((l) => {
-                      const selected = selectedLanguage === l.code;
-                      return (
-                        <button
-                          key={l.code}
-                          type="button"
-                          onClick={() => {
-                            triggerHaptic('light');
-                            setSelectedLanguage(l.code);
-                          }}
-                          className="rounded-2xl p-4 text-left relative transition-all duration-200"
-                          style={{
-                            background: selected 
-                              ? 'linear-gradient(135deg, rgba(139,92,246,0.20) 0%, rgba(139,92,246,0.12) 100%)' 
-                              : 'rgba(255,255,255,0.06)',
-                            border: selected 
-                              ? '2px solid rgba(139,92,246,0.65)' 
-                              : '1px solid rgba(255,255,255,0.12)',
-                            backdropFilter: 'blur(20px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                            boxShadow: selected 
-                              ? '0 4px 16px rgba(139,92,246,0.25), inset 0 1px 0 rgba(255,255,255,0.1)' 
-                              : '0 2px 8px rgba(0,0,0,0.1)',
-                          }}
-                        >
-                          <div className="text-[44px] leading-none">{l.flag}</div>
-                          <div className="mt-2 text-white font-semibold">{l.name}</div>
-                          <div className="text-white/60 text-sm">{l.native}</div>
-                          {selected ? <div className="absolute top-3 right-3 text-purple-200">✓</div> : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-
+                <div className="flex flex-col gap-6">
                   <div
-                    className="rounded-2xl p-5"
+                    className="rounded-2xl p-5 w-full"
                     style={{ 
                       background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
                       border: '1px solid rgba(255,255,255,0.14)',
@@ -412,11 +447,11 @@ export default function SecuritySetup() {
                       boxShadow: '0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
                     }}
                   >
-                    <div className="flex items-center gap-2 text-white/80 text-sm font-semibold">
-                      <Eye className="w-4 h-4 text-purple-200" />
+                    <div className="flex items-center gap-2 text-white/80 text-sm font-semibold mb-3">
+                      <Eye className="w-4 h-4 text-blue-200" />
                       Preview
                     </div>
-                    <div className="mt-3 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                    <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
                       <div className="text-white font-semibold">{preview.greeting}</div>
                       <div className="text-white/60 text-sm mt-1">{preview.dateLabel} • {preview.numLabel}</div>
                       <div className="mt-4 inline-flex items-center gap-2 px-3 h-9 rounded-xl" style={{ background: 'rgba(139,92,246,0.20)', border: '1px solid rgba(139,92,246,0.28)' }}>
@@ -430,7 +465,7 @@ export default function SecuritySetup() {
                         ))}
                       </div>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4">
                       <GlassButton
                         variant="secondary"
                         className="w-full"
@@ -438,15 +473,75 @@ export default function SecuritySetup() {
                           triggerHaptic('light');
                           if (!user?.id) return;
                           await supabase.from('user_settings').upsert({ user_id: user.id, language: selectedLanguage }, { onConflict: 'user_id' });
-                          await supabase.from('user_profiles').update({ language: selectedLanguage }).eq('user_id', user.id);
+                          try {
+                            const { error: profileError } = await supabase
+                              .from('user_profiles')
+                              .update({ language: selectedLanguage })
+                              .eq('user_id', user.id);
+                            if (profileError) {
+                              console.warn('Could not update user_profiles language:', profileError);
+                            }
+                          } catch (err) {
+                            console.warn('Error updating user_profiles language:', err);
+                          }
                           await changeLanguage(selectedLanguage, false);
-                          window.location.reload();
+                          showToast('Language updated successfully', 'success');
                         }}
                         disabled={saving}
                       >
-                        Apply Language (reload)
+                        Apply Language
                       </GlassButton>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-4">
+                    {languages.map((l) => {
+                      const selected = selectedLanguage === l.code;
+                      return (
+                        <div
+                          key={l.code}
+                          className="rounded-xl p-4 relative transition-all duration-200"
+                          style={{
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.12)',
+                            backdropFilter: 'blur(20px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic('light');
+                              setSelectedLanguage(l.code);
+                            }}
+                            className="w-full flex flex-col items-center justify-center text-center relative"
+                          >
+                            <div className="absolute top-1 right-1">
+                              <div
+                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200"
+                                style={{ 
+                                  background: selected 
+                                    ? 'linear-gradient(135deg, rgba(139,92,246,0.9) 0%, rgba(109,40,217,0.9) 100%)'
+                                    : 'rgba(255,255,255,0.12)',
+                                  border: selected 
+                                    ? '2px solid rgba(139,92,246,0.5)' 
+                                    : '2px solid rgba(255,255,255,0.2)',
+                                  boxShadow: selected 
+                                    ? '0 0 12px rgba(139,92,246,0.4)' 
+                                    : 'none',
+                                }}
+                              >
+                                {selected && <Check className="w-3 h-3 text-white" />}
+                              </div>
+                            </div>
+                            <div className="text-[32px] leading-none mb-2">{l.flag}</div>
+                            <div className="text-white font-semibold text-xs">{l.name}</div>
+                            <div className="text-white/60 text-[10px] mt-0.5">{l.native}</div>
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </Section>
@@ -455,7 +550,7 @@ export default function SecuritySetup() {
                 id="idle"
                 title="⏱️ Idle Timeout Protection"
                 subtitle="Auto-lock the app when inactive"
-                icon={<Shield className="w-5 h-5 text-purple-200" />}
+                icon={<Shield className="w-5 h-5 text-blue-200" />}
               >
                 <div className="flex items-center justify-between mt-2">
                   <div className="text-white/75 text-sm">Enable Idle Timeout</div>
@@ -613,7 +708,7 @@ export default function SecuritySetup() {
                 id="doclock"
                 title="🔒 Document Page Lock"
                 subtitle="Require a password to view documents"
-                icon={<Lock className="w-5 h-5 text-purple-200" />}
+                icon={<Lock className="w-5 h-5 text-blue-200" />}
               >
                 <div className="flex items-center justify-between mt-2">
                   <div className="text-white/75 text-sm">Lock Documents Page</div>
@@ -696,7 +791,7 @@ export default function SecuritySetup() {
                 id="2fa"
                 title="🔐 Two-Factor Authentication (2FA)"
                 subtitle="Highly recommended"
-                icon={<Shield className="w-5 h-5 text-purple-200" />}
+                icon={<Shield className="w-5 h-5 text-blue-200" />}
               >
                 <div className="flex items-center justify-between mt-2">
                   <div className="text-white/75 text-sm">Enable 2FA (Authenticator App)</div>
@@ -738,7 +833,7 @@ export default function SecuritySetup() {
                 id="notifications"
                 title="🔔 Notifications"
                 subtitle="Control channels (push/email/sms)"
-                icon={<Bell className="w-5 h-5 text-purple-200" />}
+                icon={<Bell className="w-5 h-5 text-blue-200" />}
               >
                 <div className="flex items-center justify-between mt-2">
                   <div className="text-white/75 text-sm">Enable Notifications</div>
@@ -804,7 +899,7 @@ export default function SecuritySetup() {
                 id="privacy"
                 title="🔒 Privacy & Data"
                 subtitle="Control analytics + features"
-                icon={<Eye className="w-5 h-5 text-purple-200" />}
+                icon={<Eye className="w-5 h-5 text-blue-200" />}
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
                   {[

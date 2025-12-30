@@ -29,8 +29,8 @@ export const AppleMobileMenu: React.FC<AppleMobileMenuProps> = ({
   // Actual DocuTrackr menu items based on authentication
   const menuItems = isAuthenticated
     ? [
-        { icon: Home, label: 'Dashboard', path: '/dashboard', color: '#8B5CF6' },
-        { icon: FileText, label: 'My Documents', path: '/documents', color: '#8B5CF6' },
+        { icon: Home, label: 'Dashboard', path: '/dashboard', color: '#2563EB' },
+        { icon: FileText, label: 'My Documents', path: '/documents', color: '#2563EB' },
         { icon: Calendar, label: 'Expiration Dates', path: '/dates', color: '#FF9500' },
         { icon: Users, label: 'Family Sharing', path: '/family', color: '#34C759' },
         { icon: Bell, label: 'Notifications', path: '/dashboard', color: '#FF3B30' },
@@ -38,8 +38,8 @@ export const AppleMobileMenu: React.FC<AppleMobileMenuProps> = ({
         { icon: Settings, label: 'Settings', path: '/settings', color: '#8E8E93' },
       ]
     : [
-        { icon: Home, label: 'Home', path: '/', color: '#8B5CF6' },
-        { icon: FileText, label: 'Features', path: '/#features', color: '#8B5CF6' },
+        { icon: Home, label: 'Home', path: '/', color: '#2563EB' },
+        { icon: FileText, label: 'Features', path: '/#features', color: '#2563EB' },
         { icon: Shield, label: 'Security', path: '/#security', color: '#5856D6' },
         { icon: Users, label: 'Family Sharing', path: '/#family', color: '#34C759' },
       ];

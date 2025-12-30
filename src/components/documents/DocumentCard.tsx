@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Document } from '../../types';
 import { formatDate, getDaysUntil, getUrgencyLevel, getUrgencyTextColor } from '../../utils/dateUtils';
-import { FileText, Calendar } from 'lucide-react';
+import { FileText, Calendar, CreditCard, Shield, Plane, DollarSign, Receipt, FileCheck, Home, Heart, GraduationCap, Briefcase } from 'lucide-react';
 import { triggerHaptic } from '../../utils/animations';
 import { useImageUrl } from '../../hooks/useImageUrl';
 
@@ -12,55 +12,53 @@ interface DocumentCardProps {
   onMarkRenewed: (document: Document) => void;
 }
 
+const DOCUMENT_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
+  passport: Plane,
+  visa: Plane,
+  national_id: CreditCard,
+  driver_license: CreditCard,
+  id_card: CreditCard,
+  insurance: Shield,
+  health_insurance: Heart,
+  auto_insurance: Shield,
+  home_insurance: Home,
+  subscription: Receipt,
+  receipt: Receipt,
+  bill: FileText,
+  contract: FileCheck,
+  bank_statement: DollarSign,
+  credit_card: CreditCard,
+  professional_license: Briefcase,
+  academic_transcript: GraduationCap,
+  other: FileText,
+};
+
 // Document type colors matching grid cards
 const getDocumentTypeColor = (type: string): { bg: string; border: string; text: string } => {
   const colors: Record<string, { bg: string; border: string; text: string }> = {
-    passport: {
-      bg: 'rgba(59, 130, 246, 0.2)',
-      border: 'rgba(59, 130, 246, 0.5)',
-      text: '#60A5FA',
-    },
-    visa: {
-      bg: 'rgba(16, 185, 129, 0.2)',
-      border: 'rgba(16, 185, 129, 0.5)',
-      text: '#34D399',
-    },
-    id_card: {
-      bg: 'rgba(139, 92, 246, 0.2)',
-      border: 'rgba(139, 92, 246, 0.5)',
-      text: '#A78BFA',
-    },
-    insurance: {
-      bg: 'rgba(236, 72, 153, 0.2)',
-      border: 'rgba(236, 72, 153, 0.5)',
-      text: '#F472B6',
-    },
-    subscription: {
-      bg: 'rgba(245, 158, 11, 0.2)',
-      border: 'rgba(245, 158, 11, 0.5)',
-      text: '#FBBF24',
-    },
-    receipt: {
-      bg: 'rgba(34, 197, 94, 0.2)',
-      border: 'rgba(34, 197, 94, 0.5)',
-      text: '#4ADE80',
-    },
-    bill: {
-      bg: 'rgba(239, 68, 68, 0.2)',
-      border: 'rgba(239, 68, 68, 0.5)',
-      text: '#F87171',
-    },
-    contract: {
-      bg: 'rgba(99, 102, 241, 0.2)',
-      border: 'rgba(99, 102, 241, 0.5)',
-      text: '#818CF8',
-    },
+    passport: { bg: 'rgba(59, 130, 246, 0.25)', border: 'rgba(96, 165, 250, 0.6)', text: '#60A5FA' },
+    visa: { bg: 'rgba(16, 185, 129, 0.25)', border: 'rgba(52, 211, 153, 0.6)', text: '#34D399' },
+    national_id: { bg: 'rgba(139, 92, 246, 0.25)', border: 'rgba(167, 139, 250, 0.6)', text: '#A78BFA' },
+    driver_license: { bg: 'rgba(234, 179, 8, 0.25)', border: 'rgba(251, 191, 36, 0.6)', text: '#FBBF24' },
+    id_card: { bg: 'rgba(139, 92, 246, 0.25)', border: 'rgba(167, 139, 250, 0.6)', text: '#A78BFA' },
+    insurance: { bg: 'rgba(236, 72, 153, 0.25)', border: 'rgba(244, 114, 182, 0.6)', text: '#F472B6' },
+    health_insurance: { bg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(248, 113, 113, 0.6)', text: '#F87171' },
+    auto_insurance: { bg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(251, 191, 36, 0.6)', text: '#FBBF24' },
+    home_insurance: { bg: 'rgba(99, 102, 241, 0.25)', border: 'rgba(129, 140, 248, 0.6)', text: '#818CF8' },
+    subscription: { bg: 'rgba(168, 85, 247, 0.25)', border: 'rgba(192, 132, 252, 0.6)', text: '#C084FC' },
+    receipt: { bg: 'rgba(34, 197, 94, 0.25)', border: 'rgba(74, 222, 128, 0.6)', text: '#4ADE80' },
+    bill: { bg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(248, 113, 113, 0.6)', text: '#F87171' },
+    contract: { bg: 'rgba(99, 102, 241, 0.25)', border: 'rgba(129, 140, 248, 0.6)', text: '#818CF8' },
+    bank_statement: { bg: 'rgba(16, 185, 129, 0.25)', border: 'rgba(52, 211, 153, 0.6)', text: '#34D399' },
+    credit_card: { bg: 'rgba(234, 88, 12, 0.25)', border: 'rgba(251, 146, 60, 0.6)', text: '#FB923C' },
+    professional_license: { bg: 'rgba(14, 165, 233, 0.25)', border: 'rgba(56, 189, 248, 0.6)', text: '#38BDF8' },
+    academic_transcript: { bg: 'rgba(168, 85, 247, 0.25)', border: 'rgba(192, 132, 252, 0.6)', text: '#C084FC' },
   };
-  
+
   return colors[type] || {
-    bg: 'rgba(139, 92, 246, 0.2)',
-    border: 'rgba(139, 92, 246, 0.5)',
-    text: '#A78BFA',
+    bg: 'rgba(37, 99, 235, 0.25)',
+    border: 'rgba(96, 165, 250, 0.6)',
+    text: '#60A5FA',
   };
 };
 
@@ -79,6 +77,7 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
   const { signedUrl: imageUrl, loading: imageLoading } = useImageUrl(document.image_url);
   const [imageError, setImageError] = useState(false);
   const typeColors = getDocumentTypeColor(document.document_type);
+  const Icon = DOCUMENT_TYPE_ICONS[document.document_type] || FileText;
 
   const handleClick = () => {
     triggerHaptic('light');
@@ -93,7 +92,14 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
       whileHover={{ y: -4, scale: 1.01 }}
       whileTap={{ scale: 0.98 }}
       onClick={handleClick}
-      className="glass-card-elevated glass-tiled rounded-[28px] overflow-hidden cursor-pointer"
+      className="rounded-[28px] overflow-hidden cursor-pointer"
+      style={{
+        background: 'var(--glass-bg-primary)',
+        border: 'var(--glass-border-subtle)',
+        backdropFilter: 'blur(40px) saturate(120%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+        boxShadow: 'var(--glass-shadow-md), var(--glass-glow-top)',
+      }}
     >
       <div className="flex h-[120px]">
         {/* Image Section - Thumbnail on left */}
@@ -146,14 +152,14 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
                   border: `1px solid ${typeColors.border}`,
                 }}
               >
-                <FileText className="w-3.5 h-3.5" style={{ color: typeColors.text }} />
-                <span className="text-[11px] font-medium" style={{ color: typeColors.text }}>
+                <Icon className="w-3.5 h-3.5" style={{ color: typeColors.text }} />
+                <span className="text-[11px] font-semibold" style={{ color: typeColors.text }}>
                   {formatDocumentType(document.document_type)}
                 </span>
       </div>
 
               {/* Document name */}
-              <h3 className="text-[14px] font-bold text-white leading-tight truncate">
+              <h3 className="text-[14px] font-bold leading-tight truncate" style={{ color: 'var(--text-primary)' }}>
         {document.document_name}
       </h3>
             </div>
@@ -176,8 +182,8 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
 
               {/* Date with icon */}
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" style={{ color: '#FFFFFF' }} />
-                <span className="text-[13px] font-semibold text-white">
+                <Calendar className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+                <span className="text-[13px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
                   {formatDate(document.expiration_date)}
                 </span>
               </div>
@@ -195,10 +201,10 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
               }}
               className="flex-1 flex items-center justify-center py-2.5 px-3 rounded-xl font-semibold text-[13px] transition-all"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(18px)',
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                color: '#FFFFFF',
+                background: 'var(--glass-bg-secondary)',
+                backdropFilter: 'blur(30px)',
+                border: 'var(--glass-border-subtle)',
+                color: 'var(--color-primary)',
               }}
             >
               <span>View</span>
@@ -214,8 +220,8 @@ export default function DocumentCard({ document, onMarkRenewed }: DocumentCardPr
           }}
               className="flex-1 flex items-center justify-center py-2.5 px-3 rounded-xl font-semibold text-[13px] transition-all text-white"
               style={{
-                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
+                background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                boxShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
               }}
             >
               <span>Mark Renewed</span>

@@ -13,9 +13,9 @@ export default function FloatingActionButton({ onClick }: FloatingActionButtonPr
           animate={{
             scale: 1,
             boxShadow: [
-              '0 5px 15px rgba(139, 92, 246, 0.4)',
-              '0 5px 25px rgba(139, 92, 246, 0.6)',
-              '0 5px 15px rgba(139, 92, 246, 0.4)',
+              '0 5px 15px rgba(37, 99, 235, 0.4)',
+              '0 5px 25px rgba(37, 99, 235, 0.6)',
+              '0 5px 15px rgba(37, 99, 235, 0.4)',
             ],
           }}
           transition={{
@@ -31,14 +31,14 @@ export default function FloatingActionButton({ onClick }: FloatingActionButtonPr
       className="
         fixed bottom-[100px] right-5 md:right-6 z-40
         w-14 h-14 md:w-16 md:h-16 rounded-full
-        bg-gradient-to-br from-purple-600 to-purple-700
+        bg-gradient-to-br from-blue-800 to-blue-800
         text-white
         flex items-center justify-center
         touch-manipulation
         select-none
       "
       style={{
-        boxShadow: '0 8px 32px rgba(139, 92, 246, 0.6)',
+        boxShadow: '0 8px 32px rgba(37, 99, 235, 0.6)',
       }}
       aria-label="Add Document"
     >

@@ -107,16 +107,16 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange }: Cat
             height: '48px',
             fontSize: '16px',
             background: selectedCategory === 'all' 
-              ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+              ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
               : 'rgba(35, 29, 51, 0.6)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             color: '#FFFFFF',
             border: selectedCategory === 'all' 
-              ? '1px solid rgba(139, 92, 246, 0.5)'
+              ? '1px solid rgba(37, 99, 235, 0.5)'
               : '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: selectedCategory === 'all' 
-              ? '0 4px 20px rgba(139, 92, 246, 0.4)'
+              ? '0 4px 20px rgba(37, 99, 235, 0.4)'
               : 'none',
           }}
         >
@@ -152,7 +152,7 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange }: Cat
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255, 255, 255, 0.15)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(139, 92, 246, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(37, 99, 235, 0.2)',
                 }}
               >
                 <div className="py-2 max-h-[400px] overflow-y-auto">
@@ -173,7 +173,7 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange }: Cat
                         className="w-full flex items-center gap-3 px-4 py-3 transition-all duration-200"
                         style={{
                           background: isActive 
-                            ? 'rgba(139, 92, 246, 0.2)' 
+                            ? 'rgba(37, 99, 235, 0.2)' 
                             : 'transparent',
                         }}
                       >
@@ -181,7 +181,7 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange }: Cat
                           className="flex items-center justify-center w-8 h-8 rounded-full transition-all"
                           style={{
                             background: isActive
-                              ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+                              ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
                               : 'rgba(255, 255, 255, 0.05)',
                           }}
                         >
@@ -202,7 +202,7 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange }: Cat
                             animate={{ scale: 1 }}
                             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                           >
-                            <Check className="w-5 h-5 text-purple-400" />
+                            <Check className="w-5 h-5 text-blue-400" />
                           </motion.div>
                         )}
                       </motion.button>
@@ -245,9 +245,9 @@ export default function CategoryTabs({ selectedCategory, onCategoryChange }: Cat
               style={isActive ? {
                 height: '36px',
                 fontSize: '15px',
-                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                 color: '#FFFFFF',
-                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
+                boxShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
                 transform: 'translateY(-2px)',
               } : {
                 height: '36px',

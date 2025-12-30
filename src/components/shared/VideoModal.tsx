@@ -197,9 +197,9 @@ export default function VideoModal({
               style={{
                 background: 'rgba(26, 22, 37, 0.8)',
                 backdropFilter: 'blur(30px)',
-                border: '2px solid rgba(139, 92, 246, 0.4)',
+                border: '2px solid rgba(37, 99, 235, 0.4)',
                 borderRadius: '24px',
-                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(139, 92, 246, 0.3)',
+                boxShadow: '0 30px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(37, 99, 235, 0.3)',
                 overflow: 'hidden',
               }}
               onClick={(e) => e.stopPropagation()}
@@ -208,8 +208,8 @@ export default function VideoModal({
               <motion.button
                 whileHover={{ 
                   scale: 1.1,
-                  background: 'rgba(139, 92, 246, 0.9)',
-                  boxShadow: '0 0 30px rgba(139, 92, 246, 0.6)',
+                  background: 'rgba(37, 99, 235, 0.9)',
+                  boxShadow: '0 0 30px rgba(37, 99, 235, 0.6)',
                 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
@@ -293,8 +293,8 @@ export default function VideoModal({
                               onClick={handleGetStarted}
                               className="px-8 py-3 rounded-xl font-semibold text-white"
                               style={{
-                                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
+                                background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                                boxShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
                               }}
                             >
                               Create Free Account

@@ -298,7 +298,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
               backdropFilter: 'blur(25px)',
               WebkitBackdropFilter: 'blur(25px)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
-              boxShadow: '0 -16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+              boxShadow: '0 -16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(37, 99, 235, 0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -321,7 +321,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-500/20 active:bg-blue-500/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -377,11 +377,11 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                         fileInputRef.current?.click();
                       }}
                       className="w-full text-sm font-semibold h-[44px] flex items-center justify-center hover:opacity-90 transition-opacity rounded-lg shadow-lg"
-                      style={{ 
+                      style={{
                         color: '#FFFFFF',
-                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
-                        border: '1px solid rgba(139, 92, 246, 0.6)',
-                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(30, 64, 175, 0.4))',
+                        border: '1px solid rgba(37, 99, 235, 0.6)',
+                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
                       }}
                     >
                       Change Image
@@ -395,7 +395,7 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                       background: 'rgba(35, 29, 51, 0.5)',
                     }}
                   >
-                    <ImageIcon className="w-8 h-8 mb-2" style={{ color: '#A78BFA', opacity: 0.9 }} />
+                    <ImageIcon className="w-8 h-8 mb-2" style={{ color: '#60A5FA', opacity: 0.9 }} />
                     <button
                       type="button"
                       onClick={() => {
@@ -403,11 +403,11 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                         fileInputRef.current?.click();
                       }}
                       className="text-xs font-semibold h-[36px] px-4 py-2 rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity shadow-lg"
-                      style={{ 
+                      style={{
                         color: '#FFFFFF',
-                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
-                        border: '1px solid rgba(139, 92, 246, 0.6)',
-                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(30, 64, 175, 0.4))',
+                        border: '1px solid rgba(37, 99, 235, 0.6)',
+                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
                       }}
                     >
                       Select Image
@@ -479,10 +479,10 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                         ? 'rgba(239, 68, 68, 0.1)'
                         : 'rgba(35, 29, 51, 0.6)',
                       backdropFilter: 'blur(15px)',
-                      color: watchedIssueDate ? '#FFFFFF' : '#A78BFA',
+                      color: watchedIssueDate ? '#FFFFFF' : '#60A5FA',
                     }}
                   >
-                    <Calendar className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                    <Calendar className="w-5 h-5" style={{ color: '#60A5FA' }} />
                     <span>
                       {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : `Select ${fieldConfig.issueDateLabel.toLowerCase()}`}
                     </span>
@@ -521,10 +521,10 @@ export default function QuickAddModal({ isOpen, onClose, onSuccess }: QuickAddMo
                       ? 'rgba(239, 68, 68, 0.1)'
                       : 'rgba(35, 29, 51, 0.6)',
                     backdropFilter: 'blur(15px)',
-                    color: watchedExpirationDate ? '#FFFFFF' : '#A78BFA',
+                    color: watchedExpirationDate ? '#FFFFFF' : '#60A5FA',
                   }}
                 >
-                  <AlertCircle className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <AlertCircle className="w-5 h-5" style={{ color: '#60A5FA' }} />
                   <span>
                     {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
                   </span>

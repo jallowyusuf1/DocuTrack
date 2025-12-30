@@ -13,12 +13,18 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { triggerHaptic } from '../../utils/animations';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 type TabType = 'all' | 'unread';
 
 export default function Notifications() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('notifications');
+
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [notifications, setNotifications] = useState<(Notification & { documents?: { id: string; document_name: string; expiration_date: string; document_type: string } })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -174,7 +180,16 @@ export default function Notifications() {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Notifications"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
+
+      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
       <main className="flex-1 pb-20 pt-4 md:pt-6 px-4 md:px-6 safe-area-bottom">
         <div className="max-w-4xl mx-auto md:max-w-[700px]">
           {/* Header */}
@@ -197,9 +212,9 @@ export default function Notifications() {
               onClick={handleMarkAllAsRead}
               className="w-full mb-6 py-3 md:py-[14px] rounded-xl font-medium text-white transition-all"
               style={{
-                background: 'rgba(139, 92, 246, 0.2)',
+                background: 'rgba(37, 99, 235, 0.2)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(139, 92, 246, 0.5)',
+                border: '1px solid rgba(37, 99, 235, 0.5)',
                 height: '40px',
               }}
               data-tablet-action="true"
@@ -276,7 +291,8 @@ export default function Notifications() {
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -411,11 +427,11 @@ function NotificationCard({
         style={{
           background: notification.is_read
             ? 'rgba(55, 48, 70, 0.6)'
-            : 'rgba(139, 92, 246, 0.15)',
+            : 'rgba(37, 99, 235, 0.15)',
           backdropFilter: 'blur(10px)',
           border: notification.is_read
             ? '1px solid rgba(255, 255, 255, 0.15)'
-            : '1px solid rgba(139, 92, 246, 0.3)',
+            : '1px solid rgba(37, 99, 235, 0.3)',
           height: '80px',
         }}
         data-tablet-notification="true"
@@ -434,8 +450,8 @@ function NotificationCard({
             className="flex-shrink-0 w-11 h-11 md:w-[52px] md:h-[52px] rounded-full flex items-center justify-center text-2xl md:text-3xl"
             style={{
               background: notification.is_read
-                ? 'rgba(139, 92, 246, 0.2)'
-                : 'rgba(139, 92, 246, 0.3)',
+                ? 'rgba(37, 99, 235, 0.2)'
+                : 'rgba(37, 99, 235, 0.3)',
             }}
           >
             {getNotificationIcon(notification.notification_type)}
@@ -453,8 +469,8 @@ function NotificationCard({
               </h3>
               {!notification.is_read && (
                 <div
-                  className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0 mt-2"
-                  style={{ boxShadow: '0 0 8px rgba(139, 92, 246, 0.6)' }}
+                  className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"
+                  style={{ boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)' }}
                 />
               )}
             </div>
@@ -467,7 +483,7 @@ function NotificationCard({
                   ).body
                 : 'Document notification'}
             </p>
-            <p className="text-xs md:text-sm text-purple-400">
+            <p className="text-xs md:text-sm text-blue-400">
               {formatTimeAgo(notification.created_at)}
             </p>
           </div>
@@ -529,9 +545,9 @@ function EmptyState() {
         }
       `}</style>
       <div
-        className="w-20 h-20 md:w-[100px] md:h-[100px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4 md:mb-6"
+        className="w-20 h-20 md:w-[100px] md:h-[100px] rounded-full bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center mx-auto mb-4 md:mb-6"
         style={{
-          boxShadow: '0 0 40px rgba(139, 92, 246, 0.5)',
+          boxShadow: '0 0 40px rgba(37, 99, 235, 0.5)',
         }}
       >
         <Bell className="w-10 h-10 md:w-12 md:h-12 text-white" />

@@ -76,7 +76,7 @@ export default function BackupCodesModal({ isOpen, onClose, userId }: BackupCode
               style={{
                 background: 'rgba(26, 22, 37, 0.95)',
                 backdropFilter: 'blur(40px)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
               }}
             >
@@ -92,7 +92,7 @@ export default function BackupCodesModal({ isOpen, onClose, userId }: BackupCode
 
               {loading ? (
                 <div className="text-center py-8">
-                  <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                   <p className="text-gray-400">Loading backup codes...</p>
                 </div>
               ) : unusedCodes.length === 0 ? (

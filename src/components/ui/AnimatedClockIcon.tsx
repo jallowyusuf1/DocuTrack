@@ -45,7 +45,7 @@ export default function AnimatedClockIcon({
     }
   };
 
-  const color = isActive ? '#A78BFA' : '#C7C3D9';
+  const color = isActive ? '#60A5FA' : '#C7C3D9';
 
   return (
     <svg

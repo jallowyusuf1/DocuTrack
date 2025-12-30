@@ -418,8 +418,8 @@ export function GlassProgressBar({
           className="h-full rounded-full transition-all duration-300"
           style={{
             width: `${clampedProgress}%`,
-            background: 'linear-gradient(90deg, var(--accent-purple-start) 0%, var(--accent-purple-end) 100%)',
-            boxShadow: '0 0 12px rgba(139, 92, 246, 0.6)',
+            background: 'linear-gradient(90deg, var(--accent-blue-start) 0%, var(--accent-blue-end) 100%)',
+            boxShadow: '0 0 12px rgba(37, 99, 235, 0.6)',
           }}
         />
       </div>

@@ -1,62 +1,123 @@
 /**
  * OCR Utility - Extract text from document images
  * Uses Tesseract.js for client-side OCR processing
+ * Enhanced with multi-language support
  */
 
-interface OCRResult {
-  text: string;
-  confidence: number;
-  fields?: {
-    documentNumber?: string;
-    expirationDate?: string;
-    issueDate?: string;
-    name?: string;
-  };
+import { getTesseractCode, DATE_FORMATS_BY_LANGUAGE } from '../constants/languages';
+import type { OCRResult } from '../types';
+
+interface OCROptions {
+  language?: string; // Language code (e.g., 'en', 'es', 'ar')
+  progressCallback?: (progress: number) => void;
 }
 
 /**
- * Extract text from an image file using OCR
+ * Extract text from an image file using OCR with multi-language support
  */
-export async function extractTextFromImage(file: File): Promise<OCRResult> {
+export async function extractTextFromImage(
+  file: File,
+  options: OCROptions = {}
+): Promise<OCRResult> {
   try {
+    const { language = 'en', progressCallback } = options;
+
+    // Get Tesseract language code
+    const tesseractLang = getTesseractCode(language);
+
+    console.log(`[OCR] Starting extraction with language: ${language} (Tesseract: ${tesseractLang})`);
+
     // Dynamically import Tesseract to avoid loading it if not needed
     const Tesseract = await import('tesseract.js');
-    
-    const worker = await Tesseract.createWorker('eng', 1, {
+
+    const worker = await Tesseract.createWorker(tesseractLang, 1, {
       logger: (m) => {
-        // Log progress if needed
+        // Log and report progress
         if (m.status === 'recognizing text') {
-          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+          const progress = Math.round(m.progress * 100);
+          console.log(`[OCR] Progress: ${progress}%`);
+          progressCallback?.(progress);
         }
       },
     });
 
     // Perform OCR
+    console.log('[OCR] Recognizing text...');
     const { data } = await worker.recognize(file);
-    
+
     // Terminate worker
     await worker.terminate();
 
-    // Extract structured fields from OCR text
-    const fields = extractFieldsFromText(data.text);
+    console.log(`[OCR] Extraction complete. Confidence: ${data.confidence}%`);
+
+    // Extract structured fields from OCR text (language-aware)
+    const fields = extractFieldsFromText(data.text, language);
 
     return {
       text: data.text,
       confidence: data.confidence || 0,
+      language,
       fields,
     };
   } catch (error) {
-    console.error('OCR extraction failed:', error);
+    console.error('[OCR] Extraction failed:', error);
     throw new Error('Failed to extract text from image. Please try again or enter details manually.');
+  }
+}
+
+/**
+ * Extract text with automatic language detection
+ * First detects language, then performs OCR with correct language
+ */
+export async function extractTextWithAutoLanguage(
+  file: File,
+  preferredLanguages?: string[],
+  progressCallback?: (progress: number) => void
+): Promise<OCRResult & { detectedLanguage: string }> {
+  try {
+    console.log('[OCR] Auto-language extraction starting...');
+
+    // Import language detection
+    const { detectLanguageSmart } = await import('../services/languageDetection');
+
+    // Step 1: Detect language (0-30% progress)
+    progressCallback?.(10);
+    const detection = await detectLanguageSmart(file, {
+      preferredLanguages,
+      autoDetect: true
+    });
+
+    console.log(`[OCR] Detected language: ${detection.languageName} (${detection.confidence}%)`);
+    progressCallback?.(30);
+
+    // Step 2: Perform OCR with detected language (30-100% progress)
+    const result = await extractTextFromImage(file, {
+      language: detection.languageCode,
+      progressCallback: (ocrProgress) => {
+        // Map OCR progress from 30-100%
+        const totalProgress = 30 + (ocrProgress * 0.7);
+        progressCallback?.(Math.round(totalProgress));
+      }
+    });
+
+    return {
+      ...result,
+      detectedLanguage: detection.languageCode,
+      confidence: Math.min(result.confidence, detection.confidence) // Use lower confidence
+    };
+  } catch (error) {
+    console.error('[OCR] Auto-language extraction failed:', error);
+    throw new Error('Failed to extract text with automatic language detection.');
   }
 }
 
 /**
  * Extract structured fields from OCR text
  * Attempts to identify document number, dates, and names
+ * Language-aware extraction
  */
-function extractFieldsFromText(text: string): OCRResult['fields'] {
-  const fields: OCRResult['fields'] = {};
+function extractFieldsFromText(text: string, language: string = 'en'): NonNullable<OCRResult['fields']> {
+  const fields: NonNullable<OCRResult['fields']> = {};
   
   // Clean text
   const cleanText = text.replace(/\s+/g, ' ').trim();
@@ -84,8 +145,8 @@ function extractFieldsFromText(text: string): OCRResult['fields'] {
     }
   });
 
-  // Try to identify expiration date (usually the latest date or contains "exp", "expiry", "valid until")
-  const expiryKeywords = /(exp|expiry|expires|valid until|valid thru)/i;
+  // Try to identify expiration date (language-aware keywords)
+  const expiryKeywords = getExpiryKeywords(language);
   const expirySection = cleanText.split('\n').find(line => expiryKeywords.test(line));
   
   if (expirySection && dates.length > 0) {
@@ -99,8 +160,8 @@ function extractFieldsFromText(text: string): OCRResult['fields'] {
     fields.expirationDate = normalizeDate(dates[dates.length - 1]);
   }
 
-  // Extract issue date (usually earlier date or contains "issue", "issued")
-  const issueKeywords = /(issue|issued|date of issue)/i;
+  // Extract issue date (language-aware keywords)
+  const issueKeywords = getIssueKeywords(language);
   const issueSection = cleanText.split('\n').find(line => issueKeywords.test(line));
   
   if (issueSection && dates.length > 0) {
@@ -113,8 +174,8 @@ function extractFieldsFromText(text: string): OCRResult['fields'] {
     fields.issueDate = normalizeDate(dates[0]);
   }
 
-  // Extract name (usually appears near "name", "full name", "holder", etc.)
-  const nameKeywords = /(name|full name|holder|bearer)/i;
+  // Extract name (language-aware keywords)
+  const nameKeywords = getNameKeywords(language);
   const nameSection = cleanText.split('\n').find(line => nameKeywords.test(line));
   
   if (nameSection) {
@@ -173,6 +234,60 @@ function normalizeDate(dateStr: string): string {
 }
 
 /**
+ * Language-aware keyword patterns for field extraction
+ */
+function getExpiryKeywords(language: string): RegExp {
+  const keywords: Record<string, string[]> = {
+    en: ['exp', 'expiry', 'expires', 'valid until', 'valid thru', 'expiration'],
+    es: ['exp', 'caduca', 'caducidad', 'válido hasta', 'vence', 'vencimiento'],
+    fr: ['exp', 'expire', 'expiration', 'valable jusqu', 'validité'],
+    de: ['gültig bis', 'ablauf', 'verfällt', 'gültigkeit'],
+    ar: ['انتهاء', 'صلاحية', 'تاريخ الانتهاء'],
+    pt: ['exp', 'validade', 'expira', 'válido até'],
+    it: ['scad', 'scadenza', 'valido fino'],
+    ru: ['срок действия', 'действителен до'],
+    zh: ['有效期', '到期', '失效']
+  };
+
+  const langKeywords = keywords[language] || keywords['en'];
+  return new RegExp(`(${langKeywords.join('|')})`, 'i');
+}
+
+function getIssueKeywords(language: string): RegExp {
+  const keywords: Record<string, string[]> = {
+    en: ['issue', 'issued', 'date of issue', 'issued on'],
+    es: ['emisión', 'fecha de emisión', 'expedición'],
+    fr: ['émission', 'date d\'émission', 'délivré'],
+    de: ['ausgestellt', 'ausgabe', 'ausstellungsdatum'],
+    ar: ['إصدار', 'تاريخ الإصدار'],
+    pt: ['emissão', 'data de emissão', 'emitido'],
+    it: ['emissione', 'data di emissione', 'rilascio'],
+    ru: ['выдан', 'дата выдачи'],
+    zh: ['签发', '颁发日期']
+  };
+
+  const langKeywords = keywords[language] || keywords['en'];
+  return new RegExp(`(${langKeywords.join('|')})`, 'i');
+}
+
+function getNameKeywords(language: string): RegExp {
+  const keywords: Record<string, string[]> = {
+    en: ['name', 'full name', 'holder', 'bearer', 'surname', 'given name'],
+    es: ['nombre', 'apellidos', 'titular', 'portador'],
+    fr: ['nom', 'prénom', 'titulaire', 'porteur'],
+    de: ['name', 'nachname', 'vorname', 'inhaber'],
+    ar: ['الاسم', 'اسم', 'حامل'],
+    pt: ['nome', 'sobrenome', 'titular', 'portador'],
+    it: ['nome', 'cognome', 'titolare', 'portatore'],
+    ru: ['имя', 'фамилия', 'владелец'],
+    zh: ['姓名', '名', '持有人']
+  };
+
+  const langKeywords = keywords[language] || keywords['en'];
+  return new RegExp(`(${langKeywords.join('|')})`, 'i');
+}
+
+/**
  * Check if OCR is available (Tesseract.js can be loaded)
  */
 export async function isOCRAvailable(): Promise<boolean> {
@@ -180,6 +295,24 @@ export async function isOCRAvailable(): Promise<boolean> {
     await import('tesseract.js');
     return true;
   } catch {
+    return false;
+  }
+}
+
+/**
+ * Download language data for offline OCR (optional enhancement)
+ * Downloads Tesseract language data for specified languages
+ */
+export async function downloadLanguageData(languageCode: string): Promise<boolean> {
+  try {
+    const tesseractCode = getTesseractCode(languageCode);
+    console.log(`[OCR] Downloading language data for ${tesseractCode}...`);
+
+    // Tesseract.js automatically downloads language data when needed
+    // This function is a placeholder for future enhancements
+    return true;
+  } catch (error) {
+    console.error('[OCR] Language data download failed:', error);
     return false;
   }
 }

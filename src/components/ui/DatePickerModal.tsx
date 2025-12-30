@@ -165,7 +165,7 @@ export default function DatePickerModal({
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -173,8 +173,8 @@ export default function DatePickerModal({
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={handleClear}
-                className="text-sm font-medium px-3 py-1 rounded-lg hover:bg-purple-500/20 transition-colors"
-                style={{ color: '#A78BFA' }}
+                className="text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-600/20 transition-colors"
+                style={{ color: '#60A5FA' }}
               >
                 Clear
               </motion.button>
@@ -185,7 +185,7 @@ export default function DatePickerModal({
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={goToPreviousMonth}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
               </motion.button>
@@ -195,7 +195,7 @@ export default function DatePickerModal({
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={goToNextMonth}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <ChevronRight className="w-5 h-5 text-white" />
               </motion.button>
@@ -217,7 +217,7 @@ export default function DatePickerModal({
                   <div
                     key={day}
                     className="text-center text-xs md:text-sm font-medium py-2"
-                    style={{ color: '#A78BFA' }}
+                    style={{ color: '#60A5FA' }}
                   >
                     {day}
                   </div>
@@ -263,9 +263,9 @@ export default function DatePickerModal({
                         fontSize: '22px',
                         ...(isSelected
                           ? {
-                              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                               color: '#FFFFFF',
-                              boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+                              boxShadow: '0 0 20px rgba(37, 99, 235, 0.5)',
                             }
                           : isTodayDate
                           ? {

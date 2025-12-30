@@ -69,12 +69,12 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
               triggerHaptic('light');
               onDecline();
             }}
-            className="p-2 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="p-2 rounded-lg hover:bg-blue-600/20 transition-colors"
           >
             <X className="w-6 h-6 text-white" />
           </motion.button>
           <div className="flex items-center gap-3">
-            <Icon className="w-6 h-6" style={{ color: '#A78BFA' }} />
+            <Icon className="w-6 h-6" style={{ color: '#60A5FA' }} />
             <h2 className="text-xl font-bold text-white">{title}</h2>
           </div>
           <div className="w-10" /> {/* Spacer for centering */}
@@ -87,26 +87,26 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
           className="flex-1 overflow-y-auto px-5 py-6"
           style={{
             scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(139, 92, 246, 0.5) transparent',
+            scrollbarColor: 'rgba(37, 99, 235, 0.5) transparent',
           }}
         >
           <div className="max-w-4xl mx-auto">
             {type === 'terms' ? (
               <div className="space-y-6">
-                <p className="text-sm" style={{ color: '#A78BFA' }}>
+                <p className="text-sm" style={{ color: '#60A5FA' }}>
                   Last updated: {new Date().toLocaleDateString()}
                 </p>
                 <section>
                   <h2 className="text-lg font-bold text-white mb-3">1. Acceptance of Terms</h2>
                   <p className="text-sm" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
-                    By accessing and using DocuTrack, you accept and agree to be bound by these Terms of Service.
+                    By accessing and using DocuTrackr, you accept and agree to be bound by these Terms of Service.
                     If you do not agree to these terms, please do not use our service.
                   </p>
                 </section>
                 <section>
                   <h2 className="text-lg font-bold text-white mb-3">2. Description of Service</h2>
                   <p className="text-sm" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
-                    DocuTrack is a document tracking application that helps you manage document expiration dates
+                    DocuTrackr is a document tracking application that helps you manage document expiration dates
                     and receive reminders. We provide tools to organize, track, and receive notifications about
                     your important documents.
                   </p>
@@ -114,7 +114,7 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
                 <section>
                   <h2 className="text-lg font-bold text-white mb-3">3. User Accounts</h2>
                   <p className="text-sm mb-4" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
-                    To use DocuTrack, you must:
+                    To use DocuTrackr, you must:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-sm ml-4" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
                     <li>Provide accurate and complete information</li>
@@ -139,7 +139,7 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
                 <section>
                   <h2 className="text-lg font-bold text-white mb-3">5. Intellectual Property</h2>
                   <p className="text-sm" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
-                    All content, features, and functionality of DocuTrack are owned by us and are protected by
+                    All content, features, and functionality of DocuTrackr are owned by us and are protected by
                     international copyright, trademark, and other intellectual property laws.
                   </p>
                 </section>
@@ -153,7 +153,7 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
                 <section>
                   <h2 className="text-lg font-bold text-white mb-3">7. Limitation of Liability</h2>
                   <p className="text-sm" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
-                    DocuTrack is provided "as is" without warranties of any kind. We are not liable for any
+                    DocuTrackr is provided "as is" without warranties of any kind. We are not liable for any
                     damages arising from your use of the service.
                   </p>
                 </section>
@@ -167,13 +167,13 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
               </div>
             ) : (
               <div className="space-y-6">
-                <p className="text-sm" style={{ color: '#A78BFA' }}>
+                <p className="text-sm" style={{ color: '#60A5FA' }}>
                   Last updated: {new Date().toLocaleDateString()}
                 </p>
                 <section>
                   <h2 className="text-lg font-bold text-white mb-3">1. Information We Collect</h2>
                   <p className="text-sm mb-4" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
-                    DocuTrack collects the following information to provide our services:
+                    DocuTrackr collects the following information to provide our services:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-sm ml-4" style={{ color: '#C7C3D9', lineHeight: '1.7' }}>
                     <li>Account information (email, name)</li>
@@ -249,7 +249,7 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className="flex items-center justify-center gap-2 mb-3"
-                style={{ color: '#A78BFA' }}
+                style={{ color: '#60A5FA' }}
               >
                 <ArrowDown className="w-4 h-4 animate-bounce" />
                 <span className="text-sm">Scroll to read all terms</span>
@@ -285,10 +285,10 @@ export default function TermsModal({ type, isOpen, onAccept, onDecline }: TermsM
               className="flex-1 h-12 rounded-xl font-semibold text-white transition-all"
               style={{
                 background: hasScrolledToBottom
-                  ? 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)'
+                  ? 'linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)'
                   : 'rgba(107, 102, 126, 0.3)',
                 boxShadow: hasScrolledToBottom
-                  ? '0 4px 20px rgba(139, 92, 246, 0.5)'
+                  ? '0 4px 20px rgba(37, 99, 235, 0.5)'
                   : 'none',
                 cursor: hasScrolledToBottom ? 'pointer' : 'not-allowed',
                 opacity: hasScrolledToBottom ? 1 : 0.5,

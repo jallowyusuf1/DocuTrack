@@ -108,7 +108,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search categories..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
               style={{ width: '600px' }}
             />
           </div>
@@ -124,7 +124,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                 onMouseLeave={() => setHoveredCategory(null)}
                 onClick={() => onSelectCategory(category)}
                 className={`relative rounded-2xl transition-all duration-300 ${
-                  focusedIndex === index ? 'ring-2 ring-purple-500' : ''
+                  focusedIndex === index ? 'ring-2 ring-blue-600' : ''
                 }`}
                 style={{
                   width: '180px',
@@ -167,14 +167,14 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
               onMouseLeave={() => setHoveredCategory(null)}
               onClick={() => setIsCreating(true)}
               className={`relative rounded-2xl transition-all duration-300 border-2 border-dashed ${
-                focusedIndex === filteredCategories.length ? 'ring-2 ring-purple-500' : ''
+                focusedIndex === filteredCategories.length ? 'ring-2 ring-blue-600' : ''
               }`}
               style={{
                 width: '180px',
                 height: '140px',
                 borderColor: hoveredCategory === 'custom' ? '#8b5cf6' : '#d1d5db',
                 background: hoveredCategory === 'custom'
-                  ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)'
+                  ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)'
                   : 'transparent',
                 transform: hoveredCategory === 'custom' ? 'translateY(-4px)' : 'translateY(0)',
               }}
@@ -183,12 +183,12 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                 <Plus
                   size={48}
                   className={`mb-2 transition-colors ${
-                    hoveredCategory === 'custom' ? 'text-purple-500' : 'text-gray-400'
+                    hoveredCategory === 'custom' ? 'text-blue-600' : 'text-gray-400'
                   }`}
                 />
                 <p
                   className={`font-medium transition-colors ${
-                    hoveredCategory === 'custom' ? 'text-purple-500' : 'text-gray-600'
+                    hoveredCategory === 'custom' ? 'text-blue-600' : 'text-gray-600'
                   }`}
                   style={{ fontSize: '17px' }}
                 >
@@ -243,7 +243,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="e.g., Insurance"
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 autoFocus
               />
             </div>
@@ -260,7 +260,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                     onClick={() => setSelectedIcon(emoji)}
                     className={`p-3 rounded-xl text-2xl transition-all ${
                       selectedIcon === emoji
-                        ? 'bg-purple-100 dark:bg-purple-900 ring-2 ring-purple-500'
+                        ? 'bg-blue-100 dark:bg-blue-900 ring-2 ring-blue-600'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -300,7 +300,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
               <button
                 onClick={handleCreateCategory}
                 disabled={!newCategoryName.trim()}
-                className="flex-1 px-6 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 Create
               </button>

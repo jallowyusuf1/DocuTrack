@@ -123,7 +123,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                     onClick={() => handleLanguageClick(language)}
                     className={`w-full rounded-2xl transition-all ${
                       isSelected
-                        ? 'bg-purple-500 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                     style={{
@@ -150,7 +150,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                         </h3>
                         <p
                           className={`${
-                            isSelected ? 'text-purple-100' : 'text-gray-500 dark:text-gray-400'
+                            isSelected ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
                           }`}
                           style={{ fontSize: '19px' }}
                         >
@@ -161,7 +161,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                       {/* Progress Bar */}
                       <div className="flex flex-col items-end gap-1">
                         {isCurrent && (
-                          <div className="flex items-center gap-1 text-xs font-semibold text-purple-500 mb-1">
+                          <div className="flex items-center gap-1 text-xs font-semibold text-blue-600 mb-1">
                             <Check size={14} />
                             Current
                           </div>
@@ -169,14 +169,14 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                         <div className="w-20 h-1 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
-                              isSelected ? 'bg-white' : 'bg-purple-500'
+                              isSelected ? 'bg-white' : 'bg-blue-600'
                             }`}
                             style={{ width: `${language.translationProgress}%` }}
                           />
                         </div>
                         <span
                           className={`text-xs ${
-                            isSelected ? 'text-purple-100' : 'text-gray-500 dark:text-gray-400'
+                            isSelected ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
                           }`}
                         >
                           {language.translationProgress}%
@@ -199,10 +199,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             <div className="space-y-6">
               {/* Mock App Header */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
-                <h4 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-4">
+                <h4 className="text-2xl font-bold text-blue-800 dark:text-blue-400 mb-4">
                   {getPreviewText(selectedLanguage).title}
                 </h4>
-                <button className="w-full py-3 bg-purple-500 text-white rounded-xl font-semibold">
+                <button className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold">
                   {getPreviewText(selectedLanguage).addDocument}
                 </button>
               </div>
@@ -210,7 +210,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               {/* Mock Document Card */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
                 <div className="flex gap-4">
-                  <div className="w-16 h-20 bg-gradient-to-br from-purple-200 to-blue-200 dark:from-purple-800 dark:to-blue-800 rounded-lg" />
+                  <div className="w-16 h-20 bg-gradient-to-br from-blue-200 to-blue-200 dark:from-blue-800 dark:to-blue-800 rounded-lg" />
                   <div className="flex-1">
                     <h5 className="font-semibold text-gray-900 dark:text-white mb-2">
                       Passport
@@ -269,7 +269,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                 style={{
                   width: '96px',
                   height: '96px',
-                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)',
+                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)',
                 }}
               >
                 <div className="text-6xl">
@@ -301,7 +301,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               </button>
               <button
                 onClick={confirmLanguageChange}
-                className="flex-1 px-6 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 transition-colors font-medium"
+                className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 transition-colors font-medium"
               >
                 Change Language
               </button>

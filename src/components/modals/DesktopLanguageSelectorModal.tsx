@@ -85,7 +85,7 @@ export default function DesktopLanguageSelectorModal({
                   onClick={() => handleLanguageClick(language.code)}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
                     currentLanguage === language.code
-                      ? 'bg-purple-500/30 border-2 border-purple-500'
+                      ? 'bg-blue-600/30 border-2 border-blue-600'
                       : 'bg-white/5 border-2 border-transparent hover:border-white/20'
                   }`}
                   style={{ height: '80px' }}
@@ -101,7 +101,7 @@ export default function DesktopLanguageSelectorModal({
                     <div className="text-xs text-white/40">{language.translationPercent}%</div>
                     <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden">
                       <div
-                        className="h-full bg-purple-500 rounded-full"
+                        className="h-full bg-blue-600 rounded-full"
                         style={{ width: `${language.translationPercent}%` }}
                       />
                     </div>
@@ -129,7 +129,7 @@ export default function DesktopLanguageSelectorModal({
               </div>
               <div className="p-6 rounded-xl bg-white/5 border border-white/10">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-purple-500/20" />
+                  <div className="w-12 h-12 rounded-full bg-blue-600/20" />
                   <div>
                     <div className="h-3 w-24 rounded bg-white/20 mb-2" />
                     <div className="h-2 w-16 rounded bg-white/10" />
@@ -169,7 +169,7 @@ export default function DesktopLanguageSelectorModal({
             </button>
             <button
               onClick={handleConfirm}
-              className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 transition-colors"
+              className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-800 transition-colors"
             >
               Change Language
             </button>

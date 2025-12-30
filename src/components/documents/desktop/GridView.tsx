@@ -28,7 +28,7 @@ const getUrgencyColor = (expiryDate: string) => {
     case 'valid':
       return '#10B981';
     default:
-      return '#8B5CF6';
+      return '#2563EB';
   }
 };
 
@@ -115,17 +115,17 @@ export default function GridView({
             onMouseLeave={() => setHoveredCard(null)}
             onClick={(e) => handleCardClick(document, e)}
             className={`relative backdrop-blur-xl border rounded-xl lg:rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
-              isSelected ? 'ring-2 ring-purple-500 border-purple-500/50' : 'border-white/10 hover:border-white/20'
+              isSelected ? 'ring-2 ring-blue-500 border-blue-500/60' : 'border-white/12 hover:border-white/25'
             }`}
             style={{
               width: '100%',
               minHeight: '320px',
-              background: 'rgba(26, 22, 37, 0.6)',
+              background: 'rgba(26, 26, 26, 0.8)',
               boxShadow: isSelected
-                ? '0 0 30px rgba(139, 92, 246, 0.4)'
+                ? '0 0 30px rgba(37, 99, 235, 0.5), 0 8px 32px rgba(0, 0, 0, 0.4)'
                 : isHovered
-                ? '0 10px 40px rgba(0, 0, 0, 0.3)'
-                : '0 4px 15px rgba(0, 0, 0, 0.2)',
+                ? '0 10px 40px rgba(0, 0, 0, 0.5)'
+                : '0 4px 15px rgba(0, 0, 0, 0.3)',
             }}
           >
             {/* Selection Checkbox */}
@@ -142,7 +142,7 @@ export default function GridView({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleCheckboxChange(document.id)}
-                      className="w-5 h-5 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-purple-500 checked:border-purple-500 cursor-pointer"
+                      className="w-5 h-5 rounded border-2 border-white/30 bg-[rgba(26,26,26,0.9)] checked:bg-blue-600 checked:border-blue-600 cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </label>
@@ -163,8 +163,9 @@ export default function GridView({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={(e) => handleQuickView(document, e)}
-                    className="w-9 h-9 rounded-lg bg-[rgba(26,22,37,0.9)] backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
+                    className="w-9 h-9 rounded-lg bg-[rgba(26,26,26,0.9)] backdrop-blur-md border border-white/15 flex items-center justify-center text-white hover:bg-blue-600/30 hover:border-blue-600/60 transition-colors"
                     title="Quick View"
+                    style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)' }}
                   >
                     <Eye className="w-4 h-4" />
                   </motion.button>
@@ -172,8 +173,9 @@ export default function GridView({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={(e) => handleShare(document, e)}
-                    className="w-9 h-9 rounded-lg bg-[rgba(26,22,37,0.9)] backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-blue-500/20 hover:border-blue-500/50 transition-colors"
+                    className="w-9 h-9 rounded-lg bg-[rgba(26,26,26,0.9)] backdrop-blur-md border border-white/15 flex items-center justify-center text-white hover:bg-blue-500/30 hover:border-blue-500/60 transition-colors"
                     title="Share"
+                    style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)' }}
                   >
                     <Share2 className="w-4 h-4" />
                   </motion.button>
@@ -182,8 +184,9 @@ export default function GridView({
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={(e) => toggleMenu(document.id, e)}
-                      className="w-9 h-9 rounded-lg bg-[rgba(26,22,37,0.9)] backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                      className="w-9 h-9 rounded-lg bg-[rgba(26,26,26,0.9)] backdrop-blur-md border border-white/15 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
                       title="More"
+                      style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)' }}
                     >
                       <MoreVertical className="w-4 h-4" />
                     </motion.button>
@@ -191,7 +194,8 @@ export default function GridView({
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        className="absolute top-full right-0 mt-2 w-48 bg-[rgba(26,22,37,0.95)] backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-xl z-30"
+                        className="absolute top-full right-0 mt-2 w-48 bg-[rgba(26,26,26,0.95)] backdrop-blur-xl border border-white/15 rounded-xl overflow-hidden shadow-xl z-30"
+                        style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.7)' }}
                       >
                         <button className="w-full px-4 py-2.5 text-left text-white text-sm hover:bg-white/10 transition-colors">
                           Edit
@@ -248,7 +252,7 @@ export default function GridView({
 
               {/* Category & Number */}
               <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 flex-wrap">
-                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-purple-500/20 text-purple-300 text-[10px] sm:text-xs font-medium">
+                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-blue-600/20 text-blue-300 text-[10px] sm:text-xs font-medium">
                   {document.document_type}
                 </span>
                 {document.document_number && (

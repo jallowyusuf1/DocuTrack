@@ -123,7 +123,24 @@ export default function ProfileLockModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        style={{
+          background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
+        }}
+      >
+        {/* Animated Background Glow Lines */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.3 }}
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(37, 99, 235, 0.2) 0%, transparent 50%)',
+            }}
+          />
+        </div>
+
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -132,7 +149,7 @@ export default function ProfileLockModal({
           onClick={onClose}
           className="absolute inset-0"
           style={{
-            background: 'rgba(0,0,0,0.55)',
+            background: 'rgba(0,0,0,0.7)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
           }}
@@ -145,56 +162,58 @@ export default function ProfileLockModal({
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           className="relative z-10 w-full max-w-md rounded-3xl overflow-hidden"
           style={{
-            background: 'rgba(42, 38, 64, 0.95)',
+            background: 'linear-gradient(135deg, rgba(42, 38, 64, 0.95) 0%, rgba(35, 29, 51, 0.95) 100%)',
             backdropFilter: 'blur(30px)',
             WebkitBackdropFilter: 'blur(30px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)',
+            border: '1px solid rgba(37, 99, 235, 0.3)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 80px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-4">
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center"
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  border: '1px solid rgba(139, 92, 246, 0.4)',
+                  background: 'rgba(37, 99, 235, 0.15)',
+                  border: '2px solid rgba(37, 99, 235, 0.5)',
+                  boxShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
                 }}
               >
-                <Lock className="w-6 h-6 text-purple-400" />
+                <Lock className="w-7 h-7" style={{ color: '#60A5FA' }} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Unlock Profile</h2>
-                <p className="text-sm" style={{ color: '#A78BFA' }}>Enter your profile lock password</p>
+                <h2 className="text-2xl font-bold text-white mb-1">Unlock Profile</h2>
+                <p className="text-sm" style={{ color: '#60A5FA' }}>Enter your profile lock password</p>
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-4">
+          <div className="px-6 pb-6 space-y-5">
             {showEmailVerification ? (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center space-y-4"
+                className="text-center space-y-4 py-4"
               >
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
                   style={{
                     background: 'rgba(239, 68, 68, 0.2)',
                     border: '1px solid rgba(239, 68, 68, 0.4)',
+                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.3)',
                   }}
                 >
                   <Mail className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white mb-2">Maximum Attempts Reached</h3>
-                  <p className="text-sm" style={{ color: '#A78BFA' }}>
+                  <p className="text-sm" style={{ color: '#60A5FA' }}>
                     For security reasons, please verify your email to continue unlocking your profile.
                   </p>
-                  <p className="text-sm mt-2" style={{ color: '#A78BFA' }}>
+                  <p className="text-sm mt-2" style={{ color: '#60A5FA' }}>
                     A verification email has been sent to your registered email address.
                   </p>
                 </div>
@@ -202,6 +221,7 @@ export default function ProfileLockModal({
                   variant="primary"
                   fullWidth
                   onClick={onExit ?? onClose}
+                  className="h-[52px] mt-4"
                 >
                   Back to Dashboard
                 </Button>
@@ -209,11 +229,10 @@ export default function ProfileLockModal({
             ) : (
               <>
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-2">
+                  <label className="block text-sm font-semibold text-white mb-3">
                     Enter 8-Digit Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#A78BFA' }} />
                     <input
                       type={secureInputType}
                       maxLength={8}
@@ -229,12 +248,17 @@ export default function ProfileLockModal({
                           handleUnlock();
                         }
                       }}
-                      placeholder="ABCD1234"
-                      className="w-full h-[52px] pl-12 pr-4 rounded-xl text-white placeholder:text-purple-300/50 text-center text-2xl tracking-widest font-mono"
+                      placeholder="••••••••"
+                      className="w-full h-[56px] px-4 rounded-xl text-white placeholder:text-blue-300/40 text-center text-2xl tracking-[0.5em] font-mono"
                       style={{
-                        background: 'rgba(35, 29, 51, 0.6)',
+                        background: 'rgba(35, 29, 51, 0.7)',
                         backdropFilter: 'blur(10px)',
-                        border: error ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                        border: error 
+                          ? '2px solid rgba(239, 68, 68, 0.6)' 
+                          : '2px solid rgba(37, 99, 235, 0.4)',
+                        boxShadow: error
+                          ? '0 0 20px rgba(239, 68, 68, 0.2)'
+                          : '0 0 20px rgba(37, 99, 235, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
                         WebkitTextSecurity: 'disc',
                       }}
                       autoComplete="off"
@@ -248,7 +272,7 @@ export default function ProfileLockModal({
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-2 text-sm text-red-400 flex items-center gap-1.5"
+                      className="mt-3 text-sm text-red-400 flex items-center gap-1.5"
                     >
                       <AlertCircle className="w-4 h-4" />
                       {error}
@@ -266,7 +290,11 @@ export default function ProfileLockModal({
                   fullWidth
                   onClick={handleUnlock}
                   disabled={isUnlocking || password.length !== 8}
-                  className="h-[52px]"
+                  className="h-[56px] text-base font-semibold"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(109, 40, 217, 0.95))',
+                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  }}
                 >
                   {isUnlocking ? (
                     <>
@@ -281,14 +309,19 @@ export default function ProfileLockModal({
                   )}
                 </Button>
 
-                <Button
-                  variant="secondary"
-                  fullWidth
+                <button
                   onClick={onExit ?? onClose}
-                  className="h-[48px]"
+                  className="w-full text-center text-sm font-medium transition-colors"
+                  style={{ color: '#60A5FA' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#C4B5FD';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#60A5FA';
+                  }}
                 >
                   Back to Dashboard
-                </Button>
+                </button>
               </>
             )}
           </div>

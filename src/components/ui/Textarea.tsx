@@ -56,9 +56,9 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               w-full min-h-[100px] max-h-[300px] px-4 py-3 rounded-xl
               text-[15px] text-white resize-none
               transition-all duration-200
-              ${error 
-                ? 'border-2 border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                : 'border border-white/10 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
+              ${error
+                ? 'border-2 border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                : 'border border-white/10 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
               }
               ${props.disabled ? 'opacity-50 cursor-not-allowed' : ''}
               placeholder:text-glass-secondary

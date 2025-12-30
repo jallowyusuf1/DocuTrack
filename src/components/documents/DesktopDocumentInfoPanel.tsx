@@ -114,7 +114,7 @@ export default function DesktopDocumentInfoPanel({
         {/* Quick Stats */}
         <div className="space-y-3">
           <div className="flex items-center gap-4 p-4 rounded-xl" style={{ background: 'rgba(42, 38, 64, 0.6)' }}>
-            <Calendar className="w-5 h-5 text-purple-400 flex-shrink-0" />
+            <Calendar className="w-5 h-5 text-blue-400 flex-shrink-0" />
             <div className="flex-1">
               <div className="text-xs text-white/60 mb-1">Issue Date</div>
               <div className="text-sm font-medium text-white">
@@ -123,7 +123,7 @@ export default function DesktopDocumentInfoPanel({
             </div>
           </div>
           <div className="flex items-center gap-4 p-4 rounded-xl" style={{ background: 'rgba(42, 38, 64, 0.6)' }}>
-            <Clock className="w-5 h-5 text-purple-400 flex-shrink-0" />
+            <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
             <div className="flex-1">
               <div className="text-xs text-white/60 mb-1">Expiry Date</div>
               <div className="text-sm font-medium text-white">
@@ -132,7 +132,7 @@ export default function DesktopDocumentInfoPanel({
             </div>
           </div>
           <div className="flex items-center gap-4 p-4 rounded-xl" style={{ background: 'rgba(42, 38, 64, 0.6)' }}>
-            <Calendar className="w-5 h-5 text-purple-400 flex-shrink-0" />
+            <Calendar className="w-5 h-5 text-blue-400 flex-shrink-0" />
             <div className="flex-1">
               <div className="text-xs text-white/60 mb-1">Days Remaining</div>
               <div className="text-sm font-medium" style={{ color: urgencyColor }}>
@@ -155,8 +155,8 @@ export default function DesktopDocumentInfoPanel({
               <span
                 className="px-2 py-1 rounded text-xs font-medium"
                 style={{
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  color: '#A78BFA',
+                  background: 'rgba(37, 99, 235, 0.2)',
+                  color: '#60A5FA',
                 }}
               >
                 {formatDocumentType(document.document_type || 'Document')}
@@ -188,7 +188,7 @@ export default function DesktopDocumentInfoPanel({
             {document.notes && (
               <button
                 onClick={() => setIsNotesModalOpen(true)}
-                className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
                 Edit
               </button>
@@ -251,7 +251,7 @@ export default function DesktopDocumentInfoPanel({
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white">Activity</h3>
-            <button className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
+            <button className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
               View All
             </button>
           </div>
@@ -303,7 +303,7 @@ function ActionButton({
         height: '52px',
       }}
     >
-      <Icon className="w-5 h-5 flex-shrink-0" style={{ color: variant === 'danger' ? '#EF4444' : '#A78BFA' }} />
+      <Icon className="w-5 h-5 flex-shrink-0" style={{ color: variant === 'danger' ? '#EF4444' : '#60A5FA' }} />
       <span className="flex-1 text-white font-medium">{label}</span>
       <span className="text-white/40">›</span>
     </motion.button>
@@ -313,7 +313,7 @@ function ActionButton({
 function ActivityItem({ action, date }: { action: string; date: string }) {
   return (
     <div className="flex items-center gap-3 py-2">
-      <div className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
+      <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0" />
       <div className="flex-1">
         <div className="text-sm text-white">{action}</div>
         <div className="text-xs text-white/60">{date}</div>

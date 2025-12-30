@@ -57,31 +57,45 @@ export default function AddDocumentFlow({
     setFormData({
       ...data,
       document_type: selectedDocumentType!,
+      // Preserve fieldValues if present
+      ...(data as any).fieldValues && { fieldValues: (data as any).fieldValues },
     });
     setCurrentStep(4); // Move to Step 4: Review & Save
   };
 
   // Step 4: Handle final save
   const handleSave = async () => {
-    if (!selectedFile || !selectedDocumentType) return;
+    if (!selectedFile || !selectedDocumentType) {
+      console.error('Missing required data: file or document type');
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.expiration_date) {
+      console.error('Expiration date is required');
+      return;
+    }
 
     setIsSaving(true);
     try {
-      const finalData: DocumentFormData = {
+      const finalData: DocumentFormData & { fieldValues?: Record<string, any> } = {
         document_type: selectedDocumentType,
-        document_name: formData.document_name || '',
+        document_name: formData.document_name || selectedDocumentTypeLabel,
         document_number: formData.document_number,
         issue_date: formData.issue_date,
-        expiration_date: formData.expiration_date || '',
+        expiration_date: formData.expiration_date,
         category: formData.category || selectedCategory || selectedDocumentTypeLabel,
         notes: formData.notes,
         image: selectedFile,
+        // Include fieldValues if present
+        ...(formData as any).fieldValues && { fieldValues: (formData as any).fieldValues },
       };
 
       await onSubmit(finalData);
       setCurrentStep('success');
     } catch (error) {
       // Error handling is done in parent component
+      console.error('Error saving document:', error);
       throw error;
     } finally {
       setIsSaving(false);

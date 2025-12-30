@@ -68,7 +68,7 @@ export default function TabSwitcher({ activeTab }: TabSwitcherProps) {
             layoutId="activeTab"
             className="absolute inset-0 rounded-xl"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
             }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           />
@@ -95,7 +95,7 @@ export default function TabSwitcher({ activeTab }: TabSwitcherProps) {
             layoutId="activeTab"
             className="absolute inset-0 rounded-xl"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
             }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           />
@@ -122,7 +122,7 @@ export default function TabSwitcher({ activeTab }: TabSwitcherProps) {
             layoutId="activeTab"
             className="absolute inset-0 rounded-xl"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
             }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           />

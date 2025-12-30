@@ -440,7 +440,7 @@ export default function DesktopSearch() {
 
     return parts.map((part, i) =>
       regex.test(part) ? (
-        <span key={i} className="font-bold text-purple-400">{part}</span>
+        <span key={i} className="font-bold text-blue-400">{part}</span>
       ) : (
         part
       )
@@ -458,13 +458,13 @@ export default function DesktopSearch() {
       <div className="fixed inset-0 -z-10" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
         <motion.div
           className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-15 blur-[120px]"
-          style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
+          style={{ background: 'linear-gradient(135deg, #2563EB, #1E40AF)' }}
           animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
           className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full opacity-15 blur-[120px]"
-          style={{ background: 'linear-gradient(135deg, #EC4899, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, #EC4899, #2563EB)' }}
           animate={{ x: [0, -40, 0], y: [0, -50, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -515,7 +515,7 @@ export default function DesktopSearch() {
                   }}
                   onFocus={(e) => {
                     setShowSuggestions(true);
-                    e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
+                    e.target.style.border = '1px solid rgba(37, 99, 235, 0.5)';
                   }}
                   onBlur={(e) => {
                     e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
@@ -569,7 +569,7 @@ export default function DesktopSearch() {
                           isSelected ? 'bg-white/10' : ''
                         }`}
                       >
-                        <Icon className={`w-5 h-5 ${suggestion.type === 'recent' ? 'text-purple-400' : suggestion.type === 'category' ? 'text-blue-400' : 'text-white/60'}`} />
+                        <Icon className={`w-5 h-5 ${suggestion.type === 'recent' ? 'text-blue-400' : suggestion.type === 'category' ? 'text-blue-400' : 'text-white/60'}`} />
                         <span className="flex-1 text-white">{highlightMatch(suggestion.text)}</span>
                         {suggestion.count !== undefined && (
                           <span className="text-sm text-white/40">({suggestion.count})</span>
@@ -607,7 +607,7 @@ export default function DesktopSearch() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-white flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-purple-400" />
+                    <Clock className="w-4 h-4 text-blue-400" />
                     Recent
                   </h3>
                   <button
@@ -615,7 +615,7 @@ export default function DesktopSearch() {
                       setRecentSearches([]);
                       localStorage.removeItem('recentSearches');
                     }}
-                    className="text-xs text-purple-400 hover:text-purple-300"
+                    className="text-xs text-blue-400 hover:text-blue-300"
                   >
                     Clear All
                   </button>
@@ -657,7 +657,7 @@ export default function DesktopSearch() {
               }}
             >
               <h3 className="font-semibold text-white flex items-center gap-2">
-                <Filter className="w-4 h-4 text-purple-400" />
+                <Filter className="w-4 h-4 text-blue-400" />
                 Filters
               </h3>
 
@@ -677,7 +677,7 @@ export default function DesktopSearch() {
                             setSelectedTypes(selectedTypes.filter(t => t !== type));
                           }
                         }}
-                        className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+                        className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-600 focus:ring-blue-600"
                       />
                       <span className="text-sm text-white/60 group-hover:text-white transition-colors">
                         {formatDocumentType(type)}
@@ -698,7 +698,7 @@ export default function DesktopSearch() {
                         name="urgency"
                         checked={selectedUrgency === urgency}
                         onChange={() => setSelectedUrgency(urgency)}
-                        className="w-4 h-4 border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+                        className="w-4 h-4 border-white/20 bg-white/10 text-blue-600 focus:ring-blue-600"
                       />
                       <span className="text-sm text-white/60 group-hover:text-white transition-colors">{urgency}</span>
                     </label>
@@ -706,7 +706,7 @@ export default function DesktopSearch() {
                   {selectedUrgency && (
                     <button
                       onClick={() => setSelectedUrgency('')}
-                      className="text-xs text-purple-400 hover:text-purple-300 ml-6"
+                      className="text-xs text-blue-400 hover:text-blue-300 ml-6"
                     >
                       Clear
                     </button>
@@ -725,7 +725,7 @@ export default function DesktopSearch() {
                         name="datePreset"
                         checked={selectedDatePreset === preset}
                         onChange={() => setSelectedDatePreset(preset)}
-                        className="w-4 h-4 border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+                        className="w-4 h-4 border-white/20 bg-white/10 text-blue-600 focus:ring-blue-600"
                       />
                       <span className="text-sm text-white/60 group-hover:text-white transition-colors">{preset}</span>
                     </label>
@@ -736,13 +736,13 @@ export default function DesktopSearch() {
                         type="date"
                         value={customDateStart}
                         onChange={(e) => setCustomDateStart(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm text-white bg-white/10 border border-white/20 focus:outline-none focus:border-purple-500"
+                        className="w-full px-3 py-2 rounded-lg text-sm text-white bg-white/10 border border-white/20 focus:outline-none focus:border-blue-600"
                       />
                       <input
                         type="date"
                         value={customDateEnd}
                         onChange={(e) => setCustomDateEnd(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm text-white bg-white/10 border border-white/20 focus:outline-none focus:border-purple-500"
+                        className="w-full px-3 py-2 rounded-lg text-sm text-white bg-white/10 border border-white/20 focus:outline-none focus:border-blue-600"
                       />
                     </div>
                   )}
@@ -753,7 +753,7 @@ export default function DesktopSearch() {
                         setCustomDateStart('');
                         setCustomDateEnd('');
                       }}
-                      className="text-xs text-purple-400 hover:text-purple-300 ml-6"
+                      className="text-xs text-blue-400 hover:text-blue-300 ml-6"
                     >
                       Clear
                     </button>
@@ -777,7 +777,7 @@ export default function DesktopSearch() {
                             setSelectedStatuses(selectedStatuses.filter(s => s !== status));
                           }
                         }}
-                        className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+                        className="w-4 h-4 rounded border-white/20 bg-white/10 text-blue-600 focus:ring-blue-600"
                       />
                       <span className="text-sm text-white/60 group-hover:text-white transition-colors">{status}</span>
                     </label>
@@ -792,7 +792,7 @@ export default function DesktopSearch() {
                   <div
                     onClick={() => setShowSharedOnly(!showSharedOnly)}
                     className={`w-11 h-6 rounded-full transition-colors relative ${
-                      showSharedOnly ? 'bg-purple-500' : 'bg-white/20'
+                      showSharedOnly ? 'bg-blue-600' : 'bg-white/20'
                     }`}
                   >
                     <motion.div
@@ -846,7 +846,7 @@ export default function DesktopSearch() {
                 <div className="flex items-center justify-between">
                   <p className="text-white/60">
                     <span className="text-white font-semibold">{groupedResults.documents.length}</span> results in{' '}
-                    <span className="text-purple-400">{searchTime.toFixed(0)}ms</span>
+                    <span className="text-blue-400">{searchTime.toFixed(0)}ms</span>
                   </p>
                   <div className="flex items-center gap-3">
                     {/* Sort */}
@@ -874,7 +874,7 @@ export default function DesktopSearch() {
                       <button
                         onClick={() => setViewMode('grid')}
                         className={`p-2 rounded transition-colors ${
-                          viewMode === 'grid' ? 'bg-purple-500 text-white' : 'text-white/60 hover:text-white'
+                          viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-white/60 hover:text-white'
                         }`}
                       >
                         <Grid3x3 className="w-4 h-4" />
@@ -882,7 +882,7 @@ export default function DesktopSearch() {
                       <button
                         onClick={() => setViewMode('list')}
                         className={`p-2 rounded transition-colors ${
-                          viewMode === 'list' ? 'bg-purple-500 text-white' : 'text-white/60 hover:text-white'
+                          viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-white/60 hover:text-white'
                         }`}
                       >
                         <List className="w-4 h-4" />
@@ -898,8 +898,8 @@ export default function DesktopSearch() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="py-20 text-center"
                   >
-                    <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-6">
-                      <Search className="w-10 h-10 text-purple-400" />
+                    <div className="w-20 h-20 rounded-full bg-blue-600/10 flex items-center justify-center mx-auto mb-6">
+                      <Search className="w-10 h-10 text-blue-400" />
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-2">No results found for "{searchQuery}"</h3>
                     <p className="text-white/60 mb-6">Try checking your spelling or using different keywords</p>
@@ -913,8 +913,8 @@ export default function DesktopSearch() {
                           }}
                           className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:scale-105"
                           style={{
-                            background: 'rgba(139, 92, 246, 0.2)',
-                            border: '1px solid rgba(139, 92, 246, 0.3)',
+                            background: 'rgba(37, 99, 235, 0.2)',
+                            border: '1px solid rgba(37, 99, 235, 0.3)',
                           }}
                         >
                           Browse {formatDocumentType(type)}
@@ -927,7 +927,7 @@ export default function DesktopSearch() {
                         <button
                           key={i}
                           onClick={() => handleRecentSearchClick(query)}
-                          className="text-purple-400 hover:text-purple-300 mr-4"
+                          className="text-blue-400 hover:text-blue-300 mr-4"
                         >
                           {query}
                         </button>
@@ -948,7 +948,7 @@ export default function DesktopSearch() {
                           ) : (
                             <ChevronRight className="w-5 h-5" />
                           )}
-                          <FileText className="w-5 h-5 text-purple-400" />
+                          <FileText className="w-5 h-5 text-blue-400" />
                           DOCUMENTS ({groupedResults.documents.length})
                         </button>
                         {expandedGroups.documents && (
@@ -971,7 +971,7 @@ export default function DesktopSearch() {
                                   }}
                                 >
                                   {/* Thumbnail */}
-                                  <div className="h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                                  <div className="h-48 bg-gradient-to-br from-blue-600/20 to-pink-500/20 flex items-center justify-center">
                                     {doc.image_url ? (
                                       <img
                                         src={doc.image_url}
@@ -985,7 +985,7 @@ export default function DesktopSearch() {
                                   {/* Info */}
                                   <div className="p-5">
                                     <h4 className="font-semibold text-white mb-2 line-clamp-2">{highlightMatch(doc.document_name)}</h4>
-                                    <p className="text-sm text-purple-400 mb-2">{formatDocumentType(doc.document_type)}</p>
+                                    <p className="text-sm text-blue-400 mb-2">{formatDocumentType(doc.document_type)}</p>
                                     {doc.expiration_date && (
                                       <p className="text-xs text-white/60">
                                         Expires: {new Date(doc.expiration_date).toLocaleDateString()}
@@ -1010,8 +1010,8 @@ export default function DesktopSearch() {
                                     border: '1px solid rgba(255, 255, 255, 0.05)',
                                   }}
                                 >
-                                  <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
-                                    <FileText className="w-6 h-6 text-purple-400" />
+                                  <div className="w-12 h-12 rounded-lg bg-blue-600/20 flex items-center justify-center shrink-0">
+                                    <FileText className="w-6 h-6 text-blue-400" />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <h4 className="font-semibold text-white truncate">{highlightMatch(doc.document_name)}</h4>
@@ -1020,7 +1020,7 @@ export default function DesktopSearch() {
                                   <div className="text-sm text-white/60 shrink-0">
                                     {doc.expiration_date && new Date(doc.expiration_date).toLocaleDateString()}
                                   </div>
-                                  <p className="text-xs text-purple-400 shrink-0">in {formatDocumentType(doc.document_type)}</p>
+                                  <p className="text-xs text-blue-400 shrink-0">in {formatDocumentType(doc.document_type)}</p>
                                 </motion.div>
                               ))}
                             </div>
@@ -1123,7 +1123,7 @@ export default function DesktopSearch() {
                 animate={{ opacity: 1 }}
                 className="py-20 text-center"
               >
-                <Search className="w-16 h-16 text-purple-400 mx-auto mb-6" />
+                <Search className="w-16 h-16 text-blue-400 mx-auto mb-6" />
                 <h3 className="text-2xl font-bold text-white mb-2">Start searching</h3>
                 <p className="text-white/60">Type in the search bar above to find your documents</p>
               </motion.div>

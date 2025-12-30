@@ -166,7 +166,7 @@ export default function DocumentScannerCamera({
                       animate={{ opacity: 1, y: 0 }}
                       className="mb-4"
                     >
-                      <Camera className="w-16 h-16 mx-auto mb-4" style={{ color: '#8B5CF6' }} />
+                      <Camera className="w-16 h-16 mx-auto mb-4" style={{ color: '#2563EB' }} />
                       <h3 className="text-xl font-bold text-white mb-2">
                         Position Document
                       </h3>
@@ -218,9 +218,9 @@ export default function DocumentScannerCamera({
                     <div 
                       className="absolute inset-[15%_8%]"
                       style={{
-                        border: '3px solid #8B5CF6',
+                        border: '3px solid #2563EB',
                         borderRadius: '16px',
-                        boxShadow: 'inset 0 0 30px rgba(139, 92, 246, 0.4), 0 0 0 9999px rgba(0, 0, 0, 0.75)',
+                        boxShadow: 'inset 0 0 30px rgba(37, 99, 235, 0.4), 0 0 0 9999px rgba(0, 0, 0, 0.75)',
                         position: 'relative',
                       }}
                     >
@@ -229,44 +229,44 @@ export default function DocumentScannerCamera({
                       <div 
                         className="absolute -top-2 -left-2 w-12 h-12"
                         style={{
-                          borderTop: '5px solid #8B5CF6',
-                          borderLeft: '5px solid #8B5CF6',
+                          borderTop: '5px solid #2563EB',
+                          borderLeft: '5px solid #2563EB',
                           borderTopLeftRadius: '16px',
-                          boxShadow: '0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 10px rgba(139, 92, 246, 0.3)',
-                          background: 'rgba(139, 92, 246, 0.1)',
+                          boxShadow: '0 0 15px rgba(37, 99, 235, 0.8), inset 0 0 10px rgba(37, 99, 235, 0.3)',
+                          background: 'rgba(37, 99, 235, 0.1)',
                         }}
                       />
                       {/* Top Right */}
                       <div 
                         className="absolute -top-2 -right-2 w-12 h-12"
                         style={{
-                          borderTop: '5px solid #8B5CF6',
-                          borderRight: '5px solid #8B5CF6',
+                          borderTop: '5px solid #2563EB',
+                          borderRight: '5px solid #2563EB',
                           borderTopRightRadius: '16px',
-                          boxShadow: '0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 10px rgba(139, 92, 246, 0.3)',
-                          background: 'rgba(139, 92, 246, 0.1)',
+                          boxShadow: '0 0 15px rgba(37, 99, 235, 0.8), inset 0 0 10px rgba(37, 99, 235, 0.3)',
+                          background: 'rgba(37, 99, 235, 0.1)',
                         }}
                       />
                       {/* Bottom Left */}
                       <div 
                         className="absolute -bottom-2 -left-2 w-12 h-12"
                         style={{
-                          borderBottom: '5px solid #8B5CF6',
-                          borderLeft: '5px solid #8B5CF6',
+                          borderBottom: '5px solid #2563EB',
+                          borderLeft: '5px solid #2563EB',
                           borderBottomLeftRadius: '16px',
-                          boxShadow: '0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 10px rgba(139, 92, 246, 0.3)',
-                          background: 'rgba(139, 92, 246, 0.1)',
+                          boxShadow: '0 0 15px rgba(37, 99, 235, 0.8), inset 0 0 10px rgba(37, 99, 235, 0.3)',
+                          background: 'rgba(37, 99, 235, 0.1)',
                         }}
                       />
                       {/* Bottom Right */}
                       <div 
                         className="absolute -bottom-2 -right-2 w-12 h-12"
                         style={{
-                          borderBottom: '5px solid #8B5CF6',
-                          borderRight: '5px solid #8B5CF6',
+                          borderBottom: '5px solid #2563EB',
+                          borderRight: '5px solid #2563EB',
                           borderBottomRightRadius: '16px',
-                          boxShadow: '0 0 15px rgba(139, 92, 246, 0.8), inset 0 0 10px rgba(139, 92, 246, 0.3)',
-                          background: 'rgba(139, 92, 246, 0.1)',
+                          boxShadow: '0 0 15px rgba(37, 99, 235, 0.8), inset 0 0 10px rgba(37, 99, 235, 0.3)',
+                          background: 'rgba(37, 99, 235, 0.1)',
                         }}
                       />
 
@@ -278,7 +278,7 @@ export default function DocumentScannerCamera({
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5 }}
                             className="text-sm font-semibold mb-1" 
-                            style={{ color: '#8B5CF6' }}
+                            style={{ color: '#2563EB' }}
                           >
                             Align document edges
                           </motion.p>
@@ -287,7 +287,7 @@ export default function DocumentScannerCamera({
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.7 }}
                             className="text-xs" 
-                            style={{ color: '#A78BFA' }}
+                            style={{ color: '#60A5FA' }}
                           >
                             Ensure all corners are visible
                           </motion.p>
@@ -314,10 +314,10 @@ export default function DocumentScannerCamera({
                     className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
                     style={{
                       background: cameraAvailable 
-                        ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+                        ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
                         : 'rgba(100, 100, 100, 0.5)',
                       boxShadow: cameraAvailable 
-                        ? '0 8px 32px rgba(139, 92, 246, 0.5), 0 0 0 4px rgba(139, 92, 246, 0.2)'
+                        ? '0 8px 32px rgba(37, 99, 235, 0.5), 0 0 0 4px rgba(37, 99, 235, 0.2)'
                         : 'none',
                       cursor: cameraAvailable ? 'pointer' : 'not-allowed',
                     }}
@@ -353,7 +353,7 @@ export default function DocumentScannerCamera({
                 <>
                   {/* Preview Screen */}
                   <div className="w-full max-w-md mb-6">
-                    <div className="relative rounded-xl overflow-hidden border-2" style={{ borderColor: '#8B5CF6' }}>
+                    <div className="relative rounded-xl overflow-hidden border-2" style={{ borderColor: '#2563EB' }}>
                       <img
                         ref={previewRef}
                         src={capturedImage}
@@ -385,7 +385,7 @@ export default function DocumentScannerCamera({
                       className="flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-medium"
                       style={{
                         background: capturedFile
-                          ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+                          ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
                           : 'rgba(100, 100, 100, 0.5)',
                         color: '#FFFFFF',
                         cursor: capturedFile ? 'pointer' : 'not-allowed',

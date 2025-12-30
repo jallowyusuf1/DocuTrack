@@ -90,7 +90,7 @@ export default function DesktopYearView({
                     onClick={() => onDateSelect(day)}
                     className={`text-[10px] aspect-square rounded flex items-center justify-center transition-all ${
                       isSelected
-                        ? 'bg-purple-500 text-white'
+                        ? 'bg-blue-600 text-white'
                         : isCurrentMonth
                         ? 'text-white hover:bg-white/10'
                         : 'text-white/30'
@@ -100,7 +100,7 @@ export default function DesktopYearView({
                     {hasDocuments && (
                       <div
                         className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                        style={{ background: '#8B5CF6' }}
+                        style={{ background: '#2563EB' }}
                       />
                     )}
                   </button>

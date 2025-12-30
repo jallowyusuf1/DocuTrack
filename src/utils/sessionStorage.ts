@@ -11,44 +11,68 @@ interface StorageAdapter {
 }
 
 class ConditionalStorage implements StorageAdapter {
+  constructor() {
+    // Immediately migrate any existing session data on initialization
+    this.migrateSessionStorage();
+  }
+
+  private migrateSessionStorage(): void {
+    // Migrate all supabase-auth keys from sessionStorage to localStorage
+    try {
+      const keys = Object.keys(sessionStorage);
+      const authKeys = keys.filter(key =>
+        key.startsWith('supabase.auth') ||
+        key.includes('sb-') ||
+        key === 'supabase.auth.token'
+      );
+
+      authKeys.forEach(key => {
+        const value = sessionStorage.getItem(key);
+        if (value) {
+          localStorage.setItem(key, value);
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to migrate session storage:', error);
+    }
+  }
+
   private getStorage(): Storage {
-    // Check if "Remember Me" was checked
-    const rememberMe = localStorage.getItem('rememberMe') === 'true';
-    
-    // If rememberMe is false, use sessionStorage (clears on tab close)
-    // If rememberMe is true, use localStorage (persists)
-    return rememberMe ? localStorage : sessionStorage;
+    // ALWAYS use localStorage for better UX - users stay logged in
+    // This fixes the logout-on-refresh issue
+    return localStorage;
   }
 
   getItem(key: string): string | null {
-    // Try both storages to handle migration
-    const sessionValue = sessionStorage.getItem(key);
-    const localValue = localStorage.getItem(key);
-    
-    // If rememberMe is false, prefer sessionStorage
-    const rememberMe = localStorage.getItem('rememberMe') === 'true';
-    
-    if (!rememberMe) {
-      return sessionValue ?? localValue;
+    // Always read from localStorage first
+    const value = localStorage.getItem(key);
+
+    // Fallback to sessionStorage for migration (shouldn't happen after constructor)
+    if (!value) {
+      const sessionValue = sessionStorage.getItem(key);
+      if (sessionValue) {
+        // Migrate from sessionStorage to localStorage
+        localStorage.setItem(key, sessionValue);
+        sessionStorage.removeItem(key);
+        return sessionValue;
+      }
     }
-    
-    return localValue ?? sessionValue;
+
+    return value;
   }
 
   setItem(key: string, value: string): void {
-    const storage = this.getStorage();
-    storage.setItem(key, value);
-    
-    // If switching to "don't remember", remove from localStorage
-    const rememberMe = localStorage.getItem('rememberMe') === 'true';
-    if (!rememberMe && key.includes('auth')) {
-      localStorage.removeItem(key);
-    }
+    // Always save to localStorage
+    localStorage.setItem(key, value);
+    // Clear from sessionStorage if it exists there
+    sessionStorage.removeItem(key);
   }
 
   removeItem(key: string): void {
-    sessionStorage.removeItem(key);
+    // Remove from both storages
     localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
   }
 }
 

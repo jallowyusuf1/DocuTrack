@@ -25,10 +25,10 @@ export default function Toggle({ checked, onChange, disabled = false, className 
       } ${className}`}
       style={{
         background: checked
-          ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+          ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
           : 'rgba(107, 102, 126, 0.3)',
         boxShadow: checked
-          ? '0 0 16px rgba(139, 92, 246, 0.6)'
+          ? '0 0 16px rgba(37, 99, 235, 0.6)'
           : 'none',
       }}
       whileTap={!disabled ? { scale: 0.95 } : {}}

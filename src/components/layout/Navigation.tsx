@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Calendar, User } from 'lucide-react';
+import { Home, FileText, Calendar, User, Clock } from 'lucide-react';
 
 export default function Navigation() {
   const location = useLocation();
 
   const navItems = [
     { path: '/dashboard', icon: Home, label: 'Dashboard' },
+    { path: '/expire-soon', icon: Clock, label: 'Expire Soon' },
     { path: '/documents', icon: FileText, label: 'Documents' },
     { path: '/dates', icon: Calendar, label: 'Dates' },
     { path: '/profile', icon: User, label: 'Profile' },

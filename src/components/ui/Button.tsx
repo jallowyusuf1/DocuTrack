@@ -32,7 +32,7 @@ export default function Button({
     primary: 'glass-btn-primary text-white',
     secondary: 'glass-btn-secondary text-glass-primary',
     danger: 'bg-red-500 text-white hover:bg-red-600 active:bg-red-700 border-0 shadow-lg shadow-red-500/30',
-    ghost: 'bg-transparent text-purple-400 hover:bg-purple-500/10 active:bg-purple-500/20 border-0',
+    ghost: 'bg-transparent text-blue-400 hover:bg-blue-500/10 active:bg-blue-500/20 border-0',
   };
 
   const sizeStyles = {

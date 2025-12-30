@@ -78,12 +78,12 @@ export default function DesktopCalendarGrid({
                 width: '120px',
                 height: '100px',
                 background: isSelected
-                  ? 'rgba(139, 92, 246, 0.2)'
+                  ? 'rgba(37, 99, 235, 0.2)'
                   : isCurrentMonth
                   ? 'rgba(42, 38, 64, 0.4)'
                   : 'rgba(35, 29, 51, 0.2)',
                 border: isSelected
-                  ? '2px solid #8B5CF6'
+                  ? '2px solid #2563EB'
                   : isTodayDate
                   ? '2px solid #3B82F6'
                   : '1px solid rgba(255, 255, 255, 0.1)',
@@ -93,7 +93,7 @@ export default function DesktopCalendarGrid({
               {/* Day Number */}
               <div
                 className="text-[20px] font-bold mb-1"
-                style={{ color: isCurrentMonth ? '#FFFFFF' : '#A78BFA' }}
+                style={{ color: isCurrentMonth ? '#FFFFFF' : '#60A5FA' }}
               >
                 {format(day, 'd')}
               </div>
@@ -102,7 +102,7 @@ export default function DesktopCalendarGrid({
               <div className="space-y-1">
                 {visibleDocs.map((doc, idx) => {
                   const daysUntil = getDaysUntil(doc.expiration_date);
-                  let urgencyColor = '#8B5CF6'; // Default purple
+                  let urgencyColor = '#2563EB'; // Default purple
                   if (daysUntil <= 7) urgencyColor = '#EF4444'; // Red
                   else if (daysUntil <= 30) urgencyColor = '#F59E0B'; // Orange
                   else urgencyColor = '#10B981'; // Green
@@ -125,7 +125,7 @@ export default function DesktopCalendarGrid({
                   );
                 })}
                 {moreCount > 0 && (
-                  <div className="text-xs text-purple-400 font-medium px-1.5">
+                  <div className="text-xs text-blue-400 font-medium px-1.5">
                     +{moreCount} more
                   </div>
                 )}

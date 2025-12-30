@@ -48,7 +48,7 @@ export default function Step2SelectType({ onTypeSelected, onBack }: Step2SelectT
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1625 0%, #2d1b4e 50%, #1a1625 100%)' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)' }}>
       {/* Header */}
       <div className="relative z-10 px-4 pt-4 pb-6">
         <div className="flex items-center gap-4 mb-4">

@@ -1,5 +1,4 @@
 # Ignore development files
-node_modules
 .git
 .cursor
 .vscode
@@ -17,12 +16,13 @@ dist
 **/*.spec.ts
 **/*.spec.tsx
 
-# Ignore documentation (optional - can be included)
+# Ignore documentation
 *.md
 !README.md
 
 # Ignore scripts
 scripts/
 
-# Ignore old/nested project folder if it exists
-document-tracker/
+# Ignore local env files (use Vercel dashboard for env vars)
+.env.local
+.env.*.local

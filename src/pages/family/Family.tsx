@@ -12,6 +12,9 @@ import ConnectionCard from '../../components/family/ConnectionCard';
 import SharedDocumentCard from '../../components/family/SharedDocumentCard';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../config/supabase';
+import { useTheme } from '../../contexts/ThemeContext';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 type TabType = 'connections' | 'shared' | 'households' | 'analytics';
 
@@ -20,14 +23,16 @@ type AnalyticsMetrics = {
   pendingConnectionRequests: number;
   sharedDocsCount: number;
   householdsCount: number;
-  pendingChildRequests?: number;
-  childAccountsCount?: number;
-  last7dChildActivity?: number;
 };
 
 export default function Family() {
   const { t } = useTranslation();
-  const { user, accountType, accountRole } = useAuth();
+  const { user } = useAuth();
+  const { theme } = useTheme();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('family');
+
   const [activeTab, setActiveTab] = useState<TabType>('connections');
   const [connections, setConnections] = useState<Connection[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
@@ -60,7 +65,7 @@ export default function Family() {
         const householdsData = await getHouseholds();
         setHouseholds(householdsData);
       } else if (activeTab === 'analytics') {
-        // Basic family analytics (frosted glass tile)
+        // Family analytics (frosted glass tile)
         const [connectionsData, pendingData, sharedData, householdsData] = await Promise.all([
           getConnections(),
           getPendingConnections(),
@@ -68,53 +73,14 @@ export default function Family() {
           getHouseholds(),
         ]);
 
-        const base: AnalyticsMetrics = {
+        const analyticsData: AnalyticsMetrics = {
           connectionsCount: connectionsData.length,
           pendingConnectionRequests: pendingData.length,
           sharedDocsCount: sharedData.length,
           householdsCount: householdsData.length,
         };
 
-        // Parent/Child specific additions
-        if (user?.id) {
-          if (accountType === 'child') {
-            const { count: pendingChildRequests } = await supabase
-              .from('child_account_requests')
-              .select('id', { count: 'exact', head: true })
-              .eq('child_id', user.id)
-              .eq('status', 'pending');
-            setAnalytics({ ...base, pendingChildRequests: pendingChildRequests ?? 0 });
-          } else if (accountRole === 'parent') {
-            const [{ count: childAccountsCount }, { count: pendingChildRequests }, { count: last7dChildActivity }] =
-              await Promise.all([
-                supabase
-                  .from('child_accounts')
-                  .select('id', { count: 'exact', head: true })
-                  .eq('parent_id', user.id)
-                  .neq('status', 'deleted'),
-                supabase
-                  .from('child_account_requests')
-                  .select('id', { count: 'exact', head: true })
-                  .eq('parent_id', user.id)
-                  .eq('status', 'pending'),
-                supabase
-                  .from('child_account_activity_logs')
-                  .select('id', { count: 'exact', head: true })
-                  .eq('parent_id', user.id)
-                  .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-              ]);
-            setAnalytics({
-              ...base,
-              childAccountsCount: childAccountsCount ?? 0,
-              pendingChildRequests: pendingChildRequests ?? 0,
-              last7dChildActivity: last7dChildActivity ?? 0,
-            });
-          } else {
-            setAnalytics(base);
-          }
-        } else {
-          setAnalytics(base);
-        }
+        setAnalytics(analyticsData);
       }
     } catch (error) {
       console.error('Error loading family data:', error);
@@ -123,17 +89,27 @@ export default function Family() {
     }
   };
 
-  const showAnalytics = accountType === 'child' || accountRole === 'parent';
-
   const tabs = [
     { id: 'connections' as TabType, label: t('family.connections'), icon: Users },
     { id: 'shared' as TabType, label: t('family.sharedWithMe'), icon: Share2 },
     { id: 'households' as TabType, label: t('family.households'), icon: Home },
-    ...(showAnalytics ? [{ id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 }] : []),
+    { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 },
   ];
 
+  const bgColor = theme === 'light' ? '#FFFFFF' : '#000000';
+  const textColor = theme === 'light' ? '#000000' : '#FFFFFF';
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Family"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
+
+      <div className="min-h-screen flex flex-col" style={{ background: bgColor, color: textColor }}>
       <main className="flex-1 pb-20 pt-4 md:pt-6 px-4 md:px-5 safe-area-bottom">
         <div className="max-w-4xl mx-auto md:max-w-[700px] md:mx-auto">
           {/* Header Section */}
@@ -151,7 +127,14 @@ export default function Family() {
           </motion.div>
 
           {/* Tabs */}
-          <div className="glass-card p-1 mb-6 flex gap-1">
+          <div className="p-1 mb-6 flex gap-1" style={{
+            background: 'rgba(26, 26, 26, 0.8)',
+            backdropFilter: 'blur(40px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          }}>
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -160,11 +143,12 @@ export default function Family() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 h-[44px] md:h-[48px] px-4 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 text-[17px] md:text-[19px] ${
-                    isActive
-                      ? 'glass-btn-primary'
-                      : 'text-glass-secondary hover:text-glass-primary'
-                  }`}
+                  className={`flex-1 h-[44px] md:h-[48px] px-4 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 text-[17px] md:text-[19px]`}
+                  style={{
+                    background: isActive ? '#60A5FA' : 'transparent',
+                    color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+                    boxShadow: isActive ? '0 8px 24px rgba(96, 165, 250, 0.4)' : 'none',
+                  }}
                 >
                   <Icon className="w-4 h-4 md:w-5 md:h-5" />
                   <span>{tab.label}</span>
@@ -179,7 +163,13 @@ export default function Family() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => setShowAddConnection(true)}
-              className="glass-btn-primary w-full py-4 rounded-xl mb-6 flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-xl mb-6 flex items-center justify-center gap-2 font-medium text-white transition-all duration-300"
+              style={{
+                background: '#60A5FA',
+                boxShadow: '0 8px 24px rgba(96, 165, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <UserPlus className="w-5 h-5" />
               <span>Add Member</span>
@@ -212,7 +202,7 @@ export default function Family() {
                   <HouseholdsTab households={households} onRefresh={loadData} />
                 )}
                 {activeTab === 'analytics' && (
-                  <FamilyAnalyticsTab metrics={analytics} isChild={accountType === 'child'} />
+                  <FamilyAnalyticsTab metrics={analytics} />
                 )}
               </motion.div>
             )}
@@ -240,25 +230,26 @@ export default function Family() {
           loadData();
         }}
       />
-    </div>
+      </div>
+    </>
   );
 }
 
-function FamilyAnalyticsTab({ metrics, isChild }: { metrics: AnalyticsMetrics | null; isChild: boolean }) {
-  const stat = (label: string, value: string, accent: string) => (
+function FamilyAnalyticsTab({ metrics }: { metrics: AnalyticsMetrics | null }) {
+  const stat = (label: string, value: string, accentColor: string) => (
     <div
       className="rounded-2xl p-4"
       style={{
-        background: 'rgba(26, 22, 37, 0.55)',
-        border: '1px solid rgba(255, 255, 255, 0.10)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 40px rgba(0,0,0,0.35)',
+        background: 'rgba(26, 26, 26, 0.8)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(40px) saturate(120%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
       }}
     >
       <div className="text-xs text-white/60">{label}</div>
       <div className="mt-2 text-2xl font-bold text-white">{value}</div>
-      <div className="mt-2 h-1.5 rounded-full" style={{ background: accent, opacity: 0.55 }} />
+      <div className="mt-2 h-1.5 rounded-full" style={{ background: accentColor, boxShadow: `0 0 12px ${accentColor}` }} />
     </div>
   );
 
@@ -268,52 +259,38 @@ function FamilyAnalyticsTab({ metrics, isChild }: { metrics: AnalyticsMetrics | 
       animate={{ opacity: 1, y: 0 }}
       className="rounded-3xl p-5 md:p-6 relative overflow-hidden"
       style={{
-        background: 'rgba(42, 38, 64, 0.42)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        backdropFilter: 'blur(26px)',
-        WebkitBackdropFilter: 'blur(26px)',
-        boxShadow: '0 26px 90px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.10)',
+        background: 'rgba(26, 26, 26, 0.8)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(40px) saturate(120%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
       }}
     >
-      <motion.div
-        className="absolute -top-10 -right-10 w-44 h-44 rounded-full opacity-15 blur-[70px]"
-        style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
-        animate={{ x: [0, 18, 0], y: [0, -12, 0], scale: [1, 1.15, 1] }}
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
       <div className="relative z-10">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-white">Family Analytics</h2>
             <p className="text-sm text-white/60 mt-1">
-              {isChild ? 'Your supervised account activity & family access' : 'A quick overview of your family sharing'}
+              A quick overview of your family sharing
             </p>
           </div>
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center"
             style={{
-              background: 'rgba(139, 92, 246, 0.18)',
-              border: '1px solid rgba(139, 92, 246, 0.28)',
+              background: 'rgba(96, 165, 250, 0.15)',
+              border: '1px solid rgba(96, 165, 250, 0.3)',
             }}
           >
-            <BarChart3 className="w-6 h-6 text-purple-300" />
+            <BarChart3 className="w-6 h-6" style={{ color: '#60A5FA' }} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-6">
-          {stat('Connections', String(metrics?.connectionsCount ?? 0), 'linear-gradient(90deg, rgba(139,92,246,1), rgba(59,130,246,1))')}
-          {stat('Shared docs', String(metrics?.sharedDocsCount ?? 0), 'linear-gradient(90deg, rgba(236,72,153,1), rgba(139,92,246,1))')}
-          {stat('Households', String(metrics?.householdsCount ?? 0), 'linear-gradient(90deg, rgba(34,197,94,1), rgba(59,130,246,1))')}
-          {stat('Pending', String((metrics?.pendingChildRequests ?? 0) + (metrics?.pendingConnectionRequests ?? 0)), 'linear-gradient(90deg, rgba(245,158,11,1), rgba(234,88,12,1))')}
+          {stat('Connections', String(metrics?.connectionsCount ?? 0), '#60A5FA')}
+          {stat('Shared docs', String(metrics?.sharedDocsCount ?? 0), '#34D399')}
+          {stat('Households', String(metrics?.householdsCount ?? 0), '#60A5FA')}
+          {stat('Pending', String(metrics?.pendingConnectionRequests ?? 0), '#FB923C')}
         </div>
-
-        {!isChild && metrics?.childAccountsCount !== undefined && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-            {stat('Child accounts', String(metrics.childAccountsCount ?? 0), 'linear-gradient(90deg, rgba(139,92,246,1), rgba(109,40,217,1))')}
-            {stat('Child activity (7d)', String(metrics.last7dChildActivity ?? 0), 'linear-gradient(90deg, rgba(59,130,246,1), rgba(14,165,233,1))')}
-          </div>
-        )}
       </div>
     </motion.div>
   );
@@ -332,7 +309,7 @@ function ConnectionsTab({ connections, pendingRequests, onRefresh }: any) {
           animate={{ opacity: 1, y: 0 }}
         >
           <h2 className="text-lg md:text-xl font-semibold text-white mb-4 md:mb-5 flex items-center gap-2">
-            <Clock className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+            <Clock className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
             Pending Requests ({pendingRequests.length})
           </h2>
           <div className="space-y-3 md:space-y-4">
@@ -354,7 +331,7 @@ function ConnectionsTab({ connections, pendingRequests, onRefresh }: any) {
         transition={{ delay: 0.1 }}
       >
         <h2 className="text-lg md:text-xl font-semibold text-white mb-4 md:mb-5 flex items-center gap-2">
-          <Users className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+          <Users className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
           {t('family.connections')} ({connections.length})
         </h2>
         {connections.length === 0 ? (
@@ -413,30 +390,13 @@ function SharedTab({ documents, onRefresh }: any) {
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl md:rounded-3xl p-4 md:p-5 space-y-3 md:space-y-4 relative overflow-hidden"
         style={{
-          background: 'rgba(42, 38, 64, 0.4)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          background: 'rgba(26, 26, 26, 0.8)',
+          backdropFilter: 'blur(40px) saturate(120%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(120%)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 8px 30px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
         }}
       >
-        {/* Liquid Glass Orb Effect */}
-        <motion.div
-          className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 blur-[60px]"
-          style={{
-            background: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
-          }}
-          animate={{
-            x: [0, 20, 0],
-            y: [0, -15, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
 
         {/* Search Input */}
         <div className="relative group">
@@ -448,25 +408,25 @@ function SharedTab({ documents, onRefresh }: any) {
             placeholder="Search documents or people..."
             className="w-full h-11 md:h-12 pl-11 md:pl-12 pr-4 rounded-xl md:rounded-2xl text-white placeholder:text-white/30 transition-all text-sm md:text-base focus:outline-none relative z-10"
             style={{
-              background: 'rgba(26, 22, 37, 0.6)',
-              backdropFilter: 'blur(15px)',
-              WebkitBackdropFilter: 'blur(15px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.4)',
+              background: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: 'inset 0 2px 6px rgba(0, 0, 0, 0.6)',
             }}
             onFocus={(e) => {
-              e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1), inset 0 2px 6px rgba(0, 0, 0, 0.4)';
+              e.target.style.border = '1px solid rgba(96, 165, 250, 0.5)';
+              e.target.style.boxShadow = '0 0 0 3px rgba(96, 165, 250, 0.15), inset 0 2px 6px rgba(0, 0, 0, 0.6)';
             }}
             onBlur={(e) => {
-              e.target.style.border = '1px solid rgba(255, 255, 255, 0.08)';
-              e.target.style.boxShadow = 'inset 0 2px 6px rgba(0, 0, 0, 0.4)';
+              e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+              e.target.style.boxShadow = 'inset 0 2px 6px rgba(0, 0, 0, 0.6)';
             }}
           />
           <motion.div
             className="absolute inset-0 rounded-xl md:rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"
             style={{
-              boxShadow: '0 0 25px rgba(139, 92, 246, 0.3)',
+              boxShadow: '0 0 25px rgba(96, 165, 250, 0.3)',
             }}
           />
         </div>
@@ -480,12 +440,12 @@ function SharedTab({ documents, onRefresh }: any) {
               onChange={(e) => setFilterBy(e.target.value as any)}
               className="w-full h-10 md:h-11 px-3 md:px-4 rounded-lg md:rounded-xl text-white text-sm md:text-base transition-all appearance-none cursor-pointer"
               style={{
-                background: 'rgba(26, 22, 37, 0.6)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.3)',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23A78BFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.6)',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2360A5FA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 12px center',
                 paddingRight: '36px',
@@ -504,12 +464,12 @@ function SharedTab({ documents, onRefresh }: any) {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="w-full h-10 md:h-11 px-3 md:px-4 rounded-lg md:rounded-xl text-white text-sm md:text-base transition-all appearance-none cursor-pointer"
               style={{
-                background: 'rgba(26, 22, 37, 0.6)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.3)',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23A78BFA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.6)',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2360A5FA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 12px center',
                 paddingRight: '36px',
@@ -527,7 +487,7 @@ function SharedTab({ documents, onRefresh }: any) {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-2 text-xs md:text-sm text-purple-300 relative z-10"
+            className="flex items-center gap-2 text-xs md:text-sm text-blue-400 relative z-10"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 md:w-4 md:h-4" />
             <span>
@@ -580,11 +540,13 @@ function HouseholdsTab({ households, onRefresh }: any) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.05 }}
           whileHover={{ scale: 1.01, y: -2 }}
-          className="p-4 md:p-5 hover:glass-card-elevated transition-all duration-300 cursor-pointer rounded-2xl mx-auto"
+          className="p-4 md:p-5 transition-all duration-300 cursor-pointer rounded-2xl mx-auto"
           style={{
-            background: 'rgba(55, 48, 70, 0.6)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(26, 26, 26, 0.8)',
+            backdropFilter: 'blur(40px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             maxWidth: '100%',
           }}
           data-tablet-card="true"
@@ -599,8 +561,11 @@ function HouseholdsTab({ households, onRefresh }: any) {
           `}</style>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 md:gap-4">
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Home className="w-6 h-6 md:w-7 md:h-7 text-white" />
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center" style={{
+                background: 'rgba(96, 165, 250, 0.15)',
+                border: '1px solid rgba(96, 165, 250, 0.3)',
+              }}>
+                <Home className="w-6 h-6 md:w-7 md:h-7" style={{ color: '#60A5FA' }} />
               </div>
               <div>
                 <h3 className="font-semibold text-white text-base md:text-lg">{household.name}</h3>
@@ -636,9 +601,11 @@ function EmptyState({ message, subtitle }: { message: string; subtitle?: string 
       animate={{ opacity: 1, scale: 1 }}
       className="p-8 md:p-12 text-center rounded-2xl mx-auto"
       style={{
-        background: 'rgba(55, 48, 70, 0.6)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
+        background: 'rgba(26, 26, 26, 0.8)',
+        backdropFilter: 'blur(40px) saturate(120%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
         maxWidth: '100%',
       }}
       data-tablet-empty="true"
@@ -650,7 +617,7 @@ function EmptyState({ message, subtitle }: { message: string; subtitle?: string 
           }
         }
       `}</style>
-      <AlertCircle className="w-12 h-12 md:w-16 md:h-16 text-purple-400 mx-auto mb-4 md:mb-6" />
+      <AlertCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" style={{ color: '#60A5FA' }} />
       <p className="text-white font-medium md:text-lg mb-2 md:mb-3">{message}</p>
       {subtitle && <p className="text-sm md:text-base text-white/60">{subtitle}</p>}
     </motion.div>

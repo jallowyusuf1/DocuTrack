@@ -154,7 +154,7 @@ export default function DesktopDatePickerModal({
               onClick={() => setViewMode('calendar')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 viewMode === 'calendar'
-                  ? 'bg-purple-500/20 text-white'
+                  ? 'bg-blue-600/20 text-white'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
@@ -165,7 +165,7 @@ export default function DesktopDatePickerModal({
               onClick={() => setViewMode('wheel')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 viewMode === 'wheel'
-                  ? 'bg-purple-500/20 text-white'
+                  ? 'bg-blue-600/20 text-white'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
@@ -232,9 +232,9 @@ export default function DesktopDatePickerModal({
                         disabled
                           ? 'text-white/20 cursor-not-allowed'
                           : isSelected
-                          ? 'bg-purple-500 text-white'
+                          ? 'bg-blue-600 text-white'
                           : inRange
-                          ? 'bg-purple-500/30 text-white'
+                          ? 'bg-blue-600/30 text-white'
                           : isTodayDate
                           ? 'bg-blue-500/20 text-blue-300 border-2 border-blue-500/50'
                           : 'text-white/70 hover:bg-white/10'
@@ -261,7 +261,7 @@ export default function DesktopDatePickerModal({
                       }}
                       className={`text-center py-4 cursor-pointer scroll-snap-align-center ${
                         wheelMonth === idx
-                          ? 'text-3xl font-bold text-purple-400'
+                          ? 'text-3xl font-bold text-blue-400'
                           : 'text-xl text-white/60'
                       }`}
                       style={{ scrollSnapAlign: 'center' }}
@@ -285,7 +285,7 @@ export default function DesktopDatePickerModal({
                       }}
                       className={`text-center py-4 cursor-pointer scroll-snap-align-center ${
                         wheelDay === day
-                          ? 'text-3xl font-bold text-purple-400'
+                          ? 'text-3xl font-bold text-blue-400'
                           : 'text-xl text-white/60'
                       }`}
                       style={{ scrollSnapAlign: 'center' }}
@@ -309,7 +309,7 @@ export default function DesktopDatePickerModal({
                       }}
                       className={`text-center py-4 cursor-pointer scroll-snap-align-center ${
                         wheelYear === year
-                          ? 'text-3xl font-bold text-purple-400'
+                          ? 'text-3xl font-bold text-blue-400'
                           : 'text-xl text-white/60'
                       }`}
                       style={{ scrollSnapAlign: 'center' }}
@@ -360,7 +360,7 @@ export default function DesktopDatePickerModal({
           <button
             onClick={handleDone}
             disabled={!selected}
-            className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Done
           </button>

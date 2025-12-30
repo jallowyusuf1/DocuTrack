@@ -101,7 +101,7 @@ export default function DesktopDeleteConfirmationModal({
             type="checkbox"
             checked={dontAskAgain}
             onChange={(e) => setDontAskAgain(e.target.checked)}
-            className="w-5 h-5 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+            className="w-5 h-5 rounded border-white/20 bg-white/10 text-blue-600 focus:ring-blue-600"
           />
           <span className="text-sm text-white/70">Don't ask again for this session</span>
         </label>

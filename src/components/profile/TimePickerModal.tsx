@@ -88,7 +88,7 @@ export default function TimePickerModal({
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -125,12 +125,12 @@ export default function TimePickerModal({
                         }`}
                         style={hour === h
                           ? {
-                              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                               color: '#FFFFFF',
-                              boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)',
+                              boxShadow: '0 0 15px rgba(37, 99, 235, 0.4)',
                             }
                           : {
-                              color: '#A78BFA',
+                              color: '#60A5FA',
                             }}
                       >
                         {h}
@@ -167,12 +167,12 @@ export default function TimePickerModal({
                         }`}
                         style={minute === m
                           ? {
-                              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                               color: '#FFFFFF',
-                              boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)',
+                              boxShadow: '0 0 15px rgba(37, 99, 235, 0.4)',
                             }
                           : {
-                              color: '#A78BFA',
+                              color: '#60A5FA',
                             }}
                       >
                         {m}
@@ -209,12 +209,12 @@ export default function TimePickerModal({
                         }`}
                         style={period === p
                           ? {
-                              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                               color: '#FFFFFF',
-                              boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)',
+                              boxShadow: '0 0 15px rgba(37, 99, 235, 0.4)',
                             }
                           : {
-                              color: '#A78BFA',
+                              color: '#60A5FA',
                             }}
                       >
                         {p}

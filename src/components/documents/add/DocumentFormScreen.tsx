@@ -155,7 +155,7 @@ export default function DocumentFormScreen({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-800 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -202,7 +202,7 @@ export default function DocumentFormScreen({
                   placeholder="e.g., US Passport"
                   className={`w-full px-4 py-3 rounded-xl bg-white/5 border ${
                     errors.documentName ? 'border-red-500' : 'border-white/10'
-                  } text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50`}
+                  } text-white placeholder-white/30 focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50`}
                 />
                 {errors.documentName && (
                   <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
@@ -224,7 +224,7 @@ export default function DocumentFormScreen({
                   disabled={isSubmitting}
                   className={`w-full px-4 py-3 rounded-xl bg-white/5 border ${
                     errors.category ? 'border-red-500' : 'border-white/10'
-                  } text-white focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50`}
+                  } text-white focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50`}
                 >
                   {DOCUMENT_CATEGORIES.map((cat) => (
                     <option key={cat.value} value={cat.value} className="bg-[#1a1625]">
@@ -252,7 +252,7 @@ export default function DocumentFormScreen({
                   onChange={(e) => updateField('documentNumber', e.target.value)}
                   disabled={isSubmitting}
                   placeholder="e.g., A12345678"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50"
                 />
               </div>
 
@@ -270,7 +270,7 @@ export default function DocumentFormScreen({
                       value={formData.issueDate}
                       onChange={(e) => updateField('issueDate', e.target.value)}
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50"
                     />
                     <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 pointer-events-none" />
                   </div>
@@ -290,7 +290,7 @@ export default function DocumentFormScreen({
                       disabled={isSubmitting}
                       className={`w-full px-4 py-3 rounded-xl bg-white/5 border ${
                         errors.expiryDate ? 'border-red-500' : 'border-white/10'
-                      } text-white focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50`}
+                      } text-white focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50`}
                     />
                     <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 pointer-events-none" />
                   </div>
@@ -356,7 +356,7 @@ export default function DocumentFormScreen({
                   disabled={isSubmitting}
                   placeholder="Add any additional notes..."
                   rows={4}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-purple-500 transition-colors resize-none disabled:opacity-50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-600 transition-colors resize-none disabled:opacity-50"
                 />
                 <p className="mt-2 text-sm text-white/50 text-right">
                   {formData.notes.length}/{NOTES_MAX_LENGTH}
@@ -368,7 +368,7 @@ export default function DocumentFormScreen({
             <div className="space-y-6">
               <div className="bg-[rgba(26,22,37,0.6)] backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-6">
-                  <Bell className="w-6 h-6 text-purple-400" />
+                  <Bell className="w-6 h-6 text-blue-400" />
                   <h2 className="text-lg font-semibold text-white">Reminder Settings</h2>
                 </div>
 
@@ -383,7 +383,7 @@ export default function DocumentFormScreen({
                       disabled={isSubmitting}
                       className="sr-only peer"
                     />
-                    <div className="w-full h-full bg-white/10 rounded-full peer-checked:bg-purple-500 transition-colors peer-disabled:opacity-50"></div>
+                    <div className="w-full h-full bg-white/10 rounded-full peer-checked:bg-blue-600 transition-colors peer-disabled:opacity-50"></div>
                     <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
                   </label>
                 </div>
@@ -397,9 +397,9 @@ export default function DocumentFormScreen({
                         checked={formData.reminder30Days}
                         onChange={(e) => updateField('reminder30Days', e.target.checked)}
                         disabled={isSubmitting}
-                        className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 checked:bg-purple-500 checked:border-purple-500 cursor-pointer disabled:opacity-50"
+                        className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 checked:bg-blue-600 checked:border-blue-600 cursor-pointer disabled:opacity-50"
                       />
-                      <span className="text-white group-hover:text-purple-300 transition-colors">
+                      <span className="text-white group-hover:text-blue-300 transition-colors">
                         30 days before expiry
                       </span>
                     </label>
@@ -410,9 +410,9 @@ export default function DocumentFormScreen({
                         checked={formData.reminder7Days}
                         onChange={(e) => updateField('reminder7Days', e.target.checked)}
                         disabled={isSubmitting}
-                        className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 checked:bg-purple-500 checked:border-purple-500 cursor-pointer disabled:opacity-50"
+                        className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 checked:bg-blue-600 checked:border-blue-600 cursor-pointer disabled:opacity-50"
                       />
-                      <span className="text-white group-hover:text-purple-300 transition-colors">
+                      <span className="text-white group-hover:text-blue-300 transition-colors">
                         7 days before expiry
                       </span>
                     </label>
@@ -423,9 +423,9 @@ export default function DocumentFormScreen({
                         checked={formData.reminder1Day}
                         onChange={(e) => updateField('reminder1Day', e.target.checked)}
                         disabled={isSubmitting}
-                        className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 checked:bg-purple-500 checked:border-purple-500 cursor-pointer disabled:opacity-50"
+                        className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 checked:bg-blue-600 checked:border-blue-600 cursor-pointer disabled:opacity-50"
                       />
-                      <span className="text-white group-hover:text-purple-300 transition-colors">
+                      <span className="text-white group-hover:text-blue-300 transition-colors">
                         1 day before expiry
                       </span>
                     </label>
@@ -443,13 +443,13 @@ export default function DocumentFormScreen({
                           onChange={(e) => updateField('customReminderValue', Number(e.target.value))}
                           disabled={isSubmitting}
                           placeholder="0"
-                          className="w-24 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+                          className="w-24 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50"
                         />
                         <select
                           value={formData.customReminderUnit}
                           onChange={(e) => updateField('customReminderUnit', e.target.value as 'days' | 'weeks' | 'months')}
                           disabled={isSubmitting}
-                          className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+                          className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-600 transition-colors disabled:opacity-50"
                         >
                           <option value="days" className="bg-[#1a1625]">Days</option>
                           <option value="weeks" className="bg-[#1a1625]">Weeks</option>

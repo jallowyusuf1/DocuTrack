@@ -86,7 +86,7 @@ export default function InvitationModal({ isOpen, onClose, onSuccess }: Invitati
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@example.com"
-                  className="w-full h-12 pl-10 pr-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-purple-500"
+                  className="w-full h-12 pl-10 pr-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-800"
                   required
                 />
               </div>
@@ -109,7 +109,7 @@ export default function InvitationModal({ isOpen, onClose, onSuccess }: Invitati
                       onClick={() => setRelationship(rel.value)}
                       className={`p-3 rounded-xl flex flex-col items-center gap-2 transition-all ${
                         relationship === rel.value
-                          ? 'bg-purple-600 border-2 border-purple-400'
+                          ? 'bg-blue-600 border-2 border-blue-400'
                           : 'bg-white/10 border-2 border-transparent hover:border-white/20'
                       }`}
                     >
@@ -131,7 +131,7 @@ export default function InvitationModal({ isOpen, onClose, onSuccess }: Invitati
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Add a personal message..."
                 rows={3}
-                className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-purple-500 resize-none"
+                className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-800 resize-none"
               />
             </div>
 
@@ -149,7 +149,7 @@ export default function InvitationModal({ isOpen, onClose, onSuccess }: Invitati
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={loading}
-                className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

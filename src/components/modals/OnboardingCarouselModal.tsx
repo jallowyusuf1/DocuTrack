@@ -23,7 +23,7 @@ const SCREENS: Screen[] = [
   {
     id: 1,
     icon: FileText,
-    title: 'Welcome to DocuTrack',
+    title: 'Welcome to DocuTrackr',
     description: 'Your personal document management system',
     features: [
       'Organize all your important documents',
@@ -155,7 +155,7 @@ export default function OnboardingCarouselModal({
         </button>
 
         {/* Left Side - Illustration */}
-        <div className="w-1/2 flex items-center justify-center p-12 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+        <div className="w-1/2 flex items-center justify-center p-12 bg-gradient-to-br from-blue-600/10 to-pink-500/10">
           <motion.div
             key={currentScreen}
             initial={{ opacity: 0, scale: 0.8 }}
@@ -167,7 +167,7 @@ export default function OnboardingCarouselModal({
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
             >
-              <Icon className="w-32 h-32 text-purple-400" />
+              <Icon className="w-32 h-32 text-blue-400" />
             </motion.div>
             <div className="text-center">
               <h2 className="text-4xl font-bold text-white mb-4">{screen.title}</h2>
@@ -189,7 +189,7 @@ export default function OnboardingCarouselModal({
               className="space-y-8"
             >
               <div className="flex items-center justify-center mb-8">
-                <Icon className="w-30 h-30 text-purple-400" style={{ width: '120px', height: '120px' }} />
+                <Icon className="w-30 h-30 text-blue-400" style={{ width: '120px', height: '120px' }} />
               </div>
 
               <h1 className="text-5xl font-bold text-white text-center mb-4">{screen.title}</h1>
@@ -204,7 +204,7 @@ export default function OnboardingCarouselModal({
                     transition={{ delay: idx * 0.1 }}
                     className="flex items-center gap-3 text-lg text-white/80"
                   >
-                    <div className="w-2 h-2 rounded-full bg-purple-400" />
+                    <div className="w-2 h-2 rounded-full bg-blue-400" />
                     {feature}
                   </motion.li>
                 ))}
@@ -229,7 +229,7 @@ export default function OnboardingCarouselModal({
                   <div
                     key={idx}
                     className={`h-1 flex-1 mx-1 rounded-full transition-all ${
-                      idx <= currentScreen ? 'bg-purple-500' : 'bg-white/20'
+                      idx <= currentScreen ? 'bg-blue-600' : 'bg-white/20'
                     }`}
                   />
                 ))}
@@ -242,7 +242,7 @@ export default function OnboardingCarouselModal({
             {currentScreen === SCREENS.length - 1 ? (
               <button
                 onClick={handleComplete}
-                className="px-8 py-4 rounded-xl bg-purple-500 text-white font-semibold hover:bg-purple-600 transition-colors"
+                className="px-8 py-4 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-800 transition-colors"
                 style={{ width: '320px', height: '64px' }}
               >
                 Get Started

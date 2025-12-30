@@ -133,8 +133,8 @@ export default function PendingInvitationsTab() {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                        <User className="w-6 h-6 text-purple-300" />
+                      <div className="w-12 h-12 rounded-full bg-blue-600/20 flex items-center justify-center">
+                        <User className="w-6 h-6 text-blue-300" />
                       </div>
                     )}
                     <div>

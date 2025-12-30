@@ -43,7 +43,7 @@ export default function DesktopDocumentSidebar({
               {item.path ? (
                 <button
                   onClick={() => navigate(item.path!)}
-                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   {item.label}
                 </button>
@@ -139,8 +139,8 @@ export default function DesktopDocumentSidebar({
                 onClick={() => onNavigate(doc.id)}
                 className="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left"
                 style={{
-                  background: doc.id === document.id ? 'rgba(139, 92, 246, 0.2)' : 'rgba(42, 38, 64, 0.6)',
-                  border: doc.id === document.id ? '1px solid rgba(139, 92, 246, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: doc.id === document.id ? 'rgba(37, 99, 235, 0.2)' : 'rgba(42, 38, 64, 0.6)',
+                  border: doc.id === document.id ? '1px solid rgba(37, 99, 235, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
                 {doc.image_url && (

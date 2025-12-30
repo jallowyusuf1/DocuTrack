@@ -139,7 +139,7 @@ export default function ImagePreviewScreen({
         <button
           onClick={handleContinue}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-800 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span>Continue</span>
           <Check className="w-5 h-5" />
@@ -173,7 +173,7 @@ export default function ImagePreviewScreen({
 
               {/* Crop area */}
               <div
-                className="absolute border-2 border-purple-500 bg-transparent"
+                className="absolute border-2 border-blue-600 bg-transparent"
                 style={{
                   left: `${(cropArea.x / (imageRef.current?.naturalWidth || 1)) * 100}%`,
                   top: `${(cropArea.y / (imageRef.current?.naturalHeight || 1)) * 100}%`,
@@ -182,10 +182,10 @@ export default function ImagePreviewScreen({
                 }}
               >
                 {/* Corner handles */}
-                <div className="absolute -top-2 -left-2 w-4 h-4 bg-purple-500 rounded-full" />
-                <div className="absolute -top-2 -right-2 w-4 h-4 bg-purple-500 rounded-full" />
-                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-purple-500 rounded-full" />
-                <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-purple-500 rounded-full" />
+                <div className="absolute -top-2 -left-2 w-4 h-4 bg-blue-600 rounded-full" />
+                <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-600 rounded-full" />
+                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-blue-600 rounded-full" />
+                <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-blue-600 rounded-full" />
               </div>
             </div>
           )}
@@ -197,7 +197,7 @@ export default function ImagePreviewScreen({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleZoomIn}
-            className="w-12 h-12 rounded-full bg-[rgba(26,22,37,0.9)] backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
+            className="w-12 h-12 rounded-full bg-[rgba(26,22,37,0.9)] backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-blue-600/20 hover:border-blue-600/50 transition-colors"
           >
             <ZoomIn className="w-5 h-5" />
           </motion.button>
@@ -205,7 +205,7 @@ export default function ImagePreviewScreen({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleZoomOut}
-            className="w-12 h-12 rounded-full bg-[rgba(26,22,37,0.9)] backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
+            className="w-12 h-12 rounded-full bg-[rgba(26,22,37,0.9)] backdrop-blur-xl border border-white/10 flex items-center justify-center text-white hover:bg-blue-600/20 hover:border-blue-600/50 transition-colors"
           >
             <ZoomOut className="w-5 h-5" />
           </motion.button>
@@ -224,7 +224,7 @@ export default function ImagePreviewScreen({
             className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all ${
               isProcessing
                 ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                : 'bg-white/10 text-white hover:bg-purple-500/20 hover:border-purple-500/50'
+                : 'bg-white/10 text-white hover:bg-blue-600/20 hover:border-blue-600/50'
             } border border-white/10`}
           >
             <RotateCw className={`w-5 h-5 ${isProcessing ? 'animate-spin' : ''}`} />
@@ -239,10 +239,10 @@ export default function ImagePreviewScreen({
             disabled={isProcessing}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all border ${
               cropMode
-                ? 'bg-purple-500/30 border-purple-500 text-white'
+                ? 'bg-blue-600/30 border-blue-600 text-white'
                 : isProcessing
                 ? 'bg-white/5 text-white/30 cursor-not-allowed border-white/10'
-                : 'bg-white/10 text-white hover:bg-purple-500/20 hover:border-purple-500/50 border-white/10'
+                : 'bg-white/10 text-white hover:bg-blue-600/20 hover:border-blue-600/50 border-white/10'
             }`}
           >
             <Crop className="w-5 h-5" />
@@ -260,7 +260,7 @@ export default function ImagePreviewScreen({
                 whileTap={{ scale: 0.95 }}
                 onClick={handleApplyCrop}
                 disabled={isProcessing}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:from-blue-800 hover:to-blue-800 transition-all disabled:opacity-50"
               >
                 <Check className="w-5 h-5" />
                 <span className="font-medium">Apply</span>
@@ -276,10 +276,10 @@ export default function ImagePreviewScreen({
             disabled={isProcessing}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all border ${
               filterMode
-                ? 'bg-purple-500/30 border-purple-500 text-white'
+                ? 'bg-blue-600/30 border-blue-600 text-white'
                 : isProcessing
                 ? 'bg-white/5 text-white/30 cursor-not-allowed border-white/10'
-                : 'bg-white/10 text-white hover:bg-purple-500/20 hover:border-purple-500/50 border-white/10'
+                : 'bg-white/10 text-white hover:bg-blue-600/20 hover:border-blue-600/50 border-white/10'
             }`}
           >
             <Sliders className="w-5 h-5" />
@@ -308,7 +308,7 @@ export default function ImagePreviewScreen({
                   max="200"
                   value={brightness}
                   onChange={(e) => setBrightness(Number(e.target.value))}
-                  className="w-full h-2 rounded-full bg-white/10 appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500"
+                  className="w-full h-2 rounded-full bg-white/10 appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600"
                 />
               </div>
 
@@ -324,7 +324,7 @@ export default function ImagePreviewScreen({
                   max="200"
                   value={contrast}
                   onChange={(e) => setContrast(Number(e.target.value))}
-                  className="w-full h-2 rounded-full bg-white/10 appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-500"
+                  className="w-full h-2 rounded-full bg-white/10 appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600"
                 />
               </div>
             </motion.div>

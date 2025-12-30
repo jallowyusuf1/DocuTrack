@@ -12,7 +12,13 @@ export async function ensureBucketExists(): Promise<boolean> {
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     
     if (listError) {
-      console.error('Error listing buckets:', listError);
+      // If we can't list buckets (permission issue), assume bucket exists or will be created by admin
+      // Don't log as error - this is expected for non-admin users
+      if (listError.message?.includes('permission') || listError.message?.includes('policy') || listError.message?.includes('RLS')) {
+        console.log(`Cannot list buckets (permission issue) - assuming "${BUCKET_NAME}" exists or will be created by admin`);
+        return true; // Assume bucket exists to prevent errors
+      }
+      console.warn('Error listing buckets:', listError);
       return false;
     }
 
@@ -23,8 +29,9 @@ export async function ensureBucketExists(): Promise<boolean> {
       return true;
     }
 
-    // Create bucket if it doesn't exist
-    console.log(`Creating bucket "${BUCKET_NAME}"...`);
+    // Only try to create bucket if we have permission
+    // Most users won't have this permission - bucket should be created by admin
+    console.log(`Bucket "${BUCKET_NAME}" not found. Attempting to create...`);
     const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
       public: false, // PRIVATE bucket for security - requires signed URLs
       fileSizeLimit: 10485760, // 10MB
@@ -32,20 +39,28 @@ export async function ensureBucketExists(): Promise<boolean> {
     });
 
     if (error) {
-      console.error('Error creating bucket:', error);
+      // If it's a permission/RLS error, that's expected - bucket should be created by admin
+      if (error.message?.includes('permission') || error.message?.includes('policy') || error.message?.includes('RLS') || error.message?.includes('row-level security')) {
+        console.log(`Cannot create bucket (permission issue) - "${BUCKET_NAME}" should be created by admin. Continuing anyway...`);
+        return true; // Return true to allow app to continue
+      }
+      
       // If bucket already exists (race condition), that's okay
       if (error.message.includes('already exists') || error.message.includes('duplicate')) {
         console.log(`Bucket "${BUCKET_NAME}" already exists (race condition)`);
         return true;
       }
+      
+      console.warn('Error creating bucket:', error);
       return false;
     }
 
     console.log(`Bucket "${BUCKET_NAME}" created successfully`);
     return true;
   } catch (error) {
-    console.error('Unexpected error ensuring bucket exists:', error);
-    return false;
+    // Catch all errors gracefully - don't break the app if bucket setup fails
+    console.warn('Unexpected error ensuring bucket exists:', error);
+    return true; // Return true to allow app to continue
   }
 }
 

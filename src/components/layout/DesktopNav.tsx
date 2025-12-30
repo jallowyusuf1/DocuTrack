@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Calendar, Users, User, Plus, Lock as LockIcon, Clock, MessageSquare, LogOut } from 'lucide-react';
+import { FileText, Calendar, Users, User, Plus, Lock as LockIcon, Clock, MessageSquare, LogOut, Folder, FolderOpen, LayoutDashboard, CalendarDays, DoorOpen, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { triggerHaptic } from '../../utils/animations';
@@ -10,12 +10,123 @@ import { useOptionalIdleTimeout } from '../../contexts/IdleTimeoutContext';
 import { usePendingRequestCount } from '../../hooks/usePendingRequestCount';
 import { childAccountsService } from '../../services/childAccounts';
 
+// Animated icon components
+function AnimatedDashboardIcon({ isActive }: { isActive: boolean }) {
+  return (
+    <div className="relative w-5 h-5">
+      <motion.div
+        animate={{
+          scale: isActive ? 1 : 0.9,
+          opacity: isActive ? 1 : 0.8,
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        <BarChart3 className="w-5 h-5" />
+      </motion.div>
+    </div>
+  );
+}
+
+function AnimatedDocumentsIcon({ isActive }: { isActive: boolean }) {
+  return (
+    <div className="relative w-5 h-5">
+      <AnimatePresence mode="wait">
+        {isActive ? (
+          <motion.div
+            key="open"
+            initial={{ rotateY: -90, opacity: 0 }}
+            animate={{ rotateY: 0, opacity: 1 }}
+            exit={{ rotateY: 90, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            <FolderOpen className="w-5 h-5" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="closed"
+            initial={{ rotateY: 90, opacity: 0 }}
+            animate={{ rotateY: 0, opacity: 1 }}
+            exit={{ rotateY: -90, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            <Folder className="w-5 h-5" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function AnimatedDatesIcon({ isActive }: { isActive: boolean }) {
+  return (
+    <div className="relative w-5 h-5">
+      <AnimatePresence mode="wait">
+        {isActive ? (
+          <motion.div
+            key="open"
+            initial={{ rotateY: -90, opacity: 0, scale: 0.8 }}
+            animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+            exit={{ rotateY: 90, opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            <CalendarDays className="w-5 h-5" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="closed"
+            initial={{ rotateY: 90, opacity: 0, scale: 0.8 }}
+            animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+            exit={{ rotateY: -90, opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            <Calendar className="w-5 h-5" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function AnimatedProfileIcon({ isActive }: { isActive: boolean }) {
+  return (
+    <div className="relative w-5 h-5">
+      <motion.div
+        animate={{
+          rotateY: isActive ? 0 : -15,
+          scale: isActive ? 1.1 : 1,
+        }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        <User className="w-5 h-5" />
+      </motion.div>
+      {isActive && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 0.3, scale: 1.5 }}
+          exit={{ opacity: 0, scale: 0 }}
+          transition={{ duration: 0.4 }}
+          className="absolute inset-0"
+          style={{
+            border: '2px solid currentColor',
+            borderRadius: '50%',
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 const baseNavItems = [
-  { path: '/expire-soon', label: 'Expiring Soon', icon: Clock },
-  { path: '/documents', label: 'Documents', icon: FileText },
-  { path: '/dates', label: 'Dates', icon: Calendar },
+  { path: '/dashboard', label: 'Dashboard', icon: BarChart3, animatedIcon: AnimatedDashboardIcon },
+  { path: '/documents', label: 'Documents', icon: Folder, animatedIcon: AnimatedDocumentsIcon },
+  { path: '/dates', label: 'Dates', icon: Calendar, animatedIcon: AnimatedDatesIcon },
   { path: '/family', label: 'Family', icon: Users },
-  { path: '/profile', label: 'Profile', icon: User },
+  { path: '/profile', label: 'Profile', icon: User, animatedIcon: AnimatedProfileIcon },
 ];
 
 export default function DesktopNav() {
@@ -50,9 +161,6 @@ export default function DesktopNav() {
     : baseNavItems;
 
   const isActive = (path: string) => {
-    if (path === '/expire-soon') {
-      return location.pathname === '/expire-soon';
-    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -96,15 +204,14 @@ export default function DesktopNav() {
 
   return (
     <header ref={headerRef} className="fixed top-4 left-0 right-0 z-50 pointer-events-auto">
-      {/* Solid-ish glass scrim so nothing reads “behind” the nav (ex: Settings danger zone) */}
+      {/* Solid-ish glass scrim so nothing reads "behind" the nav (ex: Settings danger zone) */}
       <div
         className="fixed inset-x-0 top-0 h-[120px] pointer-events-none"
         style={{
           background:
-            'linear-gradient(180deg, rgba(26,22,37,0.92) 0%, rgba(26,22,37,0.72) 55%, rgba(26,22,37,0.00) 100%)',
-          backdropFilter: 'blur(34px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(34px) saturate(180%)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+            'linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.72) 55%, rgba(0,0,0,0.00) 100%)',
+          backdropFilter: 'blur(40px) saturate(120%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(120%)',
         }}
       />
       <div className="pt-0 relative">
@@ -112,13 +219,12 @@ export default function DesktopNav() {
           <div
             className="flex items-center justify-between gap-4 px-6 md:px-8 py-5 rounded-[999px]"
             style={{
-              background:
-                'radial-gradient(circle at 18% 12%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.07) 42%, rgba(255,255,255,0.04) 100%), linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(139,92,246,0.12) 55%, rgba(59,130,246,0.08) 100%)',
-              border: '1px solid rgba(255,255,255,0.18)',
-              backdropFilter: 'blur(34px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+              background: 'rgba(26, 26, 26, 0.8)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(40px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(120%)',
               boxShadow:
-                '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
+                '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             }}
           >
         {/* Logo/Brand */}
@@ -140,13 +246,14 @@ export default function DesktopNav() {
           <div
             className="relative inline-flex items-center gap-1 rounded-[999px] p-1.5"
             style={{
-              background: 'rgba(0,0,0,0.18)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10)',
+              background: 'rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             }}
           >
             {navItems.map((item) => {
               const Icon = item.icon;
+              const AnimatedIcon = 'animatedIcon' in item ? item.animatedIcon : null;
               const active = isActive(item.path);
               return (
                 <motion.button
@@ -158,7 +265,7 @@ export default function DesktopNav() {
                   className="relative px-6 py-3 rounded-[999px] text-base transition-colors flex items-center gap-2"
                   style={{
                     WebkitTapHighlightColor: 'transparent',
-                    color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.72)',
+                    color: active ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
                   }}
                   whileTap={reduced ? undefined : { scale: 0.98 }}
                 >
@@ -167,13 +274,9 @@ export default function DesktopNav() {
                       layoutId="app-nav-pill"
                       className="absolute inset-0 rounded-[999px]"
                       style={{
-                        background:
-                          'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 48%, rgba(255,255,255,0.06) 100%), linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.08) 100%)',
-                        border: '1px solid rgba(255,255,255,0.18)',
-                        backdropFilter: 'blur(22px)',
-                        WebkitBackdropFilter: 'blur(22px)',
+                        background: '#60A5FA',
                         boxShadow:
-                          '0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)',
+                          '0 8px 24px rgba(96, 165, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                         pointerEvents: 'none',
                       }}
                       transition={
@@ -184,7 +287,11 @@ export default function DesktopNav() {
                     />
                   )}
                   <span className="relative z-10 flex items-center gap-2">
-                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    {AnimatedIcon ? (
+                      <AnimatedIcon isActive={active} />
+                    ) : (
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                    )}
                     <span className="font-medium whitespace-nowrap">{item.label}</span>
                     {'badge' in item && item.badge !== undefined && item.badge > 0 && (
                       <motion.span
@@ -218,12 +325,11 @@ export default function DesktopNav() {
               }}
               className="hidden md:flex items-center gap-2 px-4 h-12 rounded-full text-white/90 font-medium text-sm"
               style={{
-                background:
-                  'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.05) 100%)',
-                border: '1px solid rgba(255,255,255,0.16)',
-                backdropFilter: 'blur(26px)',
-                WebkitBackdropFilter: 'blur(26px)',
-                boxShadow: '0 20px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+                background: 'rgba(26, 26, 26, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(40px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
               }}
               title="Lock now (Ctrl/Cmd+L)"
             >
@@ -248,17 +354,11 @@ export default function DesktopNav() {
             }}
             className="flex items-center gap-2 px-4 h-12 rounded-full text-white/90 font-medium text-sm"
             style={{
-              background:
-                'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.05) 100%), linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(139,92,246,0.10) 55%, rgba(59,130,246,0.10) 100%)',
-              border: '1px solid rgba(255,255,255,0.16)',
-              backdropFilter: 'blur(26px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(26px) saturate(180%)',
-              boxShadow: '0 20px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
-              backgroundImage: `
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-              `,
-              backgroundSize: '20px 20px',
+              background: 'rgba(26, 26, 26, 0.8)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(40px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(120%)',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             }}
             title="Logout"
           >
@@ -272,12 +372,12 @@ export default function DesktopNav() {
             onClick={() => {
               triggerHaptic('medium');
               // Keep nav behavior unchanged
-              navigate(location.pathname === '/expire-soon' ? '/add-document?scope=expire_soon' : '/add-document?scope=dashboard');
+              navigate('/add-document?scope=dashboard');
             }}
             className="flex items-center gap-2 px-6 h-12 rounded-full text-white font-medium text-base cursor-pointer whitespace-nowrap"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-              boxShadow: '0 18px 55px rgba(139,92,246,0.35)',
+              background: '#60A5FA',
+              boxShadow: '0 8px 24px rgba(96, 165, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               pointerEvents: 'auto',
             }}
           >

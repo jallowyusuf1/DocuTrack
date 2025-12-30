@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FastForward, Pause, Play, Rewind, Volume2, VolumeX, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import FrostedModal from '../ui/FrostedModal';
+import AppDemo, { slides } from './AppDemo';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -25,6 +27,7 @@ export default function HeroVideoModal({
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const hasVideo = !!videoUrl;
 
@@ -109,7 +112,7 @@ export default function HeroVideoModal({
           <div className="min-w-0">
             <div className="text-white font-semibold text-lg truncate">{title}</div>
             <div className="text-white/60 text-xs truncate">
-              {hasVideo ? 'Tip: Space to play/pause • ←/→ to seek' : 'Paste your video URL when ready'}
+              {hasVideo ? 'Tip: Space to play/pause • ←/→ to seek' : 'Automatic slideshow demo'}
             </div>
           </div>
           <button
@@ -123,23 +126,21 @@ export default function HeroVideoModal({
           </button>
         </div>
 
-        {/* Video */}
-        <div className="p-5">
+        {/* Video or Demo */}
+        <div className="p-5 pb-3">
           {!hasVideo ? (
             <div
-              className="w-full rounded-3xl overflow-hidden flex items-center justify-center text-center px-6"
+              className="w-full rounded-3xl overflow-hidden"
               style={{
                 aspectRatio: '16 / 9',
-                background: 'rgba(0,0,0,0.22)',
+                background: '#000000',
                 border: '1px solid rgba(255,255,255,0.12)',
               }}
             >
-              <div>
-                <div className="text-white text-xl font-semibold mb-2">Video link needed</div>
-                <div className="text-white/60 text-sm max-w-lg">
-                  Send me the video link (mp4 or a direct file URL) and I’ll wire it in so this modal plays it.
-                </div>
-              </div>
+              <AppDemo
+                currentSlideIndex={currentSlideIndex}
+                onSlideChange={setCurrentSlideIndex}
+              />
             </div>
           ) : (
             <div className="w-full rounded-3xl overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
@@ -236,6 +237,36 @@ export default function HeroVideoModal({
                 />
               </div>
             </div>
+          )}
+
+          {/* Slide Indicators - Only for Demo */}
+          {!hasVideo && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex justify-center gap-2 mt-4 pb-2"
+            >
+              {slides.map((slide, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlideIndex(idx)}
+                  className="relative h-2 rounded-full transition-all"
+                  style={{
+                    width: idx === currentSlideIndex ? 40 : 20,
+                    background:
+                      idx === currentSlideIndex
+                        ? slide.accentColor
+                        : 'rgba(255, 255, 255, 0.25)',
+                    boxShadow:
+                      idx === currentSlideIndex
+                        ? `0 0 12px ${slide.accentColor}88`
+                        : 'none',
+                  }}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </motion.div>
           )}
         </div>
       </div>

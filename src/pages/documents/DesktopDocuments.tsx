@@ -16,7 +16,9 @@ import Toast from '../../components/ui/Toast';
 import BackButton from '../../components/ui/BackButton';
 import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
 import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
-import { Lock } from 'lucide-react';
+import { Lock, XCircle, FolderOpen } from 'lucide-react';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 type ViewMode = 'grid' | 'list';
 
@@ -39,6 +41,9 @@ export default function DesktopDocuments() {
   const { user } = useAuth();
   const { toasts, removeToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('documents');
 
   // State
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -427,7 +432,7 @@ export default function DesktopDocuments() {
   // Show nothing until lock check is complete
   if (!lockCheckComplete) {
     return (
-      <div className="min-h-full flex flex-col liquid-dashboard-bg">
+      <div className="pt-4 min-h-full flex flex-col blue-wave-bg">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-white text-lg">Loading...</div>
         </div>
@@ -436,16 +441,25 @@ export default function DesktopDocuments() {
   }
 
   return (
-    <div className="min-h-full flex flex-col liquid-dashboard-bg">
-      {/* Document Lock Overlay */}
-      {isLocked && !isUnlocking && (
-        <DocumentLockOverlay onUnlock={handleUnlock} />
-      )}
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Documents"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
 
-      {/* Unlock Animation */}
-      {isUnlocking && (
-        <UnlockAnimation onComplete={handleUnlockComplete} />
-      )}
+      <div className="pt-4 min-h-full flex flex-col" style={{ background: '#000000' }}>
+        {/* Document Lock Overlay */}
+        {isLocked && !isUnlocking && (
+          <DocumentLockOverlay onUnlock={handleUnlock} />
+        )}
+
+        {/* Unlock Animation */}
+        {isUnlocking && (
+          <UnlockAnimation onComplete={handleUnlockComplete} />
+        )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
@@ -497,10 +511,11 @@ export default function DesktopDocuments() {
                 }}
                 className="h-[44px] px-4 rounded-xl flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white transition-colors"
                 style={{
-                  background: 'rgba(35, 29, 51, 0.55)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(26, 26, 26, 0.8)',
+                  border: '1px solid rgba(234, 179, 8, 0.3)',
                   backdropFilter: 'blur(16px)',
                   WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 0 20px rgba(234, 179, 8, 0.25)',
                 }}
                 title="Lock Documents"
               >
@@ -518,11 +533,22 @@ export default function DesktopDocuments() {
               </div>
             ) : error ? (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <p className="text-red-400 text-lg mb-4">{error}</p>
+                <div className="text-center p-8 rounded-2xl" style={{
+                  background: 'rgba(26, 26, 26, 0.8)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                }}>
+                  <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                  <p className="text-red-400 text-lg mb-4 font-semibold">{error}</p>
                   <button
                     onClick={fetchDocuments}
-                    className="px-6 py-2.5 rounded-xl bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-colors"
+                    className="px-6 py-2.5 rounded-xl font-semibold text-white hover:bg-blue-600/40 transition-all"
+                    style={{
+                      background: 'rgba(37, 99, 235, 0.3)',
+                      border: '1px solid rgba(37, 99, 235, 0.4)',
+                      boxShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
+                    }}
                   >
                     Retry
                   </button>
@@ -530,11 +556,23 @@ export default function DesktopDocuments() {
               </div>
             ) : filteredAndSortedDocuments.length === 0 ? (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <p className="text-white/50 text-lg mb-4">No documents found</p>
+                <div className="text-center p-8 rounded-2xl" style={{
+                  background: 'rgba(26, 26, 26, 0.8)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                }}>
+                  <FolderOpen className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                  <p className="text-white text-lg mb-2 font-semibold">No Documents Found</p>
+                  <p className="text-white/50 text-sm mb-4">Add your first document to get started</p>
                   <button
                     onClick={() => navigate('/add-document')}
-                    className="px-6 py-2.5 rounded-xl bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-colors"
+                    className="px-6 py-2.5 rounded-xl font-semibold text-white hover:bg-blue-600/40 transition-all"
+                    style={{
+                      background: 'rgba(37, 99, 235, 0.3)',
+                      border: '1px solid rgba(37, 99, 235, 0.4)',
+                      boxShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
+                    }}
                   >
                     Add Document
                   </button>
@@ -572,7 +610,7 @@ export default function DesktopDocuments() {
                   <div className="flex justify-center py-8">
                     <button
                       onClick={handleLoadMore}
-                      className="px-8 py-3 rounded-xl bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 transition-all transform hover:scale-105 font-medium"
+                      className="px-8 py-3 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-all transform hover:scale-105 font-medium"
                     >
                       Load More ({filteredAndSortedDocuments.length - paginatedDocuments.length} remaining)
                     </button>
@@ -612,15 +650,16 @@ export default function DesktopDocuments() {
         hasNext={quickViewIndex < filteredAndSortedDocuments.length - 1}
       />
 
-      {/* Toast Notifications */}
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
-    </div>
+        {/* Toast Notifications */}
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+    </>
   );
 }

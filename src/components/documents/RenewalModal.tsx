@@ -133,7 +133,7 @@ export default function RenewalModal({
                         ? 'rgba(239, 68, 68, 0.1)'
                         : 'rgba(35, 29, 51, 0.6)',
                       backdropFilter: 'blur(15px)',
-                      color: watchedDate ? '#FFFFFF' : '#A78BFA',
+                      color: watchedDate ? '#FFFFFF' : '#60A5FA',
                     }}
                   >
                     <span>

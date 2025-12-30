@@ -54,7 +54,7 @@ export const UnlockAnimation: React.FC<UnlockAnimationProps> = ({ onComplete }) 
           ${stage === 'blur-dissolve' || stage === 'complete' ? 'opacity-0 blur-0' : 'opacity-40 blur-[30px]'}
         `}
       >
-        <div className="absolute inset-0 bg-purple-500/15" />
+        <div className="absolute inset-0 bg-blue-600/15" />
       </div>
 
       {/* Animation container */}
@@ -72,18 +72,18 @@ export const UnlockAnimation: React.FC<UnlockAnimationProps> = ({ onComplete }) 
           >
             {/* Folder back (stays in place) */}
             <div
-              className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg"
+              className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg"
               style={{
-                boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)',
+                boxShadow: '0 20px 60px rgba(37, 99, 235, 0.4)',
               }}
             >
-              <div className="absolute -top-3 left-4 w-24 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-t-lg" />
+              <div className="absolute -top-3 left-4 w-24 h-6 bg-gradient-to-br from-blue-400 to-blue-800 rounded-t-lg" />
             </div>
 
             {/* Folder top (opens) */}
             <div
               className={`
-                absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg origin-bottom
+                absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-800 rounded-lg origin-bottom
                 transition-all duration-500
                 ${stage === 'folder-open' || stage === 'blur-dissolve' || stage === 'complete'
                   ? 'rotate-x-[-120deg] opacity-70'
@@ -111,7 +111,7 @@ export const UnlockAnimation: React.FC<UnlockAnimationProps> = ({ onComplete }) 
             {/* Purple glow from inside */}
             <div
               className={`
-                absolute inset-0 bg-purple-400/40 rounded-lg blur-2xl
+                absolute inset-0 bg-blue-400/40 rounded-lg blur-2xl
                 transition-all duration-500
                 ${stage === 'folder-open' ? 'opacity-100 scale-110' : 'opacity-0 scale-100'}
               `}

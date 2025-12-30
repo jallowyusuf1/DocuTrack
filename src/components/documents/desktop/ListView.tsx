@@ -33,7 +33,7 @@ const getUrgencyColor = (expiryDate: string) => {
     case 'valid':
       return '#10B981';
     default:
-      return '#8B5CF6';
+      return '#2563EB';
   }
 };
 
@@ -94,7 +94,7 @@ export default function ListView({
   const SortHeader = ({ column, children }: { column: SortColumn; children: React.ReactNode }) => (
     <th
       onClick={() => handleSort(column)}
-      className="px-6 py-4 text-left text-xs font-semibold text-purple-300 uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors select-none"
+      className="px-6 py-4 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors select-none"
     >
       <div className="flex items-center gap-2">
         {children}
@@ -142,7 +142,7 @@ export default function ListView({
                           });
                         }
                       }}
-                      className="w-4 h-4 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-purple-500 checked:border-purple-500 cursor-pointer"
+                      className="w-4 h-4 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-blue-600 checked:border-blue-600 cursor-pointer"
                     />
                   </th>
                 )}
@@ -152,10 +152,10 @@ export default function ListView({
                 <SortHeader column="number">Number</SortHeader>
                 <SortHeader column="expiry">Expiry Date</SortHeader>
                 <SortHeader column="added">Date Added</SortHeader>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-purple-300 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 w-32 text-center text-xs font-semibold text-purple-300 uppercase tracking-wider">
+                <th className="px-6 py-4 w-32 text-center text-xs font-semibold text-blue-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -179,7 +179,7 @@ export default function ListView({
                     onMouseLeave={() => setHoveredRow(null)}
                     onClick={() => handleRowClick(document)}
                     className={`border-b border-white/5 cursor-pointer transition-all ${
-                      isSelected ? 'bg-purple-500/10' : isHovered ? 'bg-white/5' : ''
+                      isSelected ? 'bg-blue-600/10' : isHovered ? 'bg-white/5' : ''
                     }`}
                   >
                     {/* Selection Checkbox */}
@@ -189,7 +189,7 @@ export default function ListView({
                           type="checkbox"
                           checked={isSelected}
                           onChange={(e) => handleCheckboxChange(document.id, e as any)}
-                          className="w-4 h-4 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-purple-500 checked:border-purple-500 cursor-pointer"
+                          className="w-4 h-4 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-blue-600 checked:border-blue-600 cursor-pointer"
                         />
                       </td>
                     )}
@@ -231,7 +231,7 @@ export default function ListView({
 
                     {/* Category */}
                     <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-xs font-medium whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-lg bg-blue-600/20 text-blue-300 text-xs font-medium whitespace-nowrap">
                         {document.document_type}
                       </span>
                     </td>
@@ -283,7 +283,7 @@ export default function ListView({
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => handleAction(() => onQuickView(document), e)}
-                          className="p-2 rounded-lg text-white hover:bg-purple-500/20 transition-colors"
+                          className="p-2 rounded-lg text-white hover:bg-blue-600/20 transition-colors"
                           title="Quick View"
                         >
                           <Eye className="w-4 h-4" />

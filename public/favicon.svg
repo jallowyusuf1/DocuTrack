@@ -1,0 +1,72 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Glass holographic gradient matching the 3D "D" -->
+    <linearGradient id="glassMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0E7FF;stop-opacity:1" />
+      <stop offset="15%" style="stop-color:#C7D2FE;stop-opacity:1" />
+      <stop offset="35%" style="stop-color:#A78BFA;stop-opacity:1" />
+      <stop offset="55%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="90%" style="stop-color:#6D28D9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5B21B6;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Pink/Purple accent for depth -->
+    <linearGradient id="pinkAccent" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#E879F9;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#C026D3;stop-opacity:0.4" />
+    </linearGradient>
+
+    <!-- Top highlight (glossy glass effect) -->
+    <linearGradient id="topHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.9" />
+      <stop offset="40%" style="stop-color:#FFFFFF;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Drop shadow -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Main 3D "D" shape -->
+  <g filter="url(#shadow)">
+    <!-- Outer D shape with glass gradient -->
+    <path d="M 120 80 L 120 432 L 280 432 C 380 432 440 372 440 256 C 440 140 380 80 280 80 Z M 180 140 L 280 140 C 340 140 380 180 380 256 C 380 332 340 372 280 372 L 180 372 Z"
+          fill="url(#glassMain)"
+          filter="url(#glow)"/>
+
+    <!-- Pink accent layer for depth -->
+    <path d="M 120 80 L 120 432 L 280 432 C 380 432 440 372 440 256 C 440 140 380 80 280 80 Z M 180 140 L 280 140 C 340 140 380 180 380 256 C 380 332 340 372 280 372 L 180 372 Z"
+          fill="url(#pinkAccent)"
+          opacity="0.5"/>
+
+    <!-- Top glossy highlight -->
+    <path d="M 120 80 L 120 180 L 180 180 L 180 140 L 280 140 C 340 140 380 150 410 170 C 430 150 440 200 440 256 C 440 220 430 180 410 150 C 380 100 340 80 280 80 Z"
+          fill="url(#topHighlight)"
+          opacity="0.7"/>
+
+    <!-- Document paper line (horizontal bar) -->
+    <rect x="120" y="240" width="120" height="32" rx="6"
+          fill="#FFFFFF"
+          opacity="0.3"
+          filter="url(#glow)"/>
+
+    <!-- Bright shine on top edge -->
+    <path d="M 140 100 C 200 95 240 95 280 100 C 320 105 360 115 390 130 C 360 110 320 100 280 95 C 240 90 200 90 140 95 Z"
+          fill="#FFFFFF"
+          opacity="0.6"/>
+  </g>
+</svg>
+

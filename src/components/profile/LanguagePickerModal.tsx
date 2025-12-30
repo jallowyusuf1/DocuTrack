@@ -147,7 +147,7 @@ export default function LanguagePickerModal({
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -176,9 +176,9 @@ export default function LanguagePickerModal({
                     style={{
                       height: '60px',
                       ...(isSelected ? {
-                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(109, 40, 217, 0.4))',
-                        border: '2px solid rgba(139, 92, 246, 0.6)',
-                        boxShadow: '0 0 24px rgba(139, 92, 246, 0.4)',
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(109, 40, 217, 0.4))',
+                        border: '2px solid rgba(37, 99, 235, 0.6)',
+                        boxShadow: '0 0 24px rgba(37, 99, 235, 0.4)',
                       } : {
                         background: 'rgba(42, 38, 64, 0.6)',
                         backdropFilter: 'blur(15px)',
@@ -237,7 +237,7 @@ export default function LanguagePickerModal({
                         </span>
                         <span 
                           className="mt-0.5 truncate w-full text-sm md:text-base"
-                          style={{ color: '#A78BFA', opacity: 0.8 }}
+                          style={{ color: '#60A5FA', opacity: 0.8 }}
                         >
                           {lang.name}
                         </span>
@@ -251,8 +251,8 @@ export default function LanguagePickerModal({
                         animate={{ scale: 1 }}
                         className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{
-                          background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                          boxShadow: '0 0 16px rgba(139, 92, 246, 0.6)',
+                          background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                          boxShadow: '0 0 16px rgba(37, 99, 235, 0.6)',
                         }}
                       >
                         <Check className="w-5 h-5 text-white" />

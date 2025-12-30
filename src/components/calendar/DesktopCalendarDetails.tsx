@@ -76,7 +76,7 @@ export default function DesktopCalendarDetails({
             <div className="space-y-3">
               {filteredDocuments.map((doc) => {
                 const daysUntil = getDaysUntil(doc.expiration_date);
-                let urgencyColor = '#8B5CF6'; // Default purple
+                let urgencyColor = '#2563EB'; // Default blue
                 if (daysUntil <= 7) urgencyColor = '#EF4444'; // Red
                 else if (daysUntil <= 30) urgencyColor = '#F59E0B'; // Orange
                 else urgencyColor = '#10B981'; // Green
@@ -125,8 +125,8 @@ export default function DesktopCalendarDetails({
                           <span
                             className="px-2 py-0.5 rounded text-xs font-medium capitalize"
                             style={{
-                              background: 'rgba(139, 92, 246, 0.2)',
-                              color: '#A78BFA',
+                              background: 'rgba(37, 99, 235, 0.2)',
+                              color: '#60A5FA',
                             }}
                           >
                             {doc.document_type?.replace('_', ' ') || 'Document'}
@@ -191,7 +191,7 @@ export default function DesktopCalendarDetails({
                   <div className="space-y-2">
                     {group.documents.map((doc) => {
                       const daysUntil = getDaysUntil(doc.expiration_date);
-                      let urgencyColor = '#8B5CF6'; // Default purple
+                      let urgencyColor = '#2563EB'; // Default blue
                       if (daysUntil <= 7) urgencyColor = '#EF4444'; // Red
                       else if (daysUntil <= 30) urgencyColor = '#F59E0B'; // Orange
                       else urgencyColor = '#10B981'; // Green
@@ -256,7 +256,7 @@ export default function DesktopCalendarDetails({
                       }
                       setSelectedCategories(newSet);
                     }}
-                    className="w-4 h-4 rounded accent-purple-500"
+                    className="w-4 h-4 rounded accent-blue-600"
                   />
                   <span className="text-sm text-white capitalize">
                     {category.replace('_', ' ')}
@@ -292,7 +292,7 @@ export default function DesktopCalendarDetails({
                 setSelectedCategories(new Set(categories));
                 setSelectedUrgency('all');
               }}
-              className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               Clear Filters
             </button>

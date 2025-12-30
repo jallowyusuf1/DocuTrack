@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Search, X, Filter, ChevronDown, FolderOpen, XCircle, RefreshCw, Grid3x3, List, Lock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X, Filter, ChevronDown, FolderOpen, XCircle, RefreshCw, Grid3x3, List, Lock, FileText, Passport, CreditCard, Shield, Plus, Check } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
 import { documentLockService } from '../../services/documentLockService';
@@ -21,6 +21,9 @@ import Toast from '../../components/ui/Toast';
 import EmptyState from '../../components/ui/EmptyState';
 import { DocumentLockOverlay } from '../../components/documents/DocumentLockOverlay';
 import { UnlockAnimation } from '../../components/documents/UnlockAnimation';
+import { useTheme } from '../../contexts/ThemeContext';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 const getSortLabel = (sort: SortOption): string => {
   switch (sort) {
@@ -123,7 +126,10 @@ export default function Documents() {
   const location = useLocation();
   const { user } = useAuth();
   const { toasts, removeToast } = useToast();
-  
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('documents');
+
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -379,37 +385,50 @@ export default function Documents() {
   // Show loading until lock check is complete
   if (!lockCheckComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
+  const { theme } = useTheme();
+  const bgColor = theme === 'light' ? '#FFFFFF' : '#000000';
+  const textColor = theme === 'light' ? '#000000' : '#FFFFFF';
+
   return (
-    <div className="min-h-screen pb-[72px] relative overflow-hidden liquid-dashboard-bg">
-      {/* Document Lock Overlay */}
-      {isLocked && !isUnlocking && (
-        <DocumentLockOverlay onUnlock={handleUnlock} />
-      )}
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Documents"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
 
-      {/* Unlock Animation */}
-      {isUnlocking && (
-        <UnlockAnimation onComplete={handleUnlockComplete} />
-      )}
+      <div className="pt-4 pb-[72px] relative overflow-hidden min-h-screen" style={{ background: bgColor, color: textColor }}>
+        {/* Document Lock Overlay */}
+        {isLocked && !isUnlocking && (
+          <DocumentLockOverlay onUnlock={handleUnlock} />
+        )}
 
-      {/* Background Gradient Orbs */}
+        {/* Unlock Animation */}
+        {isUnlocking && (
+          <UnlockAnimation onComplete={handleUnlockComplete} />
+        )}
+
+      {/* Background Gradient Orbs - Subtle on pure black */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
-          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[100px] opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(37, 99, 235, 0) 70%)',
             transform: 'translate(-50%, -50%)',
           }}
         />
         <div
-          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[100px] opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0) 70%)',
             transform: 'translate(50%, 50%)',
           }}
         />
@@ -418,22 +437,24 @@ export default function Documents() {
       <div className="relative z-10">
         {/* Header */}
         <header
-          className="sticky top-0 z-10"
+          className="sticky top-0 z-10 glass-card"
           style={{
-            background: 'rgba(35, 29, 51, 0.8)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(139, 92, 246, 0.3)',
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.2)',
+            background: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(10, 10, 10, 0.9)',
+            backdropFilter: 'blur(50px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(50px) saturate(120%)',
+            borderBottom: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: theme === 'light'
+              ? '0 4px 12px rgba(0, 0, 0, 0.1)'
+              : '0 4px 12px rgba(0, 0, 0, 0.5)',
           }}
         >
           <div className="px-5 py-4 lg:max-w-[1280px] lg:mx-auto lg:px-8">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-bold text-white" style={{ fontSize: '24px' }}>My Documents</h1>
+                <h1 className="text-2xl font-bold" style={{ fontSize: '24px', color: textColor }}>My Documents</h1>
                 <p className="text-sm mt-1" style={{
                   fontSize: '14px',
-                  color: '#A78BFA',
+                  color: theme === 'light' ? '#3B82F6' : '#60A5FA',
                 }}>
                   {loading ? 'Loading...' : `${documents.length} document${documents.length !== 1 ? 's' : ''}`}
                 </p>
@@ -450,11 +471,11 @@ export default function Documents() {
                   }}
                   className="w-11 h-11 rounded-2xl flex items-center justify-center"
                   style={{
-                    background: 'rgba(35, 29, 51, 0.55)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: 'rgba(26, 26, 26, 0.8)',
+                    border: '1px solid rgba(234, 179, 8, 0.3)',
                     backdropFilter: 'blur(16px)',
                     WebkitBackdropFilter: 'blur(16px)',
-                    boxShadow: '0 0 20px rgba(234, 179, 8, 0.18)',
+                    boxShadow: '0 0 20px rgba(234, 179, 8, 0.25)',
                   }}
                   aria-label="Lock Documents"
                   title="Lock Documents"
@@ -469,11 +490,11 @@ export default function Documents() {
         {/* Search Bar */}
         <div className="px-4 pt-4 pb-2 lg:max-w-[1280px] lg:mx-auto lg:px-8">
           <div className="relative">
-            <Search 
+            <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 z-10"
-              style={{ 
-                color: '#A78BFA',
-                filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))',
+              style={{
+                color: theme === 'light' ? '#3B82F6' : '#60A5FA',
+                filter: theme === 'light' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))' : 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.5))',
               }}
             />
             <input
@@ -481,26 +502,28 @@ export default function Documents() {
               placeholder="Search documents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-[50px] pl-12 pr-12 rounded-2xl text-white transition-all duration-200"
+              className="w-full h-[50px] pl-12 pr-12 rounded-2xl transition-all duration-200"
               style={{
-                background: 'rgba(35, 29, 51, 0.6)',
-                backdropFilter: 'blur(15px)',
-                WebkitBackdropFilter: 'blur(15px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: theme === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(26, 26, 26, 0.8)',
+                backdropFilter: 'blur(30px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(30px) saturate(120%)',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.12)',
                 fontSize: '15px',
+                color: textColor,
               }}
               onFocus={(e) => {
-                e.target.style.border = '1px solid rgba(139, 92, 246, 0.5)';
-                e.target.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
+                const focusColor = theme === 'light' ? 'rgba(59, 130, 246, 0.6)' : 'rgba(96, 165, 250, 0.6)';
+                e.target.style.border = `1px solid ${focusColor}`;
+                e.target.style.boxShadow = `0 0 20px ${focusColor}66`;
               }}
               onBlur={(e) => {
-                e.target.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                e.target.style.border = theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.12)';
                 e.target.style.boxShadow = 'none';
               }}
             />
             <style>{`
               input::placeholder {
-                color: #A78BFA;
+                color: ${theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(96, 165, 250, 0.7)'};
                 opacity: 0.7;
               }
             `}</style>
@@ -509,16 +532,17 @@ export default function Documents() {
                 onClick={handleClearSearch}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all z-10"
                 style={{
-                  background: 'rgba(35, 29, 51, 0.5)',
+                  background: 'rgba(26, 26, 26, 0.9)',
                   backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
                 <X className="w-4 h-4 text-white" />
               </button>
             )}
           </div>
-          {debouncedSearchQuery && filteredAndSortedDocuments.length > 0 && (
-            <p className="text-xs mt-2 px-1" style={{ color: '#A78BFA' }}>
+            {debouncedSearchQuery && filteredAndSortedDocuments.length > 0 && (
+            <p className="text-xs mt-2 px-1" style={{ color: theme === 'light' ? '#3B82F6' : '#60A5FA' }}>
               {filteredAndSortedDocuments.length} result{filteredAndSortedDocuments.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -537,55 +561,74 @@ export default function Documents() {
           <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => setIsSortModalOpen(true)}
-              className="flex items-center gap-2 glass-card-subtle px-4 py-2.5 rounded-xl text-sm text-white hover:bg-white/10 active:scale-95 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm active:scale-95 transition-all"
+              style={{
+                background: theme === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(26, 26, 26, 0.8)',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(30px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(30px) saturate(120%)',
+                color: textColor,
+              }}
             >
               <span>Sort: {getSortLabel(sortOption)}</span>
-              <ChevronDown className="w-4 h-4 text-purple-400" />
+              <ChevronDown className="w-4 h-4" style={{ color: theme === 'light' ? '#3B82F6' : '#60A5FA' }} />
             </button>
             <button
               onClick={() => setIsFilterModalOpen(true)}
-              className="relative flex items-center gap-2 glass-card-subtle px-4 py-2.5 rounded-xl text-sm text-white hover:bg-white/10 active:scale-95 transition-all"
+              className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm active:scale-95 transition-all"
               style={activeFilterCount > 0 ? {
-                boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)',
-              } : {}}
+                background: theme === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(26, 26, 26, 0.8)',
+                border: theme === 'light' ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid rgba(96, 165, 250, 0.4)',
+                backdropFilter: 'blur(30px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(30px) saturate(120%)',
+                boxShadow: theme === 'light' ? '0 0 20px rgba(59, 130, 246, 0.4)' : '0 0 20px rgba(96, 165, 250, 0.4)',
+                color: textColor,
+              } : {
+                background: theme === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(26, 26, 26, 0.8)',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(30px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(30px) saturate(120%)',
+                color: textColor,
+              }}
             >
-              <Filter className="w-5 h-5 text-purple-400" />
+              <Filter className="w-5 h-5" style={{ color: theme === 'light' ? '#3B82F6' : '#60A5FA' }} />
               {activeFilterCount > 0 && (
                 <motion.span
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-600 to-purple-500 text-white text-xs font-semibold rounded-full flex items-center justify-center"
-                  style={{ boxShadow: '0 0 15px rgba(139, 92, 246, 0.6)' }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs font-semibold rounded-full flex items-center justify-center"
+                  style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.6)' }}
                 >
                   {activeFilterCount}
                 </motion.span>
               )}
             </button>
           </div>
-          {/* View Toggle - No outline, just lighter/darker */}
-          <div className="flex items-center gap-1 glass-card-subtle p-1 rounded-xl">
+          {/* View Toggle - Glass style */}
+          <div className="flex items-center gap-1 p-1 rounded-xl" style={{
+            background: theme === 'light' ? 'rgba(255, 255, 255, 0.85)' : 'rgba(26, 26, 26, 0.8)',
+            border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.12)',
+            backdropFilter: 'blur(30px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(30px) saturate(120%)',
+          }}>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === 'grid'
-                  ? 'text-white'
-                  : 'text-white/40'
-              }`}
+              className="p-2 rounded-lg transition-all"
               style={{
-                backgroundColor: viewMode === 'grid' ? 'rgba(139, 92, 246, 0.3)' : 'transparent',
+                color: viewMode === 'grid' ? textColor : (theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)'),
+                backgroundColor: viewMode === 'grid' ? (theme === 'light' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(96, 165, 250, 0.2)') : 'transparent',
+                boxShadow: viewMode === 'grid' ? (theme === 'light' ? '0 0 15px rgba(59, 130, 246, 0.3)' : '0 0 15px rgba(96, 165, 250, 0.3)') : 'none',
               }}
             >
               <Grid3x3 className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === 'list'
-                  ? 'text-white'
-                  : 'text-white/40'
-              }`}
+              className="p-2 rounded-lg transition-all"
               style={{
-                backgroundColor: viewMode === 'list' ? 'rgba(139, 92, 246, 0.3)' : 'transparent',
+                color: viewMode === 'list' ? textColor : (theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)'),
+                backgroundColor: viewMode === 'list' ? (theme === 'light' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(96, 165, 250, 0.2)') : 'transparent',
+                boxShadow: viewMode === 'list' ? (theme === 'light' ? '0 0 15px rgba(59, 130, 246, 0.3)' : '0 0 15px rgba(96, 165, 250, 0.3)') : 'none',
               }}
             >
               <List className="w-5 h-5" />
@@ -601,13 +644,13 @@ export default function Documents() {
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{
-                background: 'rgba(35, 29, 51, 0.6)',
+                background: 'rgba(26, 26, 26, 0.9)',
                 backdropFilter: 'blur(15px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)',
+                border: '1px solid rgba(37, 99, 235, 0.4)',
+                boxShadow: '0 0 20px rgba(37, 99, 235, 0.5)',
               }}
             >
-              <RefreshCw className="w-5 h-5" style={{ color: '#A78BFA' }} />
+              <RefreshCw className="w-5 h-5" style={{ color: '#60A5FA' }} />
             </motion.div>
           </div>
         )}
@@ -627,7 +670,12 @@ export default function Documents() {
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center glass-card rounded-3xl p-8 mx-4">
+          <div className="flex flex-col items-center justify-center py-12 text-center rounded-3xl p-8 mx-4" style={{
+            background: 'rgba(26, 26, 26, 0.8)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          }}>
             <XCircle className="w-16 h-16 text-red-400 mb-4" />
             <p className="text-lg font-semibold text-white mb-2">{error}</p>
             <Button onClick={fetchDocuments} variant="primary">
@@ -706,15 +754,16 @@ export default function Documents() {
         activeFilterCount={activeFilterCount}
       />
 
-      {/* Toast Notifications */}
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
-    </div>
+        {/* Toast Notifications */}
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+    </>
   );
 }

@@ -61,7 +61,7 @@ export default function GreetingSection({ expiringCount }: GreetingSectionProps)
         }}
         className="absolute top-4 md:top-6 right-4 md:right-6 w-16 md:w-20 h-16 md:h-20 opacity-20"
       >
-        <div className="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl transform rotate-45" />
+        <div className="w-full h-full bg-gradient-to-br from-blue-600 to-blue-500 rounded-2xl transform rotate-45" />
       </motion.div>
 
       {/* Content */}

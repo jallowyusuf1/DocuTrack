@@ -136,16 +136,16 @@ export default function ReminderSettingsModal({
           <div className="mb-8">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-3">
-                <Bell className="w-6 h-6 text-purple-400" />
+                <Bell className="w-6 h-6 text-blue-400" />
                 <span className="text-xl font-semibold text-white">Enable Reminders</span>
               </div>
               <input
                 type="checkbox"
                 checked={settings.enabled}
                 onChange={(e) => setSettings((prev) => ({ ...prev, enabled: e.target.checked }))}
-                className="w-12 h-6 rounded-full bg-white/10 border-2 border-white/20 appearance-none checked:bg-purple-500 checked:border-purple-500 relative transition-colors"
+                className="w-12 h-6 rounded-full bg-white/10 border-2 border-white/20 appearance-none checked:bg-blue-600 checked:border-blue-600 relative transition-colors"
                 style={{
-                  background: settings.enabled ? '#8B5CF6' : 'rgba(255, 255, 255, 0.1)',
+                  background: settings.enabled ? '#2563EB' : 'rgba(255, 255, 255, 0.1)',
                 }}
               />
             </label>
@@ -165,7 +165,7 @@ export default function ReminderSettingsModal({
                         reminders: { ...prev.reminders, days30: e.target.checked },
                       }))
                     }
-                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-purple-500"
+                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-blue-600"
                   />
                   <span className="text-[28px] text-white">30 days before</span>
                 </label>
@@ -179,7 +179,7 @@ export default function ReminderSettingsModal({
                         reminders: { ...prev.reminders, days7: e.target.checked },
                       }))
                     }
-                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-purple-500"
+                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-blue-600"
                   />
                   <span className="text-[28px] text-white">7 days before</span>
                 </label>
@@ -193,7 +193,7 @@ export default function ReminderSettingsModal({
                         reminders: { ...prev.reminders, days1: e.target.checked },
                       }))
                     }
-                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-purple-500"
+                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-blue-600"
                   />
                   <span className="text-[28px] text-white">1 day before</span>
                 </label>
@@ -207,7 +207,7 @@ export default function ReminderSettingsModal({
                         reminders: { ...prev.reminders, custom: e.target.checked },
                       }))
                     }
-                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-purple-500"
+                    className="w-7 h-7 rounded border-white/20 bg-white/10 text-blue-600"
                   />
                   <span className="text-[28px] text-white">Custom</span>
                 </label>
@@ -265,7 +265,7 @@ export default function ReminderSettingsModal({
               <div className="mb-6">
                 <label className="flex items-center justify-between mb-4 cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <Moon className="w-5 h-5 text-purple-400" />
+                    <Moon className="w-5 h-5 text-blue-400" />
                     <span className="text-lg font-semibold text-white">Quiet Hours</span>
                   </div>
                   <input
@@ -277,7 +277,7 @@ export default function ReminderSettingsModal({
                         quietHours: { ...prev.quietHours, enabled: e.target.checked },
                       }))
                     }
-                    className="w-10 h-5 rounded-full bg-white/10 border-2 border-white/20 appearance-none checked:bg-purple-500 checked:border-purple-500 relative transition-colors"
+                    className="w-10 h-5 rounded-full bg-white/10 border-2 border-white/20 appearance-none checked:bg-blue-600 checked:border-blue-600 relative transition-colors"
                   />
                 </label>
                 {settings.quietHours.enabled && (
@@ -354,7 +354,7 @@ export default function ReminderSettingsModal({
                       key={idx}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-purple-500 border-2 border-white"
+                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-600 border-2 border-white"
                       style={{ left: `${Math.max(0, Math.min(100, position))}%` }}
                       title={`${reminder.label}: ${format(reminder.date, 'MMM d, yyyy')}`}
                     />
@@ -380,7 +380,7 @@ export default function ReminderSettingsModal({
                 className="p-4 rounded-xl bg-white/5 border border-white/10"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <Bell className="w-5 h-5 text-purple-400" />
+                  <Bell className="w-5 h-5 text-blue-400" />
                   <span className="text-sm font-semibold text-white">{reminder.label} Reminder</span>
                 </div>
                 <p className="text-xs text-white/60">
@@ -402,7 +402,7 @@ export default function ReminderSettingsModal({
         </button>
         <button
           onClick={handleSave}
-          className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 transition-colors"
+          className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-800 transition-colors"
         >
           Save
         </button>

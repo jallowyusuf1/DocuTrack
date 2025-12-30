@@ -28,7 +28,7 @@ const getUrgencyColor = (expiryDate: string) => {
     case 'valid':
       return '#10B981';
     default:
-      return '#8B5CF6';
+      return '#2563EB';
   }
 };
 
@@ -116,14 +116,14 @@ export default function GalleryView({
             onMouseLeave={() => setHoveredCard(null)}
             onClick={(e) => handleCardClick(document, e)}
             className={`relative bg-[rgba(26,22,37,0.6)] backdrop-blur-xl border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 mb-6 ${
-              isSelected ? 'ring-2 ring-purple-500 border-purple-500/50' : 'border-white/10 hover:border-white/20'
+              isSelected ? 'ring-2 ring-blue-600 border-blue-600/50' : 'border-white/10 hover:border-white/20'
             }`}
             style={{
               width: '400px',
               height: `${cardHeight}px`,
               breakInside: 'avoid',
               boxShadow: isSelected
-                ? '0 0 30px rgba(139, 92, 246, 0.4)'
+                ? '0 0 30px rgba(37, 99, 235, 0.4)'
                 : isHovered
                 ? '0 15px 50px rgba(0, 0, 0, 0.4)'
                 : '0 6px 20px rgba(0, 0, 0, 0.3)',
@@ -143,7 +143,7 @@ export default function GalleryView({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleCheckboxChange(document.id)}
-                      className="w-5 h-5 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-purple-500 checked:border-purple-500 cursor-pointer"
+                      className="w-5 h-5 rounded border-2 border-white/30 bg-[rgba(26,22,37,0.8)] checked:bg-blue-600 checked:border-blue-600 cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </label>
@@ -164,7 +164,7 @@ export default function GalleryView({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={(e) => handleQuickView(document, e)}
-                    className="w-10 h-10 rounded-lg bg-[rgba(26,22,37,0.9)] backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
+                    className="w-10 h-10 rounded-lg bg-[rgba(26,22,37,0.9)] backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-blue-600/20 hover:border-blue-600/50 transition-colors"
                     title="Quick View"
                   >
                     <Eye className="w-5 h-5" />
@@ -260,7 +260,7 @@ export default function GalleryView({
 
               {/* Category & Number */}
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-3 py-1.5 rounded-lg bg-purple-500/20 text-purple-300 text-sm font-medium">
+                <span className="px-3 py-1.5 rounded-lg bg-blue-600/20 text-blue-300 text-sm font-medium">
                   {document.document_type}
                 </span>
                 {document.document_number && (

@@ -27,7 +27,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="relative">
+    <section id="features" className="relative" style={{ scrollMarginTop: '140px' }}>
       <div className="mx-auto max-w-6xl px-4 md:px-6 py-12 md:py-14">
         <MotionInView preset="fadeUp">
           <div className="flex items-end justify-between gap-6 flex-wrap">

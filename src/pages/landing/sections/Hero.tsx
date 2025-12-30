@@ -1,91 +1,51 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Shield, ScanLine, CalendarDays, Users, Check, Play } from 'lucide-react';
+import { ArrowRight, Shield, ScanLine, CalendarDays, Users, Check, Play, Pause, Bell } from 'lucide-react';
 import { GlassButton, GlassCard, GlassPill, GlassTile } from '../../../components/ui/glass/Glass';
 import { MotionInView } from '../../../components/ui/motion/MotionInView';
 import { prefersReducedMotion } from '../../../utils/animations';
 import HeroVideoModal from '../../../components/landing/HeroVideoModal';
 import BrandLogo from '../../../components/ui/BrandLogo';
 
-const navLinks = [
-  { label: 'Overview', href: '#overview' },
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Features', href: '#features' },
-];
-
 export function TopNav() {
-  const reduced = prefersReducedMotion();
-  const [active, setActive] = useState<'overview' | 'how-it-works' | 'features'>(() => {
-    const h = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
-    if (h === 'how-it-works' || h === 'features') return h;
-    return 'overview';
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('theme');
+    return (stored === 'light' || stored === 'dark') ? stored : 'dark';
   });
 
-  // Track active section while scrolling so the highlight follows.
+  // Detect scroll for shrink effect
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const ids: Array<'overview' | 'how-it-works' | 'features'> = ['overview', 'how-it-works', 'features'];
-    const els = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
-    if (!els.length) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        // Pick the most visible intersecting section
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0))[0];
-        const id = visible?.target?.id as any;
-        if (id && (id === 'overview' || id === 'how-it-works' || id === 'features')) setActive(id);
-      },
-      {
-        threshold: [0.2, 0.35, 0.5, 0.65],
-        rootMargin: '-30% 0px -55% 0px',
-      }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-  const scrollToId = (id: 'overview' | 'how-it-works' | 'features') => {
-    // Force scroll immediately - don't wait
-    const performScroll = () => {
-      const el = document.getElementById(id);
-      if (el) {
-        const nav = document.querySelector<HTMLElement>('[data-landing-nav]');
-        const offset = (nav?.offsetHeight ?? 96) + 32;
-        const top = el.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-        window.history.pushState(null, '', `#${id}`);
-        return true;
-      }
-      return false;
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
     };
 
-    // Try immediate scroll
-    if (performScroll()) {
-      return;
-    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
 
-    // If not found, wait for lazy-loaded sections
-    let attempts = 0;
-    const maxAttempts = 30; // 3 seconds
-    const checkInterval = setInterval(() => {
-      attempts++;
-      if (performScroll() || attempts >= maxAttempts) {
-        clearInterval(checkInterval);
-        if (attempts >= maxAttempts) {
-          console.warn(`Section with id "${id}" not found after ${maxAttempts} attempts`);
-        }
-      }
-    }, 100);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Update theme in localStorage and body
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    document.body.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+    <div className="hidden md:block lg:block fixed top-0 left-0 right-0 z-50">
       {/* Solid scrim so content goes behind the nav */}
-      <div
-        className="absolute inset-x-0 top-0 h-[140px] pointer-events-none"
+      <motion.div
+        animate={{
+          height: isScrolled ? '110px' : '140px',
+        }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        className="absolute inset-x-0 top-0 pointer-events-none"
         style={{
           background:
             'linear-gradient(180deg, rgba(26,22,37,0.95) 0%, rgba(26,22,37,0.75) 60%, rgba(26,22,37,0.00) 100%)',
@@ -93,115 +53,149 @@ export function TopNav() {
           WebkitBackdropFilter: 'blur(34px) saturate(180%)',
         }}
       />
-      <div className="relative pt-4 md:pt-6">
-        <div className="mx-auto max-w-7xl px-4 md:px-8 pointer-events-auto">
-        <div
+      <motion.div
+        animate={{
+          paddingTop: isScrolled ? '12px' : '24px',
+        }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        className="relative"
+      >
+        <div className="mx-auto max-w-7xl px-4 md:px-12">
+        <motion.div
           data-landing-nav
-          className="flex items-center justify-between gap-3 px-4 md:px-5 py-4 md:py-4.5 rounded-[999px]"
-          style={{
-            background:
-              // App Store–style frosted “tile” bar
-              'radial-gradient(circle at 18% 12%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 42%, rgba(255,255,255,0.05) 100%), linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(139,92,246,0.10) 55%, rgba(59,130,246,0.10) 100%)',
-            border: '1px solid rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(34px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(34px) saturate(180%)',
-            boxShadow:
-              '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
+          animate={{
+            paddingTop: isScrolled ? '16px' : '20px',
+            paddingBottom: isScrolled ? '16px' : '20px',
           }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="flex items-center justify-between gap-3"
         >
-          {/* Left: brand */}
-          <div className="flex items-center gap-3 pr-2">
-            <div className="w-12 h-12 flex items-center justify-center">
-              <BrandLogo className="w-12 h-12" alt="DocuTrackr Logo" />
+          {/* Left: brand logo */}
+          <motion.button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-3 px-5 py-3 rounded-full cursor-pointer"
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
+            }}
+          >
+            <BrandLogo className="w-7 h-7" alt="DocuTrackr Logo" />
+            <div className="flex flex-col leading-tight">
+              <span className="text-white font-bold tracking-tight text-sm">DocuTrackr</span>
+              <span className="text-white/50 text-[10px] font-medium">Deadline-proof</span>
             </div>
-            <div className="hidden sm:flex flex-col leading-tight">
-              <span className="text-white font-semibold tracking-tight text-base md:text-lg">DocuTrackr</span>
-              <span className="text-white/60 text-xs md:text-sm">Deadline-proof documents</span>
-            </div>
-          </div>
+          </motion.button>
 
-          {/* Center: frosted segmented tabs */}
-          <div className="hidden md:flex flex-1 justify-center">
-            <div
-              className="relative inline-flex items-center gap-1 rounded-[999px] p-1.5"
+          {/* Center: Navigation Links */}
+          <div className="hidden lg:flex items-center gap-2">
+            <motion.a
+              href="#overview"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer"
               style={{
-                background: 'rgba(0,0,0,0.18)',
+                background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)',
                 border: '1px solid rgba(255,255,255,0.12)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.12)',
+                color: 'rgba(255, 255, 255, 0.85)',
               }}
             >
-              {/* active highlight */}
-              <motion.div
-                layout
-                layoutId="nav-active-pill"
-                className="absolute top-1.5 bottom-1.5 rounded-[999px]"
-                style={{
-                  left:
-                    active === 'overview' ? 6 : active === 'how-it-works' ? '33.5%' : '66.8%',
-                  width: active === 'overview' ? '33%' : active === 'how-it-works' ? '33%' : '33%',
-                  background:
-                    'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 48%, rgba(255,255,255,0.06) 100%), linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.08) 100%)',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  backdropFilter: 'blur(22px)',
-                  WebkitBackdropFilter: 'blur(22px)',
-                  boxShadow:
-                    '0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)',
-                  pointerEvents: 'none',
-                }}
-                transition={
-                  reduced
-                    ? { duration: 0 }
-                    : { type: 'spring', stiffness: 380, damping: 32, mass: 0.8 }
-                }
-              />
-
-              {navLinks.map((l) => {
-                const id = l.href.replace('#', '') as 'overview' | 'how-it-works' | 'features';
-                const isActive = active === id;
-                return (
-                  <a
-                    key={l.href}
-                    href={l.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation(); // Prevent Landing.tsx handler from interfering
-                      e.stopImmediatePropagation(); // Also stop immediate propagation
-                      setActive(id);
-                      scrollToId(id);
-                    }}
-                    onMouseDown={(e) => {
-                      // Prevent default on mousedown too
-                      e.preventDefault();
-                    }}
-                    className="relative z-10 px-5 py-2.5 rounded-[999px] text-base transition-colors cursor-pointer"
-                    style={{
-                      WebkitTapHighlightColor: 'transparent',
-                      color: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.72)',
-                    }}
-                  >
-                    {l.label}
-                  </a>
-                );
-              })}
-            </div>
+              Overview
+            </motion.a>
+            <motion.a
+              href="#features"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer"
+              style={{
+                background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.12)',
+                color: 'rgba(255, 255, 255, 0.85)',
+              }}
+            >
+              Features
+            </motion.a>
+            <motion.a
+              href="#security"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer"
+              style={{
+                background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.02) 100%)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.12)',
+                color: 'rgba(255, 255, 255, 0.85)',
+              }}
+            >
+              Security
+            </motion.a>
           </div>
 
-          {/* Right: CTA */}
-          <div className="flex items-center gap-2">
+          {/* Right: CTA Buttons */}
+          <div className="flex items-center gap-3">
             <Link to="/login">
-              <GlassButton variant="ghost" className="h-12 px-6 rounded-full text-base">
+              <motion.button
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-3 rounded-full text-sm font-medium"
+                style={{
+                  background:
+                    'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  boxShadow:
+                    '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
+                  color: 'rgba(255, 255, 255, 0.92)',
+                }}
+                aria-label="Sign in to your account"
+              >
                 Sign in
-              </GlassButton>
+              </motion.button>
             </Link>
             <Link to="/signup">
-              <GlassButton className="h-12 px-6 rounded-full text-base">
-                Get started <ArrowRight className="w-4 h-4" />
-              </GlassButton>
+              <motion.button
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-7 py-3 rounded-full text-sm font-bold flex items-center gap-2"
+                style={{
+                  background:
+                    'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  boxShadow:
+                    '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
+                  color: 'rgba(255, 255, 255, 0.92)',
+                }}
+                aria-label="Get started with a free account"
+              >
+                Get started
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
             </Link>
           </div>
+        </motion.div>
         </div>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -213,7 +207,7 @@ function HeroShowcase() {
       {
         key: 'expiry',
         title: 'Expiry radar',
-        subtitle: 'See what’s expiring across every category — at a glance.',
+        subtitle: 'See what\'s expiring across every category - at a glance.',
         icon: <CalendarDays className="w-5 h-5 text-white/80" />,
         content: <ExpiryRadar />,
       },
@@ -225,9 +219,16 @@ function HeroShowcase() {
         content: <OCRPreview />,
       },
       {
+        key: 'reminders',
+        title: 'Smart reminders',
+        subtitle: 'Get notified at 30, 7, and 1 day before expiration - never miss a deadline.',
+        icon: <Bell className="w-5 h-5 text-white/80" />,
+        content: <RemindersPreview />,
+      },
+      {
         key: 'family',
         title: 'Family sharing',
-        subtitle: 'Share documents with permissions — no forwarding PDFs.',
+        subtitle: 'Share documents with permissions - no forwarding PDFs.',
         icon: <Users className="w-5 h-5 text-white/80" />,
         content: <FamilyPreview />,
       },
@@ -236,12 +237,13 @@ function HeroShowcase() {
   );
 
   const [idx, setIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || isPaused) return;
     const t = window.setInterval(() => setIdx((v) => (v + 1) % slides.length), 4200);
     return () => window.clearInterval(t);
-  }, [reduced, slides.length]);
+  }, [reduced, slides.length, isPaused]);
 
   const slide = slides[idx];
 
@@ -268,34 +270,70 @@ function HeroShowcase() {
             {slide.icon}
             <span className="font-medium">{slide.title}</span>
           </GlassPill>
-          <div className="hidden sm:flex items-center gap-2">
-            {slides.map((s, i) => (
-              <button
-                key={s.key}
-                onClick={() => setIdx(i)}
-                className="w-2.5 h-2.5 rounded-full transition-all"
-                style={{
-                  background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
-                  boxShadow: i === idx ? '0 0 0 6px rgba(139,92,246,0.12)' : 'none',
-                }}
-                aria-label={`Show ${s.title}`}
-              />
-            ))}
+          <div className="flex items-center gap-2">
+            {/* Pause/Play Button - Smaller and nicer */}
+            <motion.button
+              onClick={() => setIsPaused(!isPaused)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="flex items-center justify-center"
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                color: 'rgba(255, 255, 255, 0.85)',
+                transition: 'all 0.2s ease',
+              }}
+              aria-label={isPaused ? 'Resume slideshow' : 'Pause slideshow'}
+            >
+              {isPaused ? (
+                <Play className="w-3.5 h-3.5 ml-0.5" />
+              ) : (
+                <Pause className="w-3.5 h-3.5" />
+              )}
+            </motion.button>
+            {/* Slide Indicators */}
+            <div className="hidden sm:flex items-center gap-2">
+              {slides.map((s, i) => (
+                <button
+                  key={s.key}
+                  onClick={() => setIdx(i)}
+                  className="w-2.5 h-2.5 rounded-full transition-all"
+                  style={{
+                    background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
+                    boxShadow: i === idx ? '0 0 0 6px rgba(139,92,246,0.12)' : 'none',
+                  }}
+                  aria-label={`Show ${s.title}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
         <p className="text-white/70 text-sm mb-4 leading-relaxed">{slide.subtitle}</p>
 
-        <div className="relative">
+        <div className="relative overflow-hidden" style={{ minHeight: '380px', height: '380px' }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.key}
-              initial={{ opacity: 0, y: 10, filter: 'blur(6px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -10, filter: 'blur(6px)' }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ 
+                duration: 0.5, 
+                ease: [0.4, 0, 0.2, 1],
+                opacity: { duration: 0.3 }
+              }}
+              className="absolute inset-0 overflow-hidden"
+              style={{ width: '100%', height: '100%' }}
             >
-              {slide.content}
+              <div className="h-full overflow-y-auto" style={{ paddingRight: '4px' }}>
+                {slide.content}
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -333,9 +371,19 @@ function MetricTiles() {
   );
 }
 
-export default function Hero() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
-  // TODO: replace with your real URL (direct .mp4 recommended). User will provide later.
+export default function Hero({
+  isVideoModalOpen,
+  onVideoModalOpenChange,
+}: {
+  isVideoModalOpen?: boolean;
+  onVideoModalOpenChange?: (open: boolean) => void;
+} = {}) {
+  // Local state as fallback if props not provided
+  const [localVideoOpen, setLocalVideoOpen] = useState(false);
+  const isVideoOpen = isVideoModalOpen ?? localVideoOpen;
+  const setIsVideoOpen = onVideoModalOpenChange ?? setLocalVideoOpen;
+
+  // No video URL = shows animated demo instead
   const heroVideoUrl: string | undefined = undefined;
 
   return (
@@ -366,34 +414,61 @@ export default function Hero() {
 
             <MotionInView preset="fadeUp" delay={0.14}>
               <p className="mt-5 text-white/70 text-base md:text-lg leading-relaxed max-w-xl">
-                DocuTrackr keeps passports, IDs, insurance, visas, permits, and important dates organized — with
+                DocuTrackr keeps passports, IDs, insurance, visas, permits, and important dates organized - with
                 automatic reminders, OCR capture, and secure family sharing.
               </p>
             </MotionInView>
 
             <MotionInView preset="fadeUp" delay={0.20}>
-              <div className="mt-7 flex flex-col sm:flex-row gap-3">
-                <Link to="/signup">
-                  <GlassButton className="w-full sm:w-auto">
-                    Start free <ArrowRight className="w-4 h-4" />
-                  </GlassButton>
-                </Link>
-                <GlassButton
-                  variant="secondary"
-                  className="w-full sm:w-auto"
+              <div className="mt-7">
+                <button
                   onClick={(e) => {
                     e.preventDefault();
                     setIsVideoOpen(true);
                   }}
+                  className="group relative overflow-hidden rounded-full px-10 py-4 text-lg font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] inline-flex items-center justify-center gap-3"
+                  style={{
+                    background: 'radial-gradient(ellipse at 25% 35%, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.08) 100%), linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(59,130,246,0.12) 100%)',
+                    border: '1.5px solid rgba(255,255,255,0.28)',
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    boxShadow: '0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.15)',
+                    color: 'rgba(255,255,255,0.98)',
+                    minWidth: '240px',
+                  }}
                 >
-                  <Play className="w-4 h-4" />
-                  Watch video
-                </GlassButton>
-                <a href="#how-it-works" className="w-full sm:w-auto">
-                  <GlassButton variant="secondary" className="w-full sm:w-auto">
-                    See how it works
-                  </GlassButton>
-                </a>
+                  {/* Glass highlight */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.2) 0%, transparent 70%)',
+                    }}
+                  />
+
+                  {/* Animated gradient border glow */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(139,92,246,0.35) 0%, rgba(59,130,246,0.35) 100%)',
+                      filter: 'blur(24px)',
+                      zIndex: -1,
+                    }}
+                  />
+
+                  <div className="relative flex items-center justify-center gap-3">
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(139,92,246,0.3) 0%, rgba(59,130,246,0.25) 100%)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        boxShadow: '0 6px 16px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
+                      }}
+                    >
+                      <Play className="w-6 h-6 fill-white ml-0.5" style={{ color: '#FFFFFF' }} />
+                    </div>
+                    <span className="tracking-wide">Watch demo</span>
+                  </div>
+                </button>
               </div>
             </MotionInView>
 
@@ -428,23 +503,27 @@ export default function Hero() {
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
         videoUrl={heroVideoUrl}
-        title="DocuTrackr — quick demo"
+        title="DocuTrackr - Product Demo"
       />
     </section>
   );
 }
 
 function ExpiryRadar() {
-  // A tiny “area chart” look without external libs.
+  // A tiny "area chart" look without external libs.
   const points = '0,42 14,34 28,36 42,22 56,30 70,12 84,18 100,6 100,60 0,60';
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <GlassTile className="p-4" style={{ borderRadius: 22 }}>
-        <div className="flex items-center justify-between">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="flex items-center justify-between mb-3">
           <div className="text-white font-medium">Next 30 days</div>
           <div className="text-white/60 text-sm">6 items</div>
         </div>
-        <div className="mt-3 h-24 rounded-xl overflow-hidden" style={{ background: 'rgba(0,0,0,0.25)' }}>
+        <div className="flex-1 rounded-xl overflow-hidden" style={{ 
+          background: 'rgba(0,0,0,0.25)', 
+          minHeight: '140px',
+          maxHeight: '140px'
+        }}>
           <svg viewBox="0 0 100 60" className="w-full h-full">
             <defs>
               <linearGradient id="gradA" x1="0" x2="1" y1="0" y2="1">
@@ -467,9 +546,9 @@ function ExpiryRadar() {
         </div>
       </GlassTile>
 
-      <GlassTile className="p-4" style={{ borderRadius: 22 }}>
-        <div className="text-white font-medium">Today</div>
-        <div className="mt-3 space-y-2">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Today</div>
+        <div className="flex-1 space-y-1.5 overflow-y-auto" style={{ maxHeight: '240px' }}>
           {[
             { label: 'Visa renewal reminder', tag: '1 day', c: 'rgba(239,68,68,0.35)' },
             { label: 'Insurance check-in', tag: '7 days', c: 'rgba(249,115,22,0.30)' },
@@ -477,13 +556,14 @@ function ExpiryRadar() {
           ].map((x) => (
             <div
               key={x.label}
-              className="flex items-center justify-between rounded-xl px-3 py-2"
+              className="flex items-center justify-between rounded-lg px-2.5 py-1.5"
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(20px)',
               }}
             >
-              <div className="text-white/80 text-sm">{x.label}</div>
+              <div className="text-white/80 text-xs">{x.label}</div>
               <div
                 className="text-xs px-2 py-1 rounded-full"
                 style={{ background: x.c, border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.9)' }}
@@ -500,12 +580,16 @@ function ExpiryRadar() {
 
 function OCRPreview() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <GlassTile className="p-4" style={{ borderRadius: 22 }}>
-        <div className="text-white font-medium">Camera capture</div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Camera capture</div>
         <div
-          className="mt-3 rounded-xl overflow-hidden"
-          style={{ background: 'rgba(0,0,0,0.25)', height: 120 }}
+          className="flex-1 rounded-xl overflow-hidden"
+          style={{ 
+            background: 'rgba(0,0,0,0.25)', 
+            minHeight: '140px',
+            maxHeight: '140px'
+          }}
         >
           <div className="relative w-full h-full">
             <div
@@ -544,9 +628,9 @@ function OCRPreview() {
         </div>
       </GlassTile>
 
-      <GlassTile className="p-4" style={{ borderRadius: 22 }}>
-        <div className="text-white font-medium">Extracted fields</div>
-        <div className="mt-3 space-y-2">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Extracted fields</div>
+        <div className="flex-1 space-y-1.5 overflow-y-auto" style={{ maxHeight: '240px' }}>
           {[
             { k: 'Document', v: 'Passport' },
             { k: 'Full name', v: 'Amina Diallo' },
@@ -557,16 +641,20 @@ function OCRPreview() {
           ].map((r) => (
             <div
               key={r.k}
-              className="flex items-center justify-between rounded-xl px-3 py-2"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
+              className="flex items-center justify-between rounded-lg px-2.5 py-1.5"
+              style={{ 
+                background: 'rgba(255,255,255,0.06)', 
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(20px)',
+              }}
             >
               <div className="text-white/60 text-xs">{r.k}</div>
-              <div className="text-white/85 text-sm font-medium">{r.v}</div>
+              <div className="text-white/85 text-xs font-medium">{r.v}</div>
             </div>
           ))}
-          <div className="pt-2">
-            <GlassPill className="text-white/85">
-              <Check className="w-4 h-4 text-white/70" />
+          <div className="pt-1.5 mt-2">
+            <GlassPill className="text-white/85 text-xs py-1.5 px-3">
+              <Check className="w-3 h-3 text-white/70" />
               Auto‑categorized + reminders scheduled
             </GlassPill>
           </div>
@@ -576,12 +664,91 @@ function OCRPreview() {
   );
 }
 
+function RemindersPreview() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Upcoming reminders</div>
+        <div className="flex-1 space-y-1.5 overflow-y-auto" style={{ maxHeight: '240px' }}>
+          {[
+            { label: 'Passport expires', days: '30 days', type: 'warning' },
+            { label: 'Insurance renewal', days: '7 days', type: 'urgent' },
+            { label: 'Visa expires', days: '1 day', type: 'critical' },
+          ].map((r) => (
+            <div
+              key={r.label}
+              className="flex items-center justify-between rounded-lg px-2.5 py-1.5"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(20px)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Bell className="w-3.5 h-3.5" style={{ 
+                  color: r.type === 'critical' ? 'rgba(239,68,68,0.9)' : 
+                         r.type === 'urgent' ? 'rgba(249,115,22,0.9)' : 
+                         'rgba(234,179,8,0.9)' 
+                }} />
+                <div className="text-white/80 text-xs">{r.label}</div>
+              </div>
+              <div
+                className="text-xs px-2 py-1 rounded-full font-medium"
+                style={{ 
+                  background: r.type === 'critical' ? 'rgba(239,68,68,0.35)' : 
+                             r.type === 'urgent' ? 'rgba(249,115,22,0.30)' : 
+                             'rgba(234,179,8,0.28)', 
+                  border: '1px solid rgba(255,255,255,0.14)', 
+                  color: 'rgba(255,255,255,0.9)' 
+                }}
+              >
+                {r.days}
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassTile>
+
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Notification settings</div>
+        <div className="flex-1 space-y-1.5 overflow-y-auto" style={{ maxHeight: '240px' }}>
+          {[
+            { label: '30 days before', enabled: true },
+            { label: '7 days before', enabled: true },
+            { label: '1 day before', enabled: true },
+            { label: 'On expiration day', enabled: true },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="flex items-center justify-between rounded-lg px-2.5 py-1.5"
+              style={{ 
+                background: 'rgba(255,255,255,0.06)', 
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(20px)',
+              }}
+            >
+              <div className="text-white/80 text-xs">{s.label}</div>
+              <div className="text-xs px-2 py-1 rounded-full" style={{ 
+                background: s.enabled ? 'rgba(16,185,129,0.26)' : 'rgba(255,255,255,0.08)', 
+                border: '1px solid rgba(255,255,255,0.14)', 
+                color: 'rgba(255,255,255,0.85)' 
+              }}>
+                {s.enabled ? 'On' : 'Off'}
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassTile>
+    </div>
+  );
+}
+
 function FamilyPreview() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <GlassTile className="p-4" style={{ borderRadius: 22 }}>
-        <div className="text-white font-medium">Household</div>
-        <div className="mt-3 flex items-center gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Household</div>
+        <div className="flex items-center gap-2 mb-3">
           {['A', 'M', 'S', 'J'].map((x, i) => (
             <div
               key={x}
@@ -592,6 +759,7 @@ function FamilyPreview() {
                 color: 'rgba(255,255,255,0.9)',
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)',
                 marginLeft: i === 0 ? 0 : -8,
+                backdropFilter: 'blur(20px)',
               }}
             >
               {x}
@@ -599,12 +767,12 @@ function FamilyPreview() {
           ))}
           <div className="ml-2 text-white/65 text-sm">4 members</div>
         </div>
-        <div className="mt-3 text-white/60 text-xs">Share passports, insurance, school IDs, and more.</div>
+        <div className="text-white/60 text-xs">Share passports, insurance, school IDs, and more.</div>
       </GlassTile>
 
-      <GlassTile className="p-4" style={{ borderRadius: 22 }}>
-        <div className="text-white font-medium">Permissions</div>
-        <div className="mt-3 space-y-2">
+      <GlassTile className="p-4 flex flex-col" style={{ borderRadius: 22 }}>
+        <div className="text-white font-medium mb-3">Permissions</div>
+        <div className="flex-1 space-y-1.5 overflow-y-auto" style={{ maxHeight: '240px' }}>
           {[
             { label: 'View', ok: true },
             { label: 'Edit', ok: false },
@@ -612,10 +780,14 @@ function FamilyPreview() {
           ].map((p) => (
             <div
               key={p.label}
-              className="flex items-center justify-between rounded-xl px-3 py-2"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
+              className="flex items-center justify-between rounded-lg px-2.5 py-1.5"
+              style={{ 
+                background: 'rgba(255,255,255,0.06)', 
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(20px)',
+              }}
             >
-              <div className="text-white/80 text-sm">{p.label}</div>
+              <div className="text-white/80 text-xs">{p.label}</div>
               <div className="text-xs px-2 py-1 rounded-full" style={{ background: p.ok ? 'rgba(16,185,129,0.26)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.85)' }}>
                 {p.ok ? 'Allowed' : 'Off'}
               </div>

@@ -117,9 +117,9 @@ export default function EmailVerification() {
     setError(null);
     setMessage(null);
 
-    // If verification not required, allow skipping forward.
+    // If verification not required, go to dashboard.
     if (!requireVerification) {
-      navigate('/onboarding/profile', { replace: true });
+      navigate('/dashboard', { replace: true });
       return;
     }
 
@@ -184,14 +184,14 @@ export default function EmailVerification() {
 
   const handleContinue = async () => {
     triggerHaptic('light');
-    // If user has a session already, we can continue to Stage 3.
+    // If user has a session already, go to dashboard.
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      navigate('/onboarding/profile', { replace: true });
+      navigate('/dashboard', { replace: true });
       return;
     }
     // Otherwise, they must verify first.
-    setMessage('Once you verify the link, you’ll be able to continue.');
+    setMessage('Once you verify the link, you will be able to continue.');
   };
 
   return (
@@ -233,7 +233,7 @@ export default function EmailVerification() {
             </p>
 
             <div className="mt-4 flex justify-center">
-              <GlassPill className="text-white/90" style={{ color: '#A78BFA' }}>
+              <GlassPill className="text-white/90" style={{ color: '#60A5FA' }}>
                 {email || 'your email'}
               </GlassPill>
             </div>
@@ -288,7 +288,7 @@ export default function EmailVerification() {
                 {t('onboarding.stage2.resendPrefix')}{' '}
                 <button
                   type="button"
-                  className="text-purple-300 hover:text-purple-200 transition-colors font-semibold"
+                  className="text-blue-300 hover:text-blue-200 transition-colors font-semibold"
                   onClick={handleResend}
                   disabled={!canResend}
                 >

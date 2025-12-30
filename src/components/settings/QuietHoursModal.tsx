@@ -78,7 +78,7 @@ export default function QuietHoursModal({
               <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
                 <div>
                   <h2 className="text-xl font-bold text-white">Quiet Hours</h2>
-                  <p className="text-sm mt-1" style={{ color: '#A78BFA' }}>
+                  <p className="text-sm mt-1" style={{ color: '#60A5FA' }}>
                     No notifications during these hours
                   </p>
                 </div>
@@ -88,7 +88,7 @@ export default function QuietHoursModal({
                     triggerHaptic('light');
                     onClose();
                   }}
-                  className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                  className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
                 >
                   <X className="w-5 h-5 text-white" />
                 </motion.button>
@@ -100,7 +100,7 @@ export default function QuietHoursModal({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-base font-medium text-white">Enable Quiet Hours</div>
-                    <div className="text-sm mt-1" style={{ color: '#A78BFA' }}>
+                    <div className="text-sm mt-1" style={{ color: '#60A5FA' }}>
                       Silence notifications during selected hours
                     </div>
                   </div>
@@ -113,10 +113,10 @@ export default function QuietHoursModal({
                     className="relative w-[52px] h-[32px] rounded-full transition-all duration-300"
                     style={{
                       background: localQuietHours.enabled
-                        ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+                        ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
                         : 'rgba(107, 102, 126, 0.3)',
                       boxShadow: localQuietHours.enabled
-                        ? '0 0 16px rgba(139, 92, 246, 0.6)'
+                        ? '0 0 16px rgba(37, 99, 235, 0.6)'
                         : 'none',
                     }}
                   >
@@ -156,7 +156,7 @@ export default function QuietHoursModal({
                           color: '#FFFFFF',
                         }}
                       >
-                        <Clock className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                        <Clock className="w-5 h-5" style={{ color: '#60A5FA' }} />
                         <span className="flex-1 text-left">{formatTime(localQuietHours.start)}</span>
                       </motion.button>
                     </div>
@@ -179,7 +179,7 @@ export default function QuietHoursModal({
                           color: '#FFFFFF',
                         }}
                       >
-                        <Clock className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                        <Clock className="w-5 h-5" style={{ color: '#60A5FA' }} />
                         <span className="flex-1 text-left">{formatTime(localQuietHours.end)}</span>
                       </motion.button>
                     </div>
@@ -206,8 +206,8 @@ export default function QuietHoursModal({
                     onClick={handleSave}
                     className="flex-1 h-[52px] rounded-xl font-semibold transition-all"
                     style={{
-                      background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      boxShadow: '0 4px 20px rgba(139, 92, 246, 0.4)',
+                      background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                      boxShadow: '0 4px 20px rgba(37, 99, 235, 0.4)',
                       color: '#FFFFFF',
                     }}
                   >

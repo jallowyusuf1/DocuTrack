@@ -31,7 +31,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isOnline } = useOnlineStatus();
-  
+
   const [documents, setDocuments] = useState<Document[]>([]);
   const [stats, setStats] = useState<DocumentStats>({
     total: 0,
@@ -46,11 +46,35 @@ export default function Dashboard() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pullStartY = useRef<number>(0);
   const pullDistance = useRef<number>(0);
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Get current theme
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('theme');
+    return (stored === 'light' || stored === 'dark') ? stored : 'dark';
+  });
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const stored = localStorage.getItem('theme');
+      setTheme((stored === 'light' || stored === 'dark') ? stored : 'dark');
+    };
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleThemeChange);
+
+    // Also check periodically in case theme changes in same tab
+    const interval = setInterval(handleThemeChange, 100);
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Calculate urgency counts
   const urgentCount = documents.filter(
@@ -296,8 +320,11 @@ export default function Dashboard() {
     });
   }, [documents, searchQuery]);
 
+  const bgColor = theme === 'light' ? '#FFFFFF' : '#000000';
+  const textColor = theme === 'light' ? '#000000' : '#FFFFFF';
+
   return (
-    <div className="pb-[72px] min-h-screen liquid-dashboard-bg">
+    <div className="pb-[72px] min-h-screen" style={{ background: bgColor, color: textColor }}>
 
       {/* Offline Banner */}
       {showOfflineBanner && (
@@ -327,7 +354,7 @@ export default function Dashboard() {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative z-10 px-4 md:px-6 lg:px-8 pt-12 md:pt-16 lg:pt-20 md:max-w-[1024px] md:mx-auto"
+        className="relative z-10 px-4 sm:px-5 md:px-6 lg:px-8 pt-8 sm:pt-10 md:pt-16 lg:pt-20 max-w-[100%] sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] mx-auto"
       >
         {/* Header capsule */}
         <motion.div initial="initial" animate="animate" variants={fadeInUp} className="mb-6 md:mb-8">
@@ -407,9 +434,9 @@ export default function Dashboard() {
           </LiquidPill>
         </motion.div>
 
-        {/* Urgency Capsules */}
+        {/* Urgency Capsules - Responsive Grid */}
         {(urgentCount > 0 || soonCount > 0 || upcomingCount > 0) && (
-          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="mb-6 md:mb-8 grid grid-cols-3 gap-4 md:gap-6">
+          <motion.div variants={staggerContainer} initial="hidden" animate="show" className="mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
             {[
               { key: 'urgent' as const, label: 'URGENT', value: urgentCount, range: [0, 7] as const },
               { key: 'soon' as const, label: 'SOON', value: soonCount, range: [8, 30] as const },
@@ -418,33 +445,30 @@ export default function Dashboard() {
               <motion.div key={c.key} variants={staggerItem}>
                 <LiquidPill
                   interactive
-                  className="px-3 py-3 md:px-4 md:py-4"
+                  className="px-4 py-4 md:px-4 md:py-4"
                   onClick={() => handleUrgencyCardClick(c.range[0], c.range[1])}
                   style={{
-                    background:
-                      c.key === 'upcoming'
-                        ? `color-mix(in srgb, ${urgencyGlow(c.key)} 6%, rgba(255,255,255,0.04))`
-                        : `color-mix(in srgb, ${urgencyGlow(c.key)} 8%, rgba(255,255,255,0.05))`,
-                    backdropFilter: 'blur(20px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 24px color-mix(in srgb, ${urgencyGlow(c.key)} 15%, transparent), inset 0 1px 0 rgba(255,255,255,0.1)`,
-                    border: 'none',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(20px) saturate(120%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(120%)',
+                    boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 20px color-mix(in srgb, ${urgencyGlow(c.key)} 10%, transparent), inset 0 1px 0 rgba(255,255,255,0.08)`,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     outline: 'none',
                   }}
                 >
                   <div className="relative flex items-center justify-center text-center">
-                    <div className="min-w-0">
-                      <div className="text-white/70 text-[10px] md:text-[11px] font-semibold tracking-[0.18em]">
+                    <div className="min-w-0 w-full">
+                      <div className="text-white/70 text-[10px] sm:text-[10px] md:text-[11px] font-semibold tracking-[0.18em]">
                         {c.label}
                       </div>
-                      <div className="text-white text-2xl md:text-3xl font-bold mt-1.5" style={{ letterSpacing: '-0.04em' }}>
+                      <div className="text-white text-xl sm:text-2xl md:text-3xl font-bold mt-1 sm:mt-1.5" style={{ letterSpacing: '-0.04em' }}>
                         {c.value}
                       </div>
                     </div>
                     <LiquidGlowDot
                       color={urgencyGlow(c.key)}
-                      size={c.key === 'urgent' ? 16 : 14}
-                      className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2"
+                      size={c.key === 'urgent' ? 12 : 10}
+                      className="absolute right-2 sm:right-2 md:right-3 top-1/2 -translate-y-1/2 hidden sm:block"
                     />
                   </div>
                 </LiquidPill>
@@ -464,7 +488,7 @@ export default function Dashboard() {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-6 h-6 rounded-full border-2 border-purple-500 border-t-transparent"
+              className="w-6 h-6 rounded-full border-2 border-blue-500 border-t-transparent"
             />
           </motion.div>
         )}
@@ -529,7 +553,7 @@ export default function Dashboard() {
               variants={staggerContainer}
               initial="hidden"
               animate="show"
-              className="space-y-4 md:space-y-6 max-h-[420px] overflow-y-auto pr-1"
+              className="space-y-5 md:space-y-7 max-h-[420px] overflow-y-auto pr-1"
             >
               {filteredDocuments.map((document) => (
                 <motion.div

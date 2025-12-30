@@ -40,14 +40,14 @@ export default function Checkbox({
         }}
         style={{
           background: checked
-            ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+            ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
             : 'rgba(42, 38, 64, 0.6)',
           backdropFilter: 'blur(10px)',
           border: checked
             ? 'none'
             : '2px solid rgba(255, 255, 255, 0.3)',
           boxShadow: checked
-            ? '0 0 16px rgba(139, 92, 246, 0.6)'
+            ? '0 0 16px rgba(37, 99, 235, 0.6)'
             : 'none',
         }}
         whileHover={!disabled ? { scale: 1.1 } : {}}

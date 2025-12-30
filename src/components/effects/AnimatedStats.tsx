@@ -61,7 +61,7 @@ function StatCounter({ stat, index }: { stat: Stat; index: number }) {
         <motion.span
           className="text-4xl lg:text-5xl font-bold"
           style={{
-            background: 'linear-gradient(135deg, #FFFFFF 0%, #8B5CF6 100%)',
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #2563EB 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',

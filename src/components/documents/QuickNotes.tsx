@@ -64,7 +64,7 @@ function QuickNotes({ document }: QuickNotesProps) {
 
   return (
     <div className="flex items-start gap-2">
-      <StickyNote className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#A78BFA' }} />
+      <StickyNote className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#60A5FA' }} />
       <p className="text-[12px] text-white/80 leading-relaxed line-clamp-3">
         {displayNote}
       </p>

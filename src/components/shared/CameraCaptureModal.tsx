@@ -208,7 +208,7 @@ export default function CameraCaptureModal({
               background: 'rgba(35, 29, 51, 0.95)',
               backdropFilter: 'blur(30px)',
               WebkitBackdropFilter: 'blur(30px)',
-              borderTop: '1px solid rgba(139, 92, 246, 0.3)',
+              borderTop: '1px solid rgba(37, 99, 235, 0.3)',
               maxHeight: '90vh',
             }}
           >
@@ -255,14 +255,14 @@ export default function CameraCaptureModal({
                         ? 'rgba(42, 38, 64, 0.6)'
                         : 'rgba(100, 100, 100, 0.3)',
                       backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(139, 92, 246, 0.4)',
+                      border: '2px solid rgba(37, 99, 235, 0.4)',
                     }}
                     data-tablet-button="true"
                   >
                     <div
                       className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)',
+                        background: 'linear-gradient(135deg, #2563EB 0%, #EC4899 100%)',
                       }}
                     >
                       <Camera className="w-7 h-7 md:w-16 md:h-16 text-white" />
@@ -286,14 +286,14 @@ export default function CameraCaptureModal({
                     style={{
                       background: 'rgba(42, 38, 64, 0.6)',
                       backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(139, 92, 246, 0.4)',
+                      border: '2px solid rgba(37, 99, 235, 0.4)',
                     }}
                     data-tablet-button="true"
                   >
                     <div
                       className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
+                        background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                       }}
                     >
                       <ImageIcon className="w-7 h-7 md:w-16 md:h-16 text-white" />
@@ -342,7 +342,7 @@ export default function CameraCaptureModal({
 
                   {isProcessing && processingStep && (
                     <div className="text-center py-4">
-                      <Loader2 className="w-6 h-6 text-purple-400 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-6 h-6 text-blue-400 animate-spin mx-auto mb-2" />
                       <p className="text-sm text-white/60">{processingStep}</p>
                     </div>
                   )}
@@ -350,7 +350,7 @@ export default function CameraCaptureModal({
               ) : (
                 <div className="space-y-6">
                   {/* Preview Image */}
-                  <div className="relative rounded-2xl overflow-hidden border-2" style={{ borderColor: 'rgba(139, 92, 246, 0.5)' }}>
+                  <div className="relative rounded-2xl overflow-hidden border-2" style={{ borderColor: 'rgba(37, 99, 235, 0.5)' }}>
                     <img
                       src={capturedImage || ''}
                       alt="Document preview"
@@ -381,11 +381,11 @@ export default function CameraCaptureModal({
                       className="flex-1 h-14 md:h-[52px] rounded-xl flex items-center justify-center gap-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
                         background: capturedFile
-                          ? 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)'
+                          ? 'linear-gradient(135deg, #2563EB 0%, #EC4899 100%)'
                           : 'rgba(100, 100, 100, 0.5)',
                         color: '#FFFFFF',
                         boxShadow: capturedFile
-                          ? '0 10px 30px rgba(139, 92, 246, 0.4)'
+                          ? '0 10px 30px rgba(37, 99, 235, 0.4)'
                           : 'none',
                       }}
                     >

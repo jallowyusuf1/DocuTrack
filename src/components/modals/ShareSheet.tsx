@@ -114,7 +114,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
               onClick={() => setActiveTab('family')}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
                 activeTab === 'family'
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -125,7 +125,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
               onClick={() => setActiveTab('apps')}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
                 activeTab === 'apps'
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -136,7 +136,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
               onClick={() => setActiveTab('link')}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
                 activeTab === 'link'
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
@@ -156,7 +156,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
               {/* Document Thumbnail */}
               <div
-                className="bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-xl mb-3 overflow-hidden"
+                className="bg-gradient-to-br from-blue-100 to-blue-100 dark:from-blue-900 dark:to-blue-900 rounded-xl mb-3 overflow-hidden"
                 style={{ height: '160px' }}
               >
                 {documentThumbnail ? (
@@ -167,7 +167,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Share2 size={48} className="text-purple-300 dark:text-purple-600" />
+                    <Share2 size={48} className="text-blue-300 dark:text-blue-800" />
                   </div>
                 )}
               </div>
@@ -197,7 +197,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                       onClick={() => setPermission('view')}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${
                         permission === 'view'
-                          ? 'bg-purple-500 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -207,7 +207,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                       onClick={() => setPermission('edit')}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${
                         permission === 'edit'
-                          ? 'bg-purple-500 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -226,18 +226,18 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                         onClick={() => toggleMember(member.id)}
                         className={`relative p-4 rounded-2xl border-2 transition-all ${
                           isSelected
-                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
+                            ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-800'
                         }`}
                       >
                         {isSelected && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
                             <Check size={14} className="text-white" />
                           </div>
                         )}
                         <div className="flex flex-col items-center">
                           <div
-                            className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-xl font-semibold mb-3"
+                            className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-400 flex items-center justify-center text-white text-xl font-semibold mb-3"
                             style={{
                               backgroundImage: member.avatar ? `url(${member.avatar})` : undefined,
                               backgroundSize: 'cover',
@@ -271,7 +271,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                     }}
                     className="flex flex-col items-center p-4 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 flex items-center justify-center text-3xl mb-3">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-100 dark:from-blue-900 dark:to-blue-900 flex items-center justify-center text-3xl mb-3">
                       {app.icon}
                     </div>
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -302,7 +302,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                       className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                         linkCopied
                           ? 'bg-green-500 text-white'
-                          : 'bg-purple-500 text-white hover:bg-purple-600'
+                          : 'bg-blue-600 text-white hover:bg-blue-800'
                       }`}
                       style={{ minWidth: '120px' }}
                     >
@@ -329,7 +329,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                   <select
                     value={linkExpiry}
                     onChange={(e) => setLinkExpiry(e.target.value as ExpiryType)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                   >
                     <option value="never">Never</option>
                     <option value="24h">24 hours</option>
@@ -346,7 +346,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
                   <select
                     value={linkAccess}
                     onChange={(e) => setLinkAccess(e.target.value as AccessType)}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                   >
                     <option value="anyone">Anyone with the link</option>
                     <option value="invited">Invited members only</option>
@@ -386,7 +386,7 @@ export const ShareSheet: React.FC<ShareSheetProps> = ({
               <button
                 onClick={handleShare}
                 disabled={selectedMembers.size === 0}
-                className="flex-1 px-6 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 Share with {selectedMembers.size} member{selectedMembers.size !== 1 ? 's' : ''}
               </button>

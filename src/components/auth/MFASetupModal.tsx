@@ -119,7 +119,7 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
               style={{
                 background: 'rgba(26, 22, 37, 0.95)',
                 backdropFilter: 'blur(40px)',
-                border: '1px solid rgba(139, 92, 246, 0.3)',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
               }}
             >
@@ -136,7 +136,7 @@ export default function MFASetupModal({ isOpen, onClose, onSuccess }: MFASetupMo
 
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
                 </div>
               ) : step === 'qr' ? (
                 <div className="space-y-6">

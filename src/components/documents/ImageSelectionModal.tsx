@@ -196,7 +196,7 @@ export default function ImageSelectionModal({
                     background: 'rgba(35, 29, 51, 0.6)',
                     backdropFilter: 'blur(10px)',
                     border: '2px solid rgba(255, 255, 255, 0.1)',
-                    color: '#A78BFA',
+                    color: '#60A5FA',
                     height: '80px',
                   }}
                   data-tablet-image-btn2="true"
@@ -238,7 +238,7 @@ export default function ImageSelectionModal({
                   touch-manipulation
                 "
                 style={{
-                  color: '#A78BFA',
+                  color: '#60A5FA',
                   background: 'rgba(35, 29, 51, 0.3)',
                 }}
               >

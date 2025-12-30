@@ -8,7 +8,6 @@ import {
   Trash2,
   Bell,
   Clock,
-  Moon,
   Globe,
   Database,
   Download,
@@ -39,9 +38,12 @@ import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
 import ExportDataModal from '../../components/profile/ExportDataModal';
 import OnboardingTutorial from '../../components/onboarding/OnboardingTutorial';
 import SetProfileLockModal from '../../components/profile/SetProfileLockModal';
+import PageLockSettingsModal from '../../components/settings/PageLockSettingsModal';
 import { triggerHaptic } from '../../utils/animations';
 import Skeleton from '../../components/ui/Skeleton';
 import type { NotificationPreferences } from '../../services/notifications';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 interface SettingsState {
   pushNotifications: boolean;
@@ -68,6 +70,9 @@ export default function Settings() {
   const { language: currentLanguageCode, setLanguage } = useLanguage();
   const { theme } = useTheme();
   const { toasts, showToast, removeToast } = useToast();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('settings');
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<SettingsState>({
     pushNotifications: true,
@@ -98,6 +103,7 @@ export default function Settings() {
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isClearCacheConfirmOpen, setIsClearCacheConfirmOpen] = useState(false);
   const [isSetProfileLockOpen, setIsSetProfileLockOpen] = useState(false);
+  const [isPageLockSettingsOpen, setIsPageLockSettingsOpen] = useState(false);
   const [profileLockEnabled, setProfileLockEnabled] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -339,8 +345,8 @@ export default function Settings() {
         <div
           className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0"
           style={{
-            background: 'rgba(167, 139, 250, 0.1)',
-            color: isDanger ? '#F87171' : '#A78BFA',
+            background: 'rgba(96, 165, 250, 0.1)',
+            color: isDanger ? '#F87171' : '#60A5FA',
           }}
         >
           <Icon className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" />
@@ -348,7 +354,7 @@ export default function Settings() {
         <div className="flex-1 min-w-0">
           <div className="text-[17px] md:text-[19px] font-semibold text-left">{label}</div>
           {description && (
-            <div className="text-[13px] md:text-[15px] text-left mt-0.5" style={{ color: '#A78BFA' }}>
+            <div className="text-[13px] md:text-[15px] text-left mt-0.5" style={{ color: '#60A5FA' }}>
               {description}
             </div>
           )}
@@ -356,23 +362,32 @@ export default function Settings() {
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {value && (
-          <span className="text-[15px] md:text-[17px]" style={{ color: '#A78BFA' }}>
+          <span className="text-[15px] md:text-[17px]" style={{ color: '#60A5FA' }}>
             {value}
           </span>
         )}
-        {rightElement || (onPress && <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />)}
+        {rightElement || (onPress && <ChevronRight className="w-5 h-5" style={{ color: '#60A5FA' }} />)}
       </div>
     </motion.button>
   );
 
   if (loading) {
     return (
-      <div className="pb-[72px] min-h-screen relative overflow-hidden">
+      <>
+        {/* Page Lock Modal */}
+        <EnhancedPageLockModal
+          isOpen={isPageLocked}
+          pageName="Settings"
+          lockType={pageLockType}
+          onUnlock={handlePageUnlock}
+        />
+
+        <div className="pb-[72px] min-h-screen relative overflow-hidden">
         <div className="fixed inset-0 pointer-events-none z-0">
           <div
             className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
             style={{
-              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+              background: 'radial-gradient(circle, rgba(37, 99, 235, 0.6) 0%, rgba(37, 99, 235, 0) 70%)',
             }}
           />
         </div>
@@ -381,18 +396,28 @@ export default function Settings() {
           <Skeleton className="h-20 w-full rounded-2xl" />
           <Skeleton className="h-20 w-full rounded-2xl" />
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="pb-[72px] min-h-screen relative overflow-hidden">
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Settings"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
+
+      <div className="pb-[72px] min-h-screen relative overflow-hidden">
       {/* Background Gradient Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
           className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.6) 0%, rgba(37, 99, 235, 0) 70%)',
           }}
         />
         <div
@@ -439,7 +464,7 @@ export default function Settings() {
             <h3
               className="text-xs font-bold uppercase mb-3"
               style={{
-                color: '#A78BFA',
+                color: '#60A5FA',
                 letterSpacing: '1px',
                 marginTop: '32px',
               }}
@@ -479,6 +504,15 @@ export default function Settings() {
                 }
               />
               <SettingsRow
+                icon={Lock}
+                label="Page Lock Settings"
+                description="Lock individual pages with PIN or password"
+                onPress={() => {
+                  triggerHaptic('light');
+                  setIsPageLockSettingsOpen(true);
+                }}
+              />
+              <SettingsRow
                 icon={Mail}
                 label="Email"
                 value={user?.email || ''}
@@ -500,7 +534,7 @@ export default function Settings() {
             <h3
               className="text-xs font-bold uppercase mb-3"
               style={{
-                color: '#A78BFA',
+                color: '#60A5FA',
                 letterSpacing: '1px',
               }}
             >
@@ -518,12 +552,12 @@ export default function Settings() {
             >
               <div className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5">
                 <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
-                    <Bell className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(96, 165, 250, 0.1)' }}>
+                    <Bell className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#60A5FA' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[17px] md:text-[19px] font-semibold text-white">Push Notifications</div>
-                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#A78BFA' }}>
+                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#60A5FA' }}>
                       Get notified about expiring documents
                     </div>
                   </div>
@@ -539,12 +573,12 @@ export default function Settings() {
 
               <div className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5">
                 <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
-                    <Mail className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(96, 165, 250, 0.1)' }}>
+                    <Mail className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#60A5FA' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[17px] md:text-[19px] font-semibold text-white">Email Notifications</div>
-                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#A78BFA' }}>
+                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#60A5FA' }}>
                       Receive email reminders
                     </div>
                   </div>
@@ -569,14 +603,14 @@ export default function Settings() {
                   className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5"
                 >
                   <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                    <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
-                      <Clock className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                    <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(96, 165, 250, 0.1)' }}>
+                      <Clock className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#60A5FA' }} />
                     </div>
                     <div className="text-[17px] md:text-[19px] font-semibold text-white">Notification Intervals</div>
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 transition-transform ${expandedIntervals ? 'rotate-180' : ''}`}
-                    style={{ color: '#A78BFA' }}
+                    style={{ color: '#60A5FA' }}
                   />
                 </motion.button>
 
@@ -620,7 +654,7 @@ export default function Settings() {
                               className="w-5 h-5 rounded flex items-center justify-center transition-all"
                               style={{
                                 background: settings.notificationIntervals[interval.key as keyof typeof settings.notificationIntervals]
-                                  ? 'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+                                  ? 'linear-gradient(135deg, #2563EB, #1E40AF)'
                                   : 'rgba(255, 255, 255, 0.1)',
                                 border: settings.notificationIntervals[interval.key as keyof typeof settings.notificationIntervals]
                                   ? 'none'
@@ -641,7 +675,7 @@ export default function Settings() {
 
               {/* Quiet Hours */}
               <SettingsRow
-                icon={Moon}
+                icon={Clock}
                 label="Quiet Hours"
                 value={`${formatTime(settings.quietHours.start)} - ${formatTime(settings.quietHours.end)}`}
                 onPress={() => {
@@ -657,7 +691,7 @@ export default function Settings() {
             <h3
               className="text-xs font-bold uppercase mb-3"
               style={{
-                color: '#A78BFA',
+                color: '#60A5FA',
                 letterSpacing: '1px',
               }}
             >
@@ -682,20 +716,6 @@ export default function Settings() {
                   setIsLanguagePickerOpen(true);
                 }}
               />
-              <div className="w-full h-[56px] md:h-[64px] px-4 md:px-5 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
-                    <Moon className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[17px] md:text-[19px] font-semibold text-white">Dark Mode</div>
-                    <div className="text-[13px] md:text-[15px] mt-0.5" style={{ color: '#A78BFA' }}>
-                      Always dark mode
-                    </div>
-                  </div>
-                </div>
-                <Toggle checked={theme === 'dark'} onChange={() => {}} disabled />
-              </div>
             </div>
           </div>
 
@@ -704,7 +724,7 @@ export default function Settings() {
             <h3
               className="text-xs font-bold uppercase mb-3"
               style={{
-                color: '#A78BFA',
+                color: '#60A5FA',
                 letterSpacing: '1px',
               }}
             >
@@ -723,13 +743,13 @@ export default function Settings() {
               {/* Storage Used */}
               <div className="px-4 md:px-5 py-4 md:py-5 border-b border-white/5">
                 <div className="flex items-center gap-3 md:gap-4 mb-3">
-                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(167, 139, 250, 0.1)' }}>
-                    <Database className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#A78BFA' }} />
+                  <div className="w-[40px] h-[40px] md:w-[44px] md:h-[44px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(96, 165, 250, 0.1)' }}>
+                    <Database className="w-[24px] h-[24px] md:w-[28px] md:h-[28px]" style={{ color: '#60A5FA' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[17px] md:text-[19px] font-semibold text-white">Storage Used</div>
                   </div>
-                  <span className="text-[15px] md:text-[17px]" style={{ color: '#A78BFA' }}>
+                  <span className="text-[15px] md:text-[17px]" style={{ color: '#60A5FA' }}>
                     {storageUsed} / {storageTotal}
                   </span>
                 </div>
@@ -746,7 +766,7 @@ export default function Settings() {
                     transition={{ duration: 0.5 }}
                     className="h-full rounded-full"
                     style={{
-                      background: 'linear-gradient(90deg, #8B5CF6, #6D28D9)',
+                      background: 'linear-gradient(90deg, #2563EB, #1E40AF)',
                     }}
                   />
                 </div>
@@ -778,7 +798,7 @@ export default function Settings() {
             <h3
               className="text-xs font-bold uppercase mb-3"
               style={{
-                color: '#A78BFA',
+                color: '#60A5FA',
                 letterSpacing: '1px',
               }}
             >
@@ -866,6 +886,11 @@ export default function Settings() {
         onClose={() => setIsExportDataOpen(false)}
       />
 
+      <PageLockSettingsModal
+        isOpen={isPageLockSettingsOpen}
+        onClose={() => setIsPageLockSettingsOpen(false)}
+      />
+
       <SetProfileLockModal
         isOpen={isSetProfileLockOpen}
         onClose={() => setIsSetProfileLockOpen(false)}
@@ -914,7 +939,7 @@ export default function Settings() {
                 }}
               >
                 <h2 className="text-xl font-bold text-white mb-2">Clear Cache?</h2>
-                <p className="text-sm mb-6" style={{ color: '#A78BFA' }}>
+                <p className="text-sm mb-6" style={{ color: '#60A5FA' }}>
                   This will free up {cacheSize} of storage
                 </p>
                 <div className="flex gap-3">
@@ -934,7 +959,7 @@ export default function Settings() {
                     onClick={handleClearCache}
                     className="flex-1 h-12 rounded-xl font-semibold text-white"
                     style={{
-                      background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                      background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                     }}
                   >
                     Clear
@@ -955,6 +980,7 @@ export default function Settings() {
           onClose={() => removeToast(toast.id)}
         />
       ))}
-    </div>
+      </div>
+    </>
   );
 }

@@ -115,7 +115,7 @@ export default function ShareSheetModal({
                 }}
                 className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
                   activeTab === tab
-                    ? 'text-white border-b-2 border-purple-500'
+                    ? 'text-white border-b-2 border-blue-600'
                     : 'text-white/60 hover:text-white/80'
                 }`}
               >
@@ -141,7 +141,7 @@ export default function ShareSheetModal({
                       }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         permission === 'view'
-                          ? 'bg-purple-500/20 text-white border-2 border-purple-500'
+                          ? 'bg-blue-600/20 text-white border-2 border-blue-600'
                           : 'bg-white/5 text-white/60 border-2 border-transparent'
                       }`}
                     >
@@ -154,7 +154,7 @@ export default function ShareSheetModal({
                       }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         permission === 'edit'
-                          ? 'bg-purple-500/20 text-white border-2 border-purple-500'
+                          ? 'bg-blue-600/20 text-white border-2 border-blue-600'
                           : 'bg-white/5 text-white/60 border-2 border-transparent'
                       }`}
                     >
@@ -172,7 +172,7 @@ export default function ShareSheetModal({
                       onClick={() => handleMemberToggle(member.id)}
                       className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all ${
                         selectedMembers.has(member.id)
-                          ? 'bg-purple-500/20 border-2 border-purple-500'
+                          ? 'bg-blue-600/20 border-2 border-blue-600'
                           : 'bg-white/5 border-2 border-transparent hover:border-white/20'
                       }`}
                     >
@@ -183,13 +183,13 @@ export default function ShareSheetModal({
                           className="w-16 h-16 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center">
                           <span className="text-2xl">{member.name.charAt(0)}</span>
                         </div>
                       )}
                       <span className="text-sm font-medium text-white">{member.name}</span>
                       {selectedMembers.has(member.id) && (
-                        <Check className="w-5 h-5 text-purple-400" />
+                        <Check className="w-5 h-5 text-blue-400" />
                       )}
                     </motion.button>
                   ))}
@@ -204,7 +204,7 @@ export default function ShareSheetModal({
                     key={idx}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/50 transition-all"
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-blue-600/50 transition-all"
                   >
                     <span className="text-4xl">{app.icon}</span>
                     <span className="text-xs text-white/70">{app.name}</span>
@@ -227,7 +227,7 @@ export default function ShareSheetModal({
                     />
                     <button
                       onClick={handleCopyLink}
-                      className="px-6 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center gap-2"
+                      className="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 transition-colors flex items-center gap-2"
                     >
                       {linkCopied ? (
                         <>
@@ -294,7 +294,7 @@ export default function ShareSheetModal({
               <button
                 onClick={handleShare}
                 disabled={selectedMembers.size === 0}
-                className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Share
               </button>

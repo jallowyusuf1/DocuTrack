@@ -53,7 +53,7 @@ export default function CategoryPickerModal({
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customIcon, setCustomIcon] = useState('📄');
-  const [customColor, setCustomColor] = useState('#8B5CF6');
+  const [customColor, setCustomColor] = useState('#2563EB');
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -146,7 +146,7 @@ export default function CategoryPickerModal({
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search categories..."
-            className="w-full max-w-[600px] pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50"
+            className="w-full max-w-[600px] pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-blue-600/50"
           />
         </div>
 
@@ -166,7 +166,7 @@ export default function CategoryPickerModal({
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="Category name"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/50"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-blue-600/50"
                   autoFocus
                 />
               </div>
@@ -183,7 +183,7 @@ export default function CategoryPickerModal({
                       }}
                       className={`p-3 rounded-xl text-2xl transition-all ${
                         customIcon === emoji
-                          ? 'bg-purple-500/30 border-2 border-purple-500'
+                          ? 'bg-blue-600/30 border-2 border-blue-600'
                           : 'bg-white/5 border border-white/10 hover:bg-white/10'
                       }`}
                     >
@@ -196,7 +196,7 @@ export default function CategoryPickerModal({
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">Color</label>
                 <div className="flex gap-2">
-                  {['#8B5CF6', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#EC4899'].map((color) => (
+                  {['#2563EB', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#EC4899'].map((color) => (
                     <button
                       key={color}
                       onClick={() => {
@@ -227,7 +227,7 @@ export default function CategoryPickerModal({
                 <button
                   onClick={handleCustomSave}
                   disabled={!customName.trim()}
-                  className="flex-1 px-4 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Save
                 </button>
@@ -244,8 +244,8 @@ export default function CategoryPickerModal({
                   onFocus={() => setFocusedIndex(index)}
                   className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl transition-all ${
                     selectedCategoryId === category.id
-                      ? 'bg-purple-500/30 border-2 border-purple-500'
-                      : 'bg-white/5 border border-white/10 hover:border-purple-500/50'
+                      ? 'bg-blue-600/30 border-2 border-blue-600'
+                      : 'bg-white/5 border border-white/10 hover:border-blue-600/50'
                   }`}
                   style={{
                     width: '180px',
@@ -270,7 +270,7 @@ export default function CategoryPickerModal({
                   setShowCustomForm(true);
                   triggerHaptic('light');
                 }}
-                className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white/5 border-2 border-dashed border-white/20 hover:border-purple-500/50 transition-all"
+                className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white/5 border-2 border-dashed border-white/20 hover:border-blue-600/50 transition-all"
                 style={{
                   width: '180px',
                   height: '140px',

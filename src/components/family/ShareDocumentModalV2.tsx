@@ -172,7 +172,7 @@ export default function ShareDocumentModalV2({
                       onClick={() => handleToggleMember(member.connected_user_id)}
                       className={`w-full p-3 rounded-xl flex items-center gap-3 transition-all ${
                         isSelected
-                          ? 'bg-purple-600/20 border-2 border-purple-500'
+                          ? 'bg-blue-600/20 border-2 border-blue-800'
                           : 'bg-white/5 border-2 border-transparent hover:border-white/20'
                       }`}
                     >
@@ -183,8 +183,8 @@ export default function ShareDocumentModalV2({
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                          <span className="text-sm text-purple-300">
+                        <div className="w-10 h-10 rounded-full bg-blue-800/20 flex items-center justify-center">
+                          <span className="text-sm text-blue-300">
                             {(member.connected_user?.full_name || member.connected_user?.email || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
@@ -196,7 +196,7 @@ export default function ShareDocumentModalV2({
                         <p className="text-xs text-white/60">{member.relationship}</p>
                       </div>
                       {isSelected && (
-                        <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
                           <Check className="w-4 h-4 text-white" />
                         </div>
                       )}
@@ -220,7 +220,7 @@ export default function ShareDocumentModalV2({
               whileTap={{ scale: 0.98 }}
               onClick={handleShare}
               disabled={loading || selectedMembers.size === 0}
-              className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

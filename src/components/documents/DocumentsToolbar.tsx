@@ -68,7 +68,7 @@ export default function DocumentsToolbar({
                   {isActive && (
                     <motion.div
                       layoutId="viewMode"
-                      className="absolute inset-0 bg-purple-500/20 rounded-md"
+                      className="absolute inset-0 bg-blue-600/20 rounded-md"
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     />
                   )}
@@ -126,8 +126,8 @@ export default function DocumentsToolbar({
             }}
             className="py-2.5 px-5 rounded-xl text-white text-sm font-medium transition-all"
             style={{
-              background: 'rgba(139, 92, 246, 0.15)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
+              background: 'rgba(37, 99, 235, 0.15)',
+              border: '1px solid rgba(37, 99, 235, 0.3)',
               backdropFilter: 'blur(10px)',
             }}
           >

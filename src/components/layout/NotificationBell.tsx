@@ -194,7 +194,7 @@ export default function NotificationBell() {
                 backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(25px)',
                 border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(139, 92, 246, 0.4)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(37, 99, 235, 0.4)',
               }}
             >
             {/* Header with Close Button */}
@@ -204,7 +204,7 @@ export default function NotificationBell() {
                 {unreadCount > 0 && (
                   <button
                     onClick={handleMarkAllAsRead}
-                    className="text-sm text-purple-400 font-medium hover:text-purple-300 transition-colors"
+                    className="text-sm text-blue-400 font-medium hover:text-blue-300 transition-colors"
                   >
                     Mark all as read
                   </button>
@@ -216,10 +216,10 @@ export default function NotificationBell() {
                   }}
                   className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
                   style={{
-                    color: '#A78BFA',
+                    color: '#60A5FA',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.2)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'transparent';
@@ -236,21 +236,21 @@ export default function NotificationBell() {
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 60px)' }}>
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4">
                   <div 
                     className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
                     style={{
-                      background: 'rgba(139, 92, 246, 0.2)',
+                      background: 'rgba(37, 99, 235, 0.2)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                     }}
                   >
                     <span className="text-2xl">✓</span>
                   </div>
                   <p className="text-sm font-medium text-white mb-1">No notifications</p>
-                  <p className="text-xs text-center" style={{ color: '#A78BFA' }}>You're all caught up!</p>
+                  <p className="text-xs text-center" style={{ color: '#60A5FA' }}>You're all caught up!</p>
                 </div>
               ) : (
                 <div className="divide-y divide-white/10">
@@ -259,7 +259,7 @@ export default function NotificationBell() {
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
                       className={`w-full text-left px-4 py-3 hover:bg-white/5 active:bg-white/10 transition-colors ${
-                        !notification.is_read ? 'bg-purple-500/10' : ''
+                        !notification.is_read ? 'bg-blue-600/10' : ''
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -283,14 +283,14 @@ export default function NotificationBell() {
                                 ).body
                               : 'Document notification'}
                           </p>
-                          <p className="text-xs" style={{ color: '#A78BFA' }}>
+                          <p className="text-xs" style={{ color: '#60A5FA' }}>
                             {formatTimeAgo(notification.created_at)}
                           </p>
                         </div>
                         {!notification.is_read && (
                           <div 
-                            className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0 mt-2" 
-                            style={{ boxShadow: '0 0 8px rgba(139, 92, 246, 0.6)' }} 
+                            className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2" 
+                            style={{ boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)' }} 
                           />
                         )}
                       </div>
@@ -324,8 +324,8 @@ export default function NotificationBell() {
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-purple-500"
-              style={{ boxShadow: '0 0 15px rgba(139, 92, 246, 0.6)' }}
+              className="absolute -top-1 -right-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-blue-800 to-blue-600"
+              style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.6)' }}
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.span>

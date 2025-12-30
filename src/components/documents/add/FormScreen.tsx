@@ -209,7 +209,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
               })}
               placeholder="e.g., US Passport"
               className={`w-full h-12 px-4 rounded-xl text-white bg-[rgba(35,29,51,0.6)] border transition-all ${
-                errors.document_name ? 'border-red-500' : 'border-white/10 focus:border-purple-500/50'
+                errors.document_name ? 'border-red-500' : 'border-white/10 focus:border-blue-600/50'
               } focus:outline-none`}
             />
             {errors.document_name && (
@@ -230,7 +230,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
                 <select
                   {...field}
                   className={`w-full h-12 px-4 rounded-xl text-white bg-[rgba(35,29,51,0.6)] border transition-all ${
-                    errors.category ? 'border-red-500' : 'border-white/10 focus:border-purple-500/50'
+                    errors.category ? 'border-red-500' : 'border-white/10 focus:border-blue-600/50'
                   } focus:outline-none`}
                 >
                   {DOCUMENT_TYPES.map((type) => (
@@ -257,7 +257,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
                 maxLength: { value: 50, message: 'Max 50 characters' },
               })}
               placeholder="Optional"
-              className="w-full h-12 px-4 rounded-xl text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-purple-500/50 focus:outline-none"
+              className="w-full h-12 px-4 rounded-xl text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-blue-600/50 focus:outline-none"
             />
             {errors.document_number && (
               <p className="text-red-400 text-sm mt-1">{errors.document_number.message}</p>
@@ -274,13 +274,13 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowIssueDatePicker(true)}
               className={`w-full h-12 px-4 rounded-xl flex items-center justify-between text-left bg-[rgba(35,29,51,0.6)] border transition-all ${
-                errors.issueDate ? 'border-red-500' : 'border-white/10 hover:border-purple-500/30'
+                errors.issueDate ? 'border-red-500' : 'border-white/10 hover:border-blue-600/30'
               }`}
             >
               <span className={watchedIssueDate ? 'text-white' : 'text-white/40'}>
                 {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : 'Select date'}
               </span>
-              <Calendar className="w-5 h-5 text-purple-400" />
+              <Calendar className="w-5 h-5 text-blue-400" />
             </motion.button>
             <input
               type="hidden"
@@ -302,7 +302,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
                   ? 'border-red-500'
                   : watchedExpirationDate
                   ? `border-2`
-                  : 'border-white/10 hover:border-purple-500/30'
+                  : 'border-white/10 hover:border-blue-600/30'
               }`}
               style={{
                 borderColor: errors.expiration_date
@@ -315,7 +315,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
               <span className={watchedExpirationDate ? 'text-white' : 'text-white/40'}>
                 {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select date'}
               </span>
-              <AlertCircle className="w-5 h-5 text-purple-400" />
+              <AlertCircle className="w-5 h-5 text-blue-400" />
             </motion.button>
             <input
               type="hidden"
@@ -387,12 +387,12 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
                     value={customReminderValue}
                     onChange={(e) => setCustomReminderValue(e.target.value)}
                     placeholder="Custom"
-                    className="flex-1 h-10 px-3 rounded-lg text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-purple-500/50 focus:outline-none"
+                    className="flex-1 h-10 px-3 rounded-lg text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-blue-600/50 focus:outline-none"
                   />
                   <select
                     value={customReminderUnit}
                     onChange={(e) => setCustomReminderUnit(e.target.value as 'days' | 'weeks' | 'months')}
-                    className="h-10 px-3 rounded-lg text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-purple-500/50 focus:outline-none"
+                    className="h-10 px-3 rounded-lg text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-blue-600/50 focus:outline-none"
                   >
                     <option value="days">Days</option>
                     <option value="weeks">Weeks</option>
@@ -401,7 +401,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
                   <button
                     type="button"
                     onClick={handleAddCustomReminder}
-                    className="px-4 py-2 rounded-lg bg-purple-600 text-white font-medium"
+                    className="px-4 py-2 rounded-lg bg-blue-800 text-white font-medium"
                   >
                     Add
                   </button>
@@ -441,7 +441,7 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
               })}
               placeholder="Add any additional notes..."
               maxLength={500}
-              className="w-full h-32 p-4 rounded-xl text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-purple-500/50 focus:outline-none resize-none"
+              className="w-full h-32 p-4 rounded-xl text-white bg-[rgba(35,29,51,0.6)] border border-white/10 focus:border-blue-600/50 focus:outline-none resize-none"
             />
             <p className="text-xs text-white/40 mt-1 text-right">
               {(watchedNotes?.length || 0)}/500
@@ -461,8 +461,8 @@ export default function FormScreen({ imageFile, onSubmit, onBack, isDesktop = fa
             disabled={isSubmitting || isCompressing}
             className="w-full py-4 rounded-xl font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-              boxShadow: '0 4px 20px rgba(139, 92, 246, 0.4)',
+              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+              boxShadow: '0 4px 20px rgba(37, 99, 235, 0.4)',
             }}
           >
             {isSubmitting || isCompressing ? (

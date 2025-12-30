@@ -1,19 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { ArrowLeft, Calendar, AlertCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { documentService } from '../../services/documents';
+import { documentFieldsService } from '../../services/documentFields';
 import { useToast } from '../../hooks/useToast';
 import type { DocumentType, DocumentFormData } from '../../types';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
-import Textarea from '../../components/ui/Textarea';
-import Button from '../../components/ui/Button';
-import DatePickerModal from '../../components/ui/DatePickerModal';
+import { DynamicDocumentForm } from '../../components/documents/DynamicDocumentForm';
+import { DocumentTypeSelector } from '../../components/documents/DocumentTypeSelector';
+import { validateAllFields } from '../../utils/fieldValidation';
+import { documentTypesService } from '../../services/documentTypes';
 import Toast from '../../components/ui/Toast';
 import Skeleton from '../../components/ui/Skeleton';
+import Button from '../../components/ui/Button';
 import { useImageUrl } from '../../hooks/useImageUrl';
 import { motion } from 'framer-motion';
 
@@ -45,10 +44,11 @@ export default function EditDocument() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [datePickerField, setDatePickerField] = useState<'issue_date' | 'expiration_date' | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [documentType, setDocumentType] = useState<DocumentType>('passport');
+  const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   // Use hook to get signed URL for document image
   const { signedUrl: documentImageUrl, loading: imageUrlLoading } = useImageUrl(document?.image_url);
@@ -56,26 +56,7 @@ export default function EditDocument() {
   // Use local preview if new image selected, otherwise use signed URL
   const imagePreview = selectedImage ? localImagePreview : documentImageUrl;
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    trigger,
-    reset,
-  } = useForm<DocumentFormData & { image?: File }>({
-    defaultValues: {
-      document_type: 'passport',
-      category: 'passport',
-    },
-  });
-
-  const watchedDocumentType = watch('document_type');
-  const watchedIssueDate = watch('issue_date');
-  const watchedExpirationDate = watch('expiration_date');
-
-  // Load document
+  // Load document and field values
   useEffect(() => {
     const fetchDocument = async () => {
       if (!id || !user?.id) return;
@@ -85,15 +66,34 @@ export default function EditDocument() {
         const doc = await documentService.getDocumentById(id, user.id);
         if (doc) {
           setDocument(doc);
-          reset({
-            document_type: doc.document_type,
-            document_name: doc.document_name,
-            document_number: doc.document_number || '',
-            issue_date: doc.issue_date || '',
-            expiration_date: doc.expiration_date,
-            category: doc.category,
-            notes: doc.notes || '',
-          });
+          setDocumentType(doc.document_type);
+          
+          // Load field values
+          try {
+            const fieldVals = await documentFieldsService.getDocumentFields(id);
+            // Merge with legacy fields for backward compatibility
+            const mergedValues: Record<string, any> = {
+              ...fieldVals,
+              document_name: doc.document_name,
+              document_number: doc.document_number,
+              issue_date: doc.issue_date,
+              expiry_date: doc.expiration_date,
+              expiration_date: doc.expiration_date,
+              notes: doc.notes,
+            };
+            setFieldValues(mergedValues);
+          } catch (fieldError) {
+            console.warn('Failed to load field values, using legacy fields:', fieldError);
+            // Fallback to legacy fields
+            setFieldValues({
+              document_name: doc.document_name,
+              document_number: doc.document_number,
+              issue_date: doc.issue_date,
+              expiry_date: doc.expiration_date,
+              expiration_date: doc.expiration_date,
+              notes: doc.notes,
+            });
+          }
         }
       } catch (err: any) {
         console.error('Failed to fetch document:', err);
@@ -104,20 +104,12 @@ export default function EditDocument() {
     };
 
     fetchDocument();
-  }, [id, user, reset, showToast]);
-
-  // Auto-fill category when document type changes
-  useEffect(() => {
-    if (watchedDocumentType) {
-      setValue('category', watchedDocumentType);
-    }
-  }, [watchedDocumentType, setValue]);
+  }, [id, user, showToast]);
 
   // Track form changes
   useEffect(() => {
-    const subscription = watch(() => setHasChanges(true));
-    return () => subscription.unsubscribe();
-  }, [watch]);
+    setHasChanges(true);
+  }, [documentType, fieldValues, selectedImage]);
 
   // Handle back navigation with confirmation
   const handleBack = () => {
@@ -148,64 +140,62 @@ export default function EditDocument() {
     }
   };
 
-  // Handle date picker
-  const handleDateSelect = (date: string) => {
-    if (datePickerField) {
-      setValue(datePickerField, date);
-      trigger(datePickerField);
-      setHasChanges(true);
-    }
-    setIsDatePickerOpen(false);
-    setDatePickerField(null);
-  };
-
-  const openDatePicker = (field: 'issue_date' | 'expiration_date') => {
-    // Prevent rapid clicking
-    if (isDatePickerOpen) return;
-    setDatePickerField(field);
-    setIsDatePickerOpen(true);
-  };
-
-  // Format date for display
-  const formatDateDisplay = (dateString?: string) => {
-    if (!dateString) return '';
-    try {
-      return format(new Date(dateString), 'MMM dd, yyyy');
-    } catch {
-      return dateString;
-    }
-  };
-
-  // Get urgency color for expiration date
-  const getExpirationDateColor = () => {
-    if (!watchedExpirationDate) return '';
-    const expirationDate = new Date(watchedExpirationDate);
-    const today = new Date();
-    const daysUntil = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysUntil <= 7) return 'text-red-600 border-red-500';
-    if (daysUntil <= 14) return 'text-orange-600 border-orange-500';
-    if (daysUntil <= 30) return 'text-yellow-600 border-yellow-500';
-    return '';
-  };
 
   // Handle form submission
-  const onSubmit = async (data: any) => {
+  const handleSubmit = async () => {
     if (!user?.id || !id) {
       showToast('Please log in to edit documents', 'error');
       return;
     }
 
+    // Get template to validate required fields
+    const template = await documentTypesService.getTemplateByType(documentType);
+    if (!template) {
+      setErrors({ document_type: 'Invalid document type' });
+      return;
+    }
+
+    // Validate all required fields
+    const requiredFields = template.fields
+      .filter(f => f.is_required)
+      .map(f => f.field_definition);
+
+    const validationErrors = validateAllFields(requiredFields, fieldValues);
+    
+    if (validationErrors.length > 0) {
+      const errorMap: Record<string, string> = {};
+      validationErrors.forEach(err => {
+        errorMap[err.field] = err.message;
+      });
+      setErrors(errorMap);
+      return;
+    }
+
     setIsSaving(true);
     try {
+      // Extract key fields for document record
+      const documentName = fieldValues.document_name || 
+                          fieldValues.full_name || 
+                          (fieldValues.given_names && fieldValues.surname
+                            ? `${fieldValues.given_names} ${fieldValues.surname}`
+                            : document?.document_name || 'Document');
+
+      const expirationDate = fieldValues.expiry_date || fieldValues.expiration_date;
+      if (!expirationDate) {
+        setErrors({ expiry_date: 'Expiry date is required' });
+        setIsSaving(false);
+        return;
+      }
+
       const updateData: any = {
-        document_type: data.document_type,
-        document_name: data.document_name,
-        document_number: data.document_number || null,
-        issue_date: data.issue_date || null,
-        expiration_date: data.expiration_date,
-        category: data.category || data.document_type,
-        notes: data.notes || null,
+        document_type: documentType,
+        document_name: documentName,
+        document_number: fieldValues.document_number || fieldValues.passport_number || fieldValues.license_number || null,
+        issue_date: fieldValues.issue_date || null,
+        expiration_date: expirationDate,
+        category: template.category || documentType,
+        notes: fieldValues.notes || null,
+        fieldValues, // Include all field values
       };
 
       // Only include image if a new one was selected
@@ -213,7 +203,7 @@ export default function EditDocument() {
         updateData.image = selectedImage;
       }
 
-      // Start the update (this will compress and upload image, then update DB)
+      // Start the update
       const startTime = Date.now();
       await documentService.updateDocument(id, user.id, updateData);
       const elapsed = Date.now() - startTime;
@@ -237,16 +227,6 @@ export default function EditDocument() {
       setIsSaving(false);
     }
   };
-
-  // Scroll to first error
-  const scrollToFirstError = () => {
-    const firstError = document.querySelector('.border-red-500');
-    if (firstError) {
-      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
-  const handleFormSubmit = handleSubmit(onSubmit, scrollToFirstError);
 
   if (loading) {
     return (
@@ -296,10 +276,10 @@ export default function EditDocument() {
             onClick={handleBack}
             className="p-2 rounded-lg transition-colors"
             style={{
-              color: '#A78BFA',
+              color: '#60A5FA',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.2)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
@@ -313,7 +293,7 @@ export default function EditDocument() {
       </motion.header>
 
       {/* Form */}
-      <form onSubmit={handleFormSubmit} className="px-4 py-6 space-y-5">
+      <div className="px-4 py-6 space-y-5">
         {/* Image Preview */}
         <div className="space-y-3">
           <label className="block text-sm font-semibold text-white mb-3 mt-1">
@@ -323,7 +303,7 @@ export default function EditDocument() {
             <div className="relative">
               {imageUrlLoading && !selectedImage ? (
                 <div className="w-full h-48 rounded-2xl bg-gray-800 flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
                 </div>
               ) : (
                 <img
@@ -340,12 +320,12 @@ export default function EditDocument() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="mt-3 text-sm font-medium transition-colors"
-                style={{ color: '#A78BFA' }}
+                style={{ color: '#60A5FA' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = '#C4B5FD';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#A78BFA';
+                  e.currentTarget.style.color = '#60A5FA';
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -360,17 +340,17 @@ export default function EditDocument() {
                 background: 'rgba(42, 38, 64, 0.3)',
               }}
             >
-              <ImageIcon className="w-12 h-12 mb-2" style={{ color: '#A78BFA' }} />
+              <ImageIcon className="w-12 h-12 mb-2" style={{ color: '#60A5FA' }} />
               <motion.button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="text-sm font-medium transition-colors"
-                style={{ color: '#A78BFA' }}
+                style={{ color: '#60A5FA' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = '#C4B5FD';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#A78BFA';
+                  e.currentTarget.style.color = '#60A5FA';
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -387,163 +367,32 @@ export default function EditDocument() {
           />
         </div>
 
-        {/* Document Type */}
-        <Select
-          label={
-            <>
-              Document Type <span className="text-red-500">*</span>
-            </>
-          }
-          options={DOCUMENT_TYPES}
-          {...register('document_type', { required: 'Document type is required' })}
-          error={errors.document_type?.message}
-          className="h-[52px]"
-        />
-
-        {/* Document Name */}
-        <Input
-          label={
-            <>
-              Document Name <span className="text-red-500">*</span>
-            </>
-          }
-          placeholder="e.g., US Passport"
-          maxLength={100}
-          {...register('document_name', {
-            required: 'Document name is required',
-            maxLength: { value: 100, message: 'Document name must be less than 100 characters' },
-          })}
-          error={errors.document_name?.message}
-          className="h-[52px]"
-        />
-
-        {/* Document Number */}
-        <Input
-          label="Document Number"
-          placeholder="e.g., 123456789"
-          maxLength={50}
-          {...register('document_number', {
-            maxLength: { value: 50, message: 'Document number must be less than 50 characters' },
-          })}
-          error={errors.document_number?.message}
-          className="h-[52px]"
-        />
-
-        {/* Issue Date */}
-        <div>
-          <label className="block text-sm font-semibold text-white mb-3 mt-1">
-            Issue Date
-          </label>
-          <motion.button
-            type="button"
-            onClick={() => openDatePicker('issue_date')}
-            className={`
-              w-full h-[52px] px-4 rounded-xl border
-              flex items-center gap-3
-              text-left text-[15px]
-              ${errors.issue_date ? 'border-red-500' : 'border-white/10'}
-              focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500
-            `}
-            style={{
-              background: 'rgba(35, 29, 51, 0.6)',
-              backdropFilter: 'blur(15px)',
-              color: watchedIssueDate ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
+        {/* Document Type Selector */}
+        <div className="bg-[rgba(26,22,37,0.6)] backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          <DocumentTypeSelector
+            value={documentType}
+            onChange={(type) => {
+              setDocumentType(type);
+              setFieldValues({});
+              setErrors({});
             }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Calendar className="w-5 h-5" style={{ color: '#A78BFA' }} />
-            <span>
-              {watchedIssueDate ? formatDateDisplay(watchedIssueDate) : 'Select issue date'}
-            </span>
-          </motion.button>
-          <input
-            type="hidden"
-            {...register('issue_date')}
+            error={errors.document_type}
+            disabled={isSaving}
           />
-          {errors.issue_date && (
-            <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4" />
-              {errors.issue_date.message}
-            </p>
-          )}
         </div>
 
-        {/* Expiration Date */}
-        <div>
-          <label className="block text-sm font-semibold text-white mb-3 mt-1">
-            Expiration Date <span className="text-red-400">*</span>
-          </label>
-          <motion.button
-            type="button"
-            onClick={() => openDatePicker('expiration_date')}
-            className={`
-              w-full h-[52px] px-4 rounded-xl border
-              flex items-center gap-3
-              text-left text-[15px]
-              ${errors.expiration_date ? 'border-red-500' : 'border-white/10'}
-              focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500
-            `}
-            style={{
-              background: 'rgba(35, 29, 51, 0.6)',
-              backdropFilter: 'blur(15px)',
-              color: watchedExpirationDate ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <AlertCircle className="w-5 h-5" style={{ color: '#A78BFA' }} />
-            <span>
-              {watchedExpirationDate ? formatDateDisplay(watchedExpirationDate) : 'Select expiration date'}
-            </span>
-          </motion.button>
-          <input
-            type="hidden"
-            {...register('expiration_date', {
-              required: 'Expiration date is required',
-              validate: (value) => {
-                if (!value) return true;
-                const expirationDate = new Date(value);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                if (expirationDate <= today) {
-                  return 'Expiration date must be in the future';
-                }
-                return true;
-              },
-            })}
-          />
-          {errors.expiration_date && (
-            <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4" />
-              {errors.expiration_date.message}
-            </p>
-          )}
-        </div>
-
-        {/* Category (Auto-filled, disabled) */}
-        <Input
-          label="Category"
-          value={watchedDocumentType || ''}
-          disabled
-          className="h-[52px]"
+        {/* Dynamic Form */}
+        <DynamicDocumentForm
+          documentType={documentType}
+          values={fieldValues}
+          onChange={(values) => {
+            setFieldValues(values);
+            setErrors({});
+          }}
+          errors={errors}
+          disabled={isSaving}
         />
-
-        {/* Notes */}
-        <div>
-          <Textarea
-            label="Notes"
-            placeholder="Add any additional notes..."
-            maxLength={500}
-            {...register('notes', {
-              maxLength: { value: 500, message: 'Notes must be less than 500 characters' },
-            })}
-            error={errors.notes?.message}
-            className="min-h-[80px]"
-          />
-          <p className="mt-1 text-xs text-right" style={{ color: '#A78BFA' }}>
-            {watch('notes')?.length || 0}/500
-          </p>
-        </div>
-      </form>
+      </div>
 
       {/* Fixed Save Button */}
       <div 
@@ -555,10 +404,10 @@ export default function EditDocument() {
         }}
       >
         <Button
-          type="submit"
+          type="button"
           variant="primary"
           fullWidth
-          onClick={handleFormSubmit}
+          onClick={handleSubmit}
           disabled={isSaving}
           className="h-[52px] text-base font-semibold"
         >
@@ -572,35 +421,6 @@ export default function EditDocument() {
           )}
         </Button>
       </div>
-
-      {/* Date Picker Modal */}
-      <DatePickerModal
-        isOpen={isDatePickerOpen}
-        onClose={() => {
-          setIsDatePickerOpen(false);
-          setDatePickerField(null);
-        }}
-        onSelect={handleDateSelect}
-        selectedDate={
-          datePickerField === 'issue_date'
-            ? watchedIssueDate
-            : datePickerField === 'expiration_date'
-            ? watchedExpirationDate
-            : undefined
-        }
-        minDate={
-          datePickerField === 'issue_date'
-            ? '2010-01-01'
-            : datePickerField === 'expiration_date'
-            ? new Date().toISOString().split('T')[0]
-            : undefined
-        }
-        maxDate={
-          datePickerField === 'expiration_date'
-            ? '2040-12-31'
-            : undefined
-        }
-      />
 
       {/* Toast Notifications */}
       {toasts.map((toast) => (

@@ -165,7 +165,7 @@ export default function DesktopDocumentDetail() {
       <div className="min-h-screen flex flex-col">
         <DesktopNav />
         <div className="flex-1 flex items-center justify-center" style={{ marginTop: '104px' }}>
-          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -181,7 +181,7 @@ export default function DesktopDocumentDetail() {
             <button
               onClick={() => navigate('/documents')}
               className="px-6 py-3 rounded-xl text-white"
-              style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
+              style={{ background: 'linear-gradient(135deg, #2563EB, #1E40AF)' }}
             >
               Back to Documents
             </button>

@@ -97,10 +97,31 @@ export default function AddImportantDateModal({
       return;
     }
 
+    // Validate required fields
+    if (!data.title || !data.title.trim()) {
+      showToast('Please enter a title for this important date', 'error');
+      return;
+    }
+
+    if (!data.date) {
+      showToast('Please select a date', 'error');
+      return;
+    }
+
+    // Validate date is not in the past (optional, but good UX)
+    const selectedDate = new Date(data.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      // Allow past dates but show a gentle reminder
+      console.log('Date is in the past, but allowing it');
+    }
+
     setIsSaving(true);
     try {
       await dateService.createDate({
         ...data,
+        title: data.title.trim(),
         user_id: user.id,
       } as any);
       showToast('Important date added successfully!', 'success');
@@ -133,10 +154,10 @@ export default function AddImportantDateModal({
             transition={getTransition(transitions.spring)}
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] w-full max-h-[90vh] overflow-y-auto"
             style={{
-              background: 'rgba(42, 38, 64, 0.85)',
-              backdropFilter: 'blur(25px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: 'rgba(26, 26, 26, 0.95)',
+              backdropFilter: 'blur(40px)',
+              WebkitBackdropFilter: 'blur(40px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -159,7 +180,7 @@ export default function AddImportantDateModal({
                   triggerHaptic('light');
                   onClose();
                 }}
-                className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
               >
                 <X className="w-5 h-5 text-white" />
               </motion.button>
@@ -207,10 +228,10 @@ export default function AddImportantDateModal({
                       ? 'rgba(239, 68, 68, 0.1)'
                       : 'rgba(35, 29, 51, 0.6)',
                     backdropFilter: 'blur(15px)',
-                    color: watchedDate ? '#FFFFFF' : '#A78BFA',
+                    color: watchedDate ? '#FFFFFF' : '#60A5FA',
                   }}
                 >
-                  <Calendar className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <Calendar className="w-5 h-5" style={{ color: '#60A5FA' }} />
                   <span>
                     {watchedDate ? formatDateDisplay(watchedDate) : 'Select date'}
                   </span>

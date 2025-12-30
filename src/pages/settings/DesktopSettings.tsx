@@ -25,8 +25,6 @@ import {
   Trash2,
   Clock,
   AlertCircle,
-  Moon,
-  Sun,
   Monitor,
   Laptop,
   Tablet,
@@ -63,6 +61,8 @@ import Toast from '../../components/ui/Toast';
 import { format, formatDistanceToNow } from 'date-fns';
 import { compressImage, selectImageFromGallery, openCamera } from '../../utils/imageHandler';
 import { documentService } from '../../services/documents';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 type SettingsSection =
   | 'email-password'
@@ -106,6 +106,9 @@ export default function DesktopSettings() {
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
   const { toasts, showToast, removeToast } = useToast();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('settings');
 
   const [activeSection, setActiveSection] = useState<SettingsSection>('email-password');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -233,16 +236,25 @@ export default function DesktopSettings() {
   };
 
   return (
-    <div className="min-h-full w-full flex flex-col" style={{
-      background: 'linear-gradient(135deg, #1a1625 0%, #2d1b3d 100%)',
-    }}>
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Settings"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
+
+      <div className="min-h-full w-full flex flex-col" style={{
+        background: 'linear-gradient(135deg, #1a1625 0%, #2d1b3d 100%)',
+      }}>
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <aside className="w-[280px] flex-shrink-0 overflow-y-auto" style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          borderRight: '1px solid rgba(139, 92, 246, 0.2)',
+          borderRight: '1px solid rgba(37, 99, 235, 0.2)',
         }}>
           {/* User Profile */}
           <div className="p-6 border-b border-white/10">
@@ -251,10 +263,10 @@ export default function DesktopSettings() {
                 <img
                   src={userProfile.avatar_url}
                   alt="Avatar"
-                  className="w-24 h-24 rounded-full object-cover mb-4 border-2 border-purple-500/30"
+                  className="w-24 h-24 rounded-full object-cover mb-4 border-2 border-blue-600/30"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold mb-4">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center text-white text-3xl font-bold mb-4">
                   {userProfile?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                 </div>
               )}
@@ -264,7 +276,7 @@ export default function DesktopSettings() {
               <p className="text-gray-400 text-sm mb-4">{user?.email || 'user@example.com'}</p>
               <button
                 onClick={() => setIsEditProfileOpen(true)}
-                className="w-full py-2 px-4 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-all"
+                className="w-full py-2 px-4 rounded-lg bg-blue-600/20 border border-blue-600/30 text-blue-300 hover:bg-blue-600/30 transition-all"
               >
                 Edit Profile
               </button>
@@ -288,12 +300,12 @@ export default function DesktopSettings() {
                       onClick={() => setActiveSection(item.id)}
                       className="w-full px-6 py-3 flex items-center gap-3 transition-all"
                       style={{
-                        background: isActive ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
-                        borderLeft: isActive ? '3px solid #8B5CF6' : '3px solid transparent',
+                        background: isActive ? 'rgba(37, 99, 235, 0.15)' : 'transparent',
+                        borderLeft: isActive ? '3px solid #2563EB' : '3px solid transparent',
                       }}
                     >
                       <Icon className="w-5 h-5" style={{
-                        color: isActive ? '#A78BFA' : '#9CA3AF',
+                        color: isActive ? '#60A5FA' : '#9CA3AF',
                       }} />
                       <span className="flex-1 text-left text-sm" style={{
                         color: isActive ? '#FFFFFF' : '#D1D5DB',
@@ -302,7 +314,7 @@ export default function DesktopSettings() {
                       </span>
                       {item.hasChevron && (
                         <ChevronRight className="w-4 h-4" style={{
-                          color: isActive ? '#A78BFA' : '#6B7280',
+                          color: isActive ? '#60A5FA' : '#6B7280',
                         }} />
                       )}
                     </button>
@@ -392,7 +404,8 @@ export default function DesktopSettings() {
           onClose={() => removeToast(toast.id)}
         />
       ))}
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -438,14 +451,14 @@ function EmailPasswordContent() {
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <h3 className="text-white font-semibold text-lg mb-4">Email Address</h3>
         <div className="flex items-center justify-between mb-4">
           <span className="text-white text-xl">{user?.email || 'user@example.com'}</span>
           <button
             onClick={() => setShowEmailForm(!showEmailForm)}
-            className="px-4 py-2 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-all"
+            className="px-4 py-2 rounded-lg bg-blue-600/20 border border-blue-600/30 text-blue-300 hover:bg-blue-600/30 transition-all"
           >
             Change Email
           </button>
@@ -494,13 +507,13 @@ function EmailPasswordContent() {
       <div className="p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <h3 className="text-white font-semibold text-lg mb-4">Password</h3>
         <p className="text-gray-400 text-sm mb-4">••••••••</p>
         <button
           onClick={() => navigate('/settings/change-password')}
-          className="px-4 py-2 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-all"
+          className="px-4 py-2 rounded-lg bg-blue-600/20 border border-blue-600/30 text-blue-300 hover:bg-blue-600/30 transition-all"
         >
           Change Password
         </button>
@@ -574,7 +587,7 @@ function TwoFactorContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     );
   }
@@ -588,7 +601,7 @@ function TwoFactorContent() {
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="flex items-center gap-4">
           <div className={`w-4 h-4 rounded-full ${isEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
@@ -610,7 +623,7 @@ function TwoFactorContent() {
         <div className="p-6 rounded-2xl" style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}>
           <h3 className="text-white font-semibold text-lg mb-4">Enable Two-Factor Authentication</h3>
           <p className="text-gray-400 mb-6">
@@ -723,7 +736,7 @@ function ConnectedDevicesContent({ userSettings }: { userSettings: UserSettings 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     );
   }
@@ -737,7 +750,7 @@ function ConnectedDevicesContent({ userSettings }: { userSettings: UserSettings 
         <div className="p-12 rounded-2xl text-center" style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}>
           <p className="text-gray-400">No connected devices found</p>
         </div>
@@ -755,19 +768,19 @@ function ConnectedDevicesContent({ userSettings }: { userSettings: UserSettings 
                   background: 'rgba(26, 22, 37, 0.6)',
                   backdropFilter: 'blur(20px)',
                   border: isCurrent
-                    ? '2px solid rgba(139, 92, 246, 0.5)'
-                    : '1px solid rgba(139, 92, 246, 0.2)',
+                    ? '2px solid rgba(37, 99, 235, 0.5)'
+                    : '1px solid rgba(37, 99, 235, 0.2)',
                 }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                    <DeviceIcon className="w-6 h-6 text-purple-400" />
+                  <div className="w-12 h-12 rounded-full bg-blue-600/20 flex items-center justify-center">
+                    <DeviceIcon className="w-6 h-6 text-blue-400" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-white font-semibold text-lg">{device.device_name || 'Unknown Device'}</h3>
                       {isCurrent && (
-                        <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold">
+                        <span className="px-2 py-1 rounded-full bg-blue-600/20 text-blue-300 text-xs font-semibold">
                           This device
                         </span>
                       )}
@@ -923,7 +936,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="flex items-center justify-between">
           <div>
@@ -933,7 +946,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
           <button
             onClick={() => handleMasterToggle(!masterEnabled)}
             className={`w-14 h-8 rounded-full transition-all ${
-              masterEnabled ? 'bg-purple-600' : 'bg-gray-600'
+              masterEnabled ? 'bg-blue-800' : 'bg-gray-600'
             }`}
           >
             <div
@@ -949,7 +962,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -1026,7 +1039,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <h3 className="text-white font-semibold text-lg mb-4">Reminder Timing</h3>
         <div className="flex gap-4 flex-wrap">
@@ -1036,7 +1049,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
               onClick={() => toggleReminderTiming(days)}
               className={`px-4 py-2 rounded-lg transition-all ${
                 reminderTiming.includes(days)
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-blue-800 text-white'
                   : 'bg-white/5 text-gray-400 hover:bg-white/10'
               }`}
             >
@@ -1050,7 +1063,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -1060,7 +1073,7 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
           <button
             onClick={() => setQuietHoursEnabled(!quietHoursEnabled)}
             className={`w-14 h-8 rounded-full transition-all ${
-              quietHoursEnabled ? 'bg-purple-600' : 'bg-gray-600'
+              quietHoursEnabled ? 'bg-blue-800' : 'bg-gray-600'
             }`}
           >
             <div
@@ -1106,51 +1119,10 @@ function NotificationsContent({ userSettings, onSettingsChange }: { userSettings
 
 function AppearanceContent({ userSettings, onSettingsChange }: { userSettings: UserSettings | null; onSettingsChange: (settings: UserSettings | null) => void }) {
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'auto'>(
-    (userSettings?.theme as 'light' | 'dark' | 'auto') || theme || 'dark'
-  );
   const [textSize, setTextSize] = useState(userSettings?.text_size || 16);
   const [reduceMotion, setReduceMotion] = useState(userSettings?.reduce_motion || false);
-
-  const themes = [
-    {
-      id: 'light' as const,
-      name: 'Light',
-      icon: Sun,
-      preview: 'linear-gradient(135deg, #FFFFFF 0%, #F3F4F6 100%)',
-    },
-    {
-      id: 'dark' as const,
-      name: 'Dark',
-      icon: Moon,
-      preview: 'linear-gradient(135deg, #1a1625 0%, #2d1b3d 100%)',
-    },
-    {
-      id: 'auto' as const,
-      name: 'Auto',
-      icon: Monitor,
-      preview: 'linear-gradient(135deg, #1a1625 0%, #FFFFFF 100%)',
-    },
-  ];
-
-  const handleThemeChange = async (themeId: 'light' | 'dark' | 'auto') => {
-    setSelectedTheme(themeId);
-    setTheme(themeId);
-    
-    // Save to DB
-    if (user?.id) {
-      try {
-        const updated = await userService.updateUserSettings(user.id, { theme: themeId });
-        onSettingsChange(updated);
-        localStorage.setItem('theme', themeId);
-      } catch (error) {
-        console.error('Error saving theme:', error);
-      }
-    }
-  };
 
   const handleSave = async () => {
     if (!user?.id) return;
@@ -1175,47 +1147,13 @@ function AppearanceContent({ userSettings, onSettingsChange }: { userSettings: U
   return (
     <div>
       <h1 className="text-white text-3xl font-bold mb-2">Appearance</h1>
-      <p className="text-gray-400 mb-8">Customize how DocuTrack looks</p>
-
-      {/* Theme Selection */}
-      <div className="mb-8">
-        <h3 className="text-white font-semibold text-lg mb-4">Theme</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {themes.map((themeOption) => {
-            const ThemeIcon = themeOption.icon;
-            const isSelected = selectedTheme === themeOption.id;
-
-            return (
-              <button
-                key={themeOption.id}
-                onClick={() => handleThemeChange(themeOption.id)}
-                className="p-6 rounded-2xl transition-all"
-                style={{
-                  background: 'rgba(26, 22, 37, 0.6)',
-                  backdropFilter: 'blur(20px)',
-                  border: isSelected
-                    ? '2px solid rgba(139, 92, 246, 0.8)'
-                    : '1px solid rgba(139, 92, 246, 0.2)',
-                }}
-              >
-                <div
-                  className="w-full h-32 rounded-xl mb-4 flex items-center justify-center"
-                  style={{ background: themeOption.preview }}
-                >
-                  <ThemeIcon className="w-8 h-8 text-purple-400" />
-                </div>
-                <h4 className="text-white font-semibold">{themeOption.name}</h4>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <p className="text-gray-400 mb-8">Customize how DocuTrackr looks (Dark mode only)</p>
 
       {/* Text Size */}
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <h3 className="text-white font-semibold text-lg mb-4">Text Size</h3>
         <input
@@ -1236,7 +1174,7 @@ function AppearanceContent({ userSettings, onSettingsChange }: { userSettings: U
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="flex items-center justify-between">
           <div>
@@ -1246,7 +1184,7 @@ function AppearanceContent({ userSettings, onSettingsChange }: { userSettings: U
           <button
             onClick={() => setReduceMotion(!reduceMotion)}
             className={`w-14 h-8 rounded-full transition-all ${
-              reduceMotion ? 'bg-purple-600' : 'bg-gray-600'
+              reduceMotion ? 'bg-blue-800' : 'bg-gray-600'
             }`}
           >
             <div
@@ -1316,12 +1254,12 @@ function LanguageContent({ userSettings, onSettingsChange }: { userSettings: Use
               className="p-6 rounded-2xl transition-all text-left"
               style={{
                 background: isSelected
-                  ? 'rgba(139, 92, 246, 0.2)'
+                  ? 'rgba(37, 99, 235, 0.2)'
                   : 'rgba(26, 22, 37, 0.6)',
                 backdropFilter: 'blur(20px)',
                 border: isSelected
-                  ? '2px solid rgba(139, 92, 246, 0.8)'
-                  : '1px solid rgba(139, 92, 246, 0.2)',
+                  ? '2px solid rgba(37, 99, 235, 0.8)'
+                  : '1px solid rgba(37, 99, 235, 0.2)',
               }}
             >
               <div className="text-4xl mb-3">{lang.flag}</div>
@@ -1402,7 +1340,7 @@ function StorageContent() {
   if (loading || !storageData) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     );
   }
@@ -1418,7 +1356,7 @@ function StorageContent() {
       <div className="mb-6 p-8 rounded-2xl flex flex-col items-center" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="relative w-48 h-48 mb-6">
           <svg className="w-full h-full transform -rotate-90">
@@ -1427,7 +1365,7 @@ function StorageContent() {
               cy="96"
               r="80"
               fill="none"
-              stroke="rgba(139, 92, 246, 0.1)"
+              stroke="rgba(37, 99, 235, 0.1)"
               strokeWidth="16"
             />
             <circle
@@ -1435,7 +1373,7 @@ function StorageContent() {
               cy="96"
               r="80"
               fill="none"
-              stroke="#8B5CF6"
+              stroke="#2563EB"
               strokeWidth="16"
               strokeDasharray={`${percentage * 5.03} 502`}
               strokeLinecap="round"
@@ -1476,10 +1414,10 @@ function StorageContent() {
           >
             Clear Cache
           </Button>
-          <button className="w-full py-3 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-all">
+          <button className="w-full py-3 rounded-lg bg-blue-600/20 border border-blue-600/30 text-blue-300 hover:bg-blue-600/30 transition-all">
             Optimize Storage
           </button>
-          <button className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-all">
+          <button className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-800 to-pink-600 text-white font-semibold hover:opacity-90 transition-all">
             Upgrade Storage
           </button>
         </div>
@@ -1588,7 +1526,7 @@ function ExportDataContent() {
       <div className="p-6 rounded-2xl space-y-6" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         {/* Format Selection */}
         <div>
@@ -1596,7 +1534,7 @@ function ExportDataContent() {
           <select
             value={format}
             onChange={(e) => setFormat(e.target.value as any)}
-            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-blue-600 focus:outline-none"
           >
             <option value="json">JSON</option>
             <option value="csv">CSV</option>
@@ -1610,7 +1548,7 @@ function ExportDataContent() {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value as any)}
-            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-blue-600 focus:outline-none"
           >
             <option value="all">All time</option>
             <option value="month">Last month</option>
@@ -1641,7 +1579,7 @@ function ExportDataContent() {
         {exporting && (
           <div className="w-full bg-white/5 rounded-full h-2">
             <div
-              className="bg-purple-600 h-2 rounded-full transition-all"
+              className="bg-blue-800 h-2 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -1672,9 +1610,9 @@ function FamilySharingContent() {
       <div className="p-12 rounded-2xl text-center" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
-        <Users className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+        <Users className="w-16 h-16 text-blue-400 mx-auto mb-4" />
         <p className="text-gray-400 mb-6">Manage your family connections and shared documents</p>
         <Button
           variant="primary"
@@ -1788,7 +1726,7 @@ function IdleTimeoutContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     );
   }
@@ -1818,7 +1756,7 @@ function IdleTimeoutContent() {
         style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}
       >
         <div className="flex items-center justify-between mb-4">
@@ -1832,7 +1770,7 @@ function IdleTimeoutContent() {
             onClick={handleToggleEnabled}
             disabled={!hasPassword && !enabled}
             className={`w-14 h-8 rounded-full transition-all ${
-              enabled ? 'bg-purple-600' : 'bg-gray-600'
+              enabled ? 'bg-blue-800' : 'bg-gray-600'
             } ${!hasPassword && !enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div
@@ -1857,7 +1795,7 @@ function IdleTimeoutContent() {
         style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}
       >
         <h3 className="text-white font-semibold text-lg mb-4">Lock After</h3>
@@ -1869,7 +1807,7 @@ function IdleTimeoutContent() {
               disabled={saving}
               className={`py-3 rounded-xl text-sm font-medium transition-all ${
                 settings?.idleTimeoutMinutes === m
-                  ? 'bg-purple-500/25 border border-purple-400 text-white'
+                  ? 'bg-blue-600/25 border border-blue-400 text-white'
                   : 'bg-white/5 border border-white/10 text-white/80 hover:bg-white/10'
               }`}
             >
@@ -1885,7 +1823,7 @@ function IdleTimeoutContent() {
         style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}
       >
         <h3 className="text-white font-semibold text-lg mb-4">Unlock Protection</h3>
@@ -1949,7 +1887,7 @@ function IdleTimeoutContent() {
         style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}
       >
         <div className="flex items-center justify-between">
@@ -1961,7 +1899,7 @@ function IdleTimeoutContent() {
             onClick={() => save({ idleSoundAlertsEnabled: !(settings?.idleSoundAlertsEnabled ?? false) })}
             disabled={saving}
             className={`w-14 h-8 rounded-full transition-all ${
-              settings?.idleSoundAlertsEnabled ? 'bg-purple-600' : 'bg-gray-600'
+              settings?.idleSoundAlertsEnabled ? 'bg-blue-800' : 'bg-gray-600'
             }`}
           >
             <div
@@ -1979,7 +1917,7 @@ function IdleTimeoutContent() {
         style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}
       >
         <div className="flex items-center justify-between mb-4">
@@ -1993,7 +1931,7 @@ function IdleTimeoutContent() {
             onClick={handleToggleBiometric}
             disabled={!biometricSupported || saving}
             className={`w-14 h-8 rounded-full transition-all ${
-              settings?.biometricUnlockEnabled ? 'bg-purple-600' : 'bg-gray-600'
+              settings?.biometricUnlockEnabled ? 'bg-blue-800' : 'bg-gray-600'
             } ${!biometricSupported ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div
@@ -2159,7 +2097,7 @@ function DocumentLockContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
     );
   }
@@ -2176,7 +2114,7 @@ function DocumentLockContent() {
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -2189,7 +2127,7 @@ function DocumentLockContent() {
             onClick={isEnabled ? handleDisableLock : handleEnableLock}
             disabled={!hasPassword && !isEnabled}
             className={`w-14 h-8 rounded-full transition-all ${
-              isEnabled ? 'bg-purple-600' : 'bg-gray-600'
+              isEnabled ? 'bg-blue-800' : 'bg-gray-600'
             } ${!hasPassword && !isEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div
@@ -2207,7 +2145,7 @@ function DocumentLockContent() {
       <div className="mb-6 p-6 rounded-2xl" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <h3 className="text-white font-semibold text-lg mb-4">Lock Password</h3>
         <p className="text-gray-400 text-sm mb-4">
@@ -2237,7 +2175,7 @@ function DocumentLockContent() {
         <div className="mb-6 p-6 rounded-2xl" style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}>
           <h3 className="text-white font-semibold text-lg mb-4">Lock Trigger</h3>
           <p className="text-gray-400 text-sm mb-4">Choose when to lock the documents page</p>
@@ -2252,7 +2190,7 @@ function DocumentLockContent() {
                 onClick={() => handleUpdateTrigger(option.value as any)}
                 className={`w-full p-4 rounded-xl text-left transition-all ${
                   lockSettings?.lockTrigger === option.value
-                    ? 'bg-purple-500/20 border-2 border-purple-500'
+                    ? 'bg-blue-600/20 border-2 border-blue-600'
                     : 'bg-white/5 border border-white/10 hover:bg-white/10'
                 }`}
               >
@@ -2262,7 +2200,7 @@ function DocumentLockContent() {
                     <p className="text-gray-400 text-sm mt-1">{option.desc}</p>
                   </div>
                   {lockSettings?.lockTrigger === option.value && (
-                    <Check className="w-5 h-5 text-purple-400" />
+                    <Check className="w-5 h-5 text-blue-400" />
                   )}
                 </div>
               </button>
@@ -2276,7 +2214,7 @@ function DocumentLockContent() {
         <div className="mb-6 p-6 rounded-2xl" style={{
           background: 'rgba(26, 22, 37, 0.6)',
           backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(139, 92, 246, 0.2)',
+          border: '1px solid rgba(37, 99, 235, 0.2)',
         }}>
           <h3 className="text-white font-semibold text-lg mb-4">Security Settings</h3>
 
@@ -2288,7 +2226,7 @@ function DocumentLockContent() {
             <select
               value={lockSettings?.maxAttempts ?? 3}
               onChange={(e) => handleUpdateMaxAttempts(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-blue-600 focus:outline-none"
             >
               <option value="1">1 attempt</option>
               <option value="3">3 attempts</option>
@@ -2308,7 +2246,7 @@ function DocumentLockContent() {
             <select
               value={lockSettings?.lockoutDurationMinutes ?? 15}
               onChange={(e) => handleUpdateLockoutDuration(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-500 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-blue-600 focus:outline-none"
             >
               <option value="5">5 minutes</option>
               <option value="15">15 minutes</option>
@@ -2324,12 +2262,12 @@ function DocumentLockContent() {
 
       {/* Info Card */}
       <div className="p-6 rounded-2xl" style={{
-        background: 'rgba(139, 92, 246, 0.1)',
+        background: 'rgba(37, 99, 235, 0.1)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.3)',
+        border: '1px solid rgba(37, 99, 235, 0.3)',
       }}>
         <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="text-white font-semibold mb-2">About Document Lock</h4>
             <ul className="text-gray-400 text-sm space-y-1">
@@ -2382,7 +2320,7 @@ function PlaceholderContent({ section }: { section: string }) {
       <div className="p-12 rounded-2xl flex items-center justify-center" style={{
         background: 'rgba(26, 22, 37, 0.6)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)',
+        border: '1px solid rgba(37, 99, 235, 0.2)',
       }}>
         <p className="text-gray-500 text-lg">Content coming soon...</p>
       </div>

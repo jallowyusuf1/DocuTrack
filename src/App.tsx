@@ -15,10 +15,8 @@ const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const OAuthCallback = lazy(() => import('./pages/auth/OAuthCallback'));
-// Revert to the first/original Dashboard design
-const Dashboard = lazy(() => import('./pages/dashboard/Dashboard.backup'));
-// Keep /expire-soon working but point it to the same original design
-const ExpireSoon = lazy(() => import('./pages/dashboard/Dashboard.backup'));
+// Use the new comprehensive dashboard
+const Dashboard = lazy(() => import('./pages/dashboard/DashboardNew'));
 const Documents = lazy(() => import('./pages/documents/Documents'));
 const AddDocument = lazy(() => import('./pages/documents/AddDocument'));
 const DocumentDetail = lazy(() => import('./pages/documents/DocumentDetail'));
@@ -39,19 +37,22 @@ const DesktopSearch = lazy(() => import('./pages/search/DesktopSearch'));
 const DesktopNotifications = lazy(() => import('./pages/notifications/DesktopNotifications'));
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
+const LegalSecurity = lazy(() => import('./pages/legal/Security'));
+const DataProcessingAgreement = lazy(() => import('./pages/legal/DataProcessingAgreement'));
 const Features = lazy(() => import('./pages/info/Features'));
-const Security = lazy(() => import('./pages/info/Security'));
+const SecurityInfo = lazy(() => import('./pages/info/Security'));
 const FamilySharing = lazy(() => import('./pages/info/FamilySharing'));
 const HelpCenter = lazy(() => import('./pages/info/HelpCenter'));
-const FAQ = lazy(() => import('./pages/info/FAQ'));
+const FAQ = lazy(() => import('./pages/faq/FAQ'));
+const About = lazy(() => import('./pages/about/About'));
 const MyRequests = lazy(() => import('./pages/child/MyRequests'));
 const PendingRequests = lazy(() => import('./pages/requests/PendingRequests'));
+const Sitemap = lazy(() => import('./pages/Sitemap'));
 
 // Onboarding routes
 const EmailVerification = lazy(() => import('./pages/onboarding/EmailVerification'));
 const VerifyEmail = lazy(() => import('./pages/onboarding/VerifyEmail'));
-const ProfileCompletion = lazy(() => import('./pages/onboarding/ProfileCompletion'));
-const SecuritySetup = lazy(() => import('./pages/onboarding/SecuritySetup'));
 
 function AppRoutes() {
   const location = useLocation();
@@ -102,7 +103,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Onboarding (Stage 2 is public, Stage 3/4 are protected) */}
+        {/* Onboarding (Stage 2 is public) */}
         <Route
           path="/onboarding/email"
           element={
@@ -117,26 +118,6 @@ function AppRoutes() {
             <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
               <VerifyEmail />
             </Suspense>
-          }
-        />
-        <Route
-          path="/onboarding/profile"
-          element={
-            <ProtectedRoute>
-              <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
-                <ProfileCompletion />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/onboarding/security"
-          element={
-            <ProtectedRoute>
-              <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
-                <SecuritySetup />
-              </Suspense>
-            </ProtectedRoute>
           }
         />
         <Route
@@ -175,7 +156,31 @@ function AppRoutes() {
           path="/security"
           element={
             <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
-              <Security />
+              <LegalSecurity />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/info/security"
+          element={
+            <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
+              <SecurityInfo />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/cookies"
+          element={
+            <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
+              <CookiePolicy />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/dpa"
+          element={
+            <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
+              <DataProcessingAgreement />
             </Suspense>
           }
         />
@@ -200,6 +205,14 @@ function AppRoutes() {
           element={
             <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
               <FAQ />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
+              <About />
             </Suspense>
           }
         />
@@ -237,14 +250,6 @@ function AppRoutes() {
               }
             />
             <Route
-              path="expire-soon"
-              element={
-                <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
-                  <ExpireSoon />
-                </Suspense>
-              }
-            />
-            <Route 
               path="documents" 
               element={
                 <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
@@ -390,6 +395,16 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
+
+        {/* Sitemap */}
+        <Route
+          path="/sitemap"
+          element={
+            <Suspense fallback={<LoadingScreen subtitle="Loading..." />}>
+              <Sitemap />
+            </Suspense>
+          }
+        />
 
         {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -134,7 +134,7 @@ export default function ActivityChart({ documents = [], data }: ActivityChartPro
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           className="w-full h-full"
-          style={{ filter: 'drop-shadow(0 0 8px rgba(167, 139, 250, 0.6))' }}
+          style={{ filter: 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.6))' }}
         >
           {/* Grid lines */}
           {[0, 25, 50, 75, 100].map((y) => (
@@ -152,8 +152,8 @@ export default function ActivityChart({ documents = [], data }: ActivityChartPro
           {/* Area fill with gradient */}
           <defs>
             <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
+              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
             </linearGradient>
           </defs>
           <path
@@ -165,7 +165,7 @@ export default function ActivityChart({ documents = [], data }: ActivityChartPro
           <path
             d={generatePath().replace(/ L \d+ 100 Z$/, '')}
             fill="none"
-            stroke="#A78BFA"
+            stroke="#60A5FA"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -181,7 +181,7 @@ export default function ActivityChart({ documents = [], data }: ActivityChartPro
                 cx={x}
                 cy={y}
                 r="1.5"
-                fill="#A78BFA"
+                fill="#60A5FA"
                 className="drop-shadow-[0_0_4px_rgba(167,139,250,0.8)]"
               />
             );

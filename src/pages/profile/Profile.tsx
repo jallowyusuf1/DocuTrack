@@ -2,47 +2,40 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LogOut,
   Edit,
   Folder,
   Clock,
   AlertCircle,
-  Lock,
   Mail,
   Bell,
-  Moon,
   Globe,
-  Download,
-  Database,
-  Trash2,
-  HelpCircle,
   Shield,
-  FileText,
-  Info,
+  Settings as SettingsIcon,
   ChevronRight,
-  Sun,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { documentService } from '../../services/documents';
 import { supabase } from '../../config/supabase';
 import EditProfileModal from '../../components/profile/EditProfileModal';
-import LanguagePickerModal from '../../components/profile/LanguagePickerModal';
-import TimePickerModal from '../../components/profile/TimePickerModal';
-import DeleteAccountModal from '../../components/profile/DeleteAccountModal';
-import LogoutConfirmationModal from '../../components/profile/LogoutConfirmationModal';
-import ExportDataModal from '../../components/profile/ExportDataModal';
-import NotificationPreferencesModal from '../../components/profile/NotificationPreferencesModal';
 import ProfileLockModal from '../../components/profile/ProfileLockModal';
+import LanguagePickerModal from '../../components/profile/LanguagePickerModal';
+import QuietHoursModal from '../../components/profile/QuietHoursModal';
+import SetProfileLockModal from '../../components/profile/SetProfileLockModal';
+import { getNotificationPreferences, updateNotificationPreferences } from '../../services/notifications';
 import Skeleton from '../../components/ui/Skeleton';
 import { useToast } from '../../hooks/useToast';
 import Toast from '../../components/ui/Toast';
 import { getDaysUntil } from '../../utils/dateUtils';
 import { triggerHaptic } from '../../utils/animations';
 import BackButton from '../../components/ui/BackButton';
-import FamilyChildAccountsTab from '../../components/profile/FamilyChildAccountsTab';
+import { GlassContainer, GlassCard } from '../../components/ui/GlassContainer';
+import { getGlassAvatarStyle, getGlassCardStyle, getGlassGradientBackground } from '../../utils/glassStyles';
+import Toggle from '../../components/ui/Toggle';
+import { usePageLock } from '../../hooks/usePageLock';
+import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
 
 interface Statistics {
   totalDocuments: number;
@@ -56,9 +49,11 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const [isEntering, setIsEntering] = useState(true);
   const { theme, toggleTheme } = useTheme();
-  const { t } = useTranslation();
-  const { language: currentLanguageCode } = useLanguage();
   const { toasts, showToast, removeToast } = useToast();
+
+  // Page lock
+  const { isLocked: isPageLocked, lockType: pageLockType, handleUnlock: handlePageUnlock } = usePageLock('profile');
+
   const [statistics, setStatistics] = useState<Statistics>({
     totalDocuments: 0,
     expiringSoon: 0,
@@ -68,29 +63,16 @@ export default function Profile() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   
-  const getLanguageDisplayName = () => {
-    const languages: Record<string, string> = {
-      en: 'English',
-      ar: 'العربية',
-      es: 'Español',
-      fr: 'Français',
-      ur: 'اردو',
-    };
-    return languages[currentLanguageCode] || 'English';
-  };
-  const [reminderTime, setReminderTime] = useState('9:00 AM');
-  const [storageUsed, setStorageUsed] = useState('0 MB');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [isLanguagePickerOpen, setIsLanguagePickerOpen] = useState(false);
-  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
-  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
-  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const [isExportDataOpen, setIsExportDataOpen] = useState(false);
-  const [isNotificationPreferencesOpen, setIsNotificationPreferencesOpen] = useState(false);
   const [isProfileLocked, setIsProfileLocked] = useState(false);
   const [isProfileLockModalOpen, setIsProfileLockModalOpen] = useState(false);
   const [profileUnlocked, setProfileUnlocked] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'family'>('profile');
+  const [profileLockEnabled, setProfileLockEnabled] = useState(false);
+  const [isLanguagePickerOpen, setIsLanguagePickerOpen] = useState(false);
+  const [isQuietHoursOpen, setIsQuietHoursOpen] = useState(false);
+  const [isSetProfileLockOpen, setIsSetProfileLockOpen] = useState(false);
+  const [quietHours, setQuietHours] = useState({ enabled: false, start: '22:00', end: '08:00' });
+  const { language: currentLanguageCode } = useLanguage();
 
   // Get user initials
   const getUserInitials = () => {
@@ -133,37 +115,10 @@ export default function Profile() {
     }
   };
 
-  // Calculate storage used
-  const calculateStorageUsed = async () => {
-    if (!user?.id) return;
-
-    try {
-      const { data, error } = await supabase.storage
-        .from('document-images')
-        .list(user.id, {
-          limit: 1000,
-          sortBy: { column: 'created_at', order: 'desc' },
-        });
-
-      if (error) throw error;
-
-      let totalSize = 0;
-      data?.forEach((file) => {
-        totalSize += file.metadata?.size || 0;
-      });
-
-      const sizeInMB = (totalSize / (1024 * 1024)).toFixed(1);
-      setStorageUsed(`${sizeInMB} MB`);
-    } catch (error) {
-      console.error('Failed to calculate storage:', error);
-      setStorageUsed('0 MB');
-    }
-  };
-
   useEffect(() => {
     if (user?.id) {
       setLoading(true);
-      Promise.all([fetchStatistics(), calculateStorageUsed()]).finally(() => {
+      fetchStatistics().finally(() => {
         setLoading(false);
       });
 
@@ -178,15 +133,31 @@ export default function Profile() {
             setIsProfileLocked(true);
             setProfileUnlocked(false);
             setIsProfileLockModalOpen(true);
+            setProfileLockEnabled(true);
           } else {
             setIsProfileLocked(false);
             setProfileUnlocked(true);
+            setProfileLockEnabled(false);
           }
         })
         .catch(() => {
           setIsProfileLocked(false);
           setProfileUnlocked(true);
+          setProfileLockEnabled(false);
         });
+
+      // Load notification preferences
+      getNotificationPreferences(user.id).then((prefs) => {
+        setEmailNotifications(prefs.email_enabled ?? true);
+        setPushNotifications(prefs.push_enabled ?? true);
+        if (prefs.quiet_hours_start && prefs.quiet_hours_end) {
+          setQuietHours({
+            enabled: true,
+            start: prefs.quiet_hours_start,
+            end: prefs.quiet_hours_end,
+          });
+        }
+      }).catch(console.error);
     }
   }, [user]);
 
@@ -204,16 +175,28 @@ export default function Profile() {
   }, []);
 
   const handleToggle = async (
-    setting: 'email' | 'push' | 'darkMode',
+    setting: 'email' | 'push',
     value: boolean
   ) => {
     triggerHaptic('light');
     if (setting === 'email') {
       setEmailNotifications(value);
+      if (user?.id) {
+        try {
+          await updateNotificationPreferences(user.id, { email_enabled: value });
+        } catch (error) {
+          console.error('Failed to save email preference:', error);
+        }
+      }
     } else if (setting === 'push') {
       setPushNotifications(value);
-    } else if (setting === 'darkMode') {
-      toggleTheme();
+      if (user?.id) {
+        try {
+          await updateNotificationPreferences(user.id, { push_enabled: value });
+        } catch (error) {
+          console.error('Failed to save push preference:', error);
+        }
+      }
     }
 
     try {
@@ -224,23 +207,26 @@ export default function Profile() {
     }
   };
 
-
-  const handleClearCache = () => {
-    triggerHaptic('light');
-    localStorage.clear();
-    showToast('Cache cleared successfully', 'success');
+  const getLanguageDisplayName = () => {
+    const languages: Record<string, string> = {
+      en: 'English',
+      ar: 'العربية',
+      es: 'Español',
+      fr: 'Français',
+      ur: 'اردو',
+    };
+    return languages[currentLanguageCode] || 'English';
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  const handleDeleteAccount = async () => {
-    setIsDeleteAccountOpen(false);
-    await logout();
-    navigate('/login');
-  };
+
 
   // Show lock modal if profile is locked and not unlocked
   if (isProfileLocked && !profileUnlocked && isProfileLockModalOpen) {
@@ -267,21 +253,24 @@ export default function Profile() {
   }
 
   if (loading && statistics.totalDocuments === 0) {
-    return (
-      <div className="pb-[72px] min-h-screen relative overflow-hidden liquid-dashboard-bg">
+  return (
+    <div
+      className="pt-4 pb-[72px] min-h-screen relative overflow-hidden"
+      style={{ background: '#000000' }}
+    >
         {/* Background Gradient */}
         <div className="fixed inset-0 pointer-events-none z-0">
           <div
-            className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+            className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-20"
             style={{
-              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
               transform: 'translate(-50%, -50%)',
             }}
           />
         </div>
 
         <div className="relative z-10">
-          <div className="px-5 py-4">
+          <div className="px-5 pb-4">
             <Skeleton className="h-8 w-32 mb-4 rounded-xl" />
           </div>
           <div className="px-4 mb-5">
@@ -300,20 +289,32 @@ export default function Profile() {
   }
 
   return (
-    <div className="pb-[72px] min-h-screen relative overflow-hidden">
-      {/* Background Gradient Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+    <>
+      {/* Page Lock Modal */}
+      <EnhancedPageLockModal
+        isOpen={isPageLocked}
+        pageName="Profile"
+        lockType={pageLockType}
+        onUnlock={handlePageUnlock}
+      />
+
+      <div
+        className="pt-4 pb-[72px] min-h-screen relative overflow-hidden"
+        style={{ background: '#000000' }}
+      >
+        {/* Background Gradient Orbs */}
+        <div className="fixed inset-0 pointer-events-none z-0">
         <div
-          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
             transform: 'translate(-50%, -50%)',
           }}
         />
         <div
-          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-30"
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
             transform: 'translate(50%, 50%)',
           }}
         />
@@ -330,7 +331,7 @@ export default function Profile() {
               transition={{ duration: 0.6, ease: 'easeInOut' }}
               className="fixed inset-y-0 left-0 w-1/2 z-50 pointer-events-none"
               style={{
-                background: 'linear-gradient(135deg, #1A1625, #231D33)',
+                background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
                 transformOrigin: 'left center',
               }}
             />
@@ -341,7 +342,7 @@ export default function Profile() {
               transition={{ duration: 0.6, ease: 'easeInOut' }}
               className="fixed inset-y-0 right-0 w-1/2 z-50 pointer-events-none"
               style={{
-                background: 'linear-gradient(135deg, #231D33, #1A1625)',
+                background: 'linear-gradient(135deg, #1A1625 0%, #231D33 50%, #2A2640 100%)',
                 transformOrigin: 'right center',
               }}
             />
@@ -358,84 +359,44 @@ export default function Profile() {
         className="relative z-10"
       >
         {/* Header */}
-        <header 
-          className="px-5 py-4 flex items-center justify-between"
+        <header
+          className="px-5 py-6 flex items-center justify-between border-b"
           style={{
-            background: 'rgba(35, 29, 51, 0.8)',
+            background: 'rgba(0, 0, 0, 0.8)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderColor: 'rgba(255, 255, 255, 0.05)',
           }}
         >
-          <h1 className="text-2xl font-bold text-white">Profile</h1>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              triggerHaptic('light');
-              setIsLogoutOpen(true);
-            }}
-            className="text-red-400 text-sm font-medium flex items-center gap-1"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </motion.button>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))',
+              }}
+            >
+              <User className="w-5 h-5" style={{ color: '#60A5FA' }} />
+            </div>
+            <h1 className="text-2xl font-bold text-white">Profile</h1>
+          </div>
         </header>
 
         {/* Back Button */}
-        <div className="px-4 pt-4 mb-3 flex items-center justify-between gap-3">
+        <div className="px-4 pt-4 mb-3">
           <BackButton to="/dashboard" />
-          <div
-            className="rounded-2xl p-1 flex items-center gap-1"
-            style={{
-              background: 'rgba(42, 38, 64, 0.55)',
-              backdropFilter: 'blur(14px)',
-              border: '1px solid rgba(255, 255, 255, 0.10)',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setActiveTab('profile')}
-              className="px-4 h-10 rounded-xl text-sm font-semibold transition-colors"
-              style={{
-                color: activeTab === 'profile' ? '#FFFFFF' : 'rgba(255,255,255,0.70)',
-                background: activeTab === 'profile' ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))' : 'transparent',
-              }}
-            >
-              Profile
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('family')}
-              className="px-4 h-10 rounded-xl text-sm font-semibold transition-colors"
-              style={{
-                color: activeTab === 'family' ? '#FFFFFF' : 'rgba(255,255,255,0.70)',
-                background: activeTab === 'family' ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))' : 'transparent',
-              }}
-            >
-              Family
-            </button>
-          </div>
         </div>
 
-        {activeTab === 'family' ? (
-          <FamilyChildAccountsTab />
-        ) : (
-          <>
-            {/* User Profile Card */}
+        {/* User Profile Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: isEntering ? 0 : 1, scale: isEntering ? 0.9 : 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
               className="px-4 pt-5"
             >
-              <div 
-                className="rounded-3xl p-6"
+              <GlassCard
                 style={{
-                  background: 'rgba(42, 38, 64, 0.7)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                  borderRadius: '28px',
+                  padding: '32px',
                 }}
               >
                 <div className="flex flex-col items-center">
@@ -450,10 +411,10 @@ export default function Profile() {
                     transition={{ delay: 0.6, duration: 0.5, type: 'spring', stiffness: 200 }}
                     className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden"
                     style={{
-                      background: user?.user_metadata?.avatar_url 
-                        ? 'transparent' 
-                        : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                      boxShadow: '0 0 30px rgba(139, 92, 246, 0.5)',
+                      ...getGlassAvatarStyle(80),
+                      background: user?.user_metadata?.avatar_url
+                        ? 'transparent'
+                        : 'linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(30, 64, 175, 0.8))',
                     }}
                   >
                     {user?.user_metadata?.avatar_url ? (
@@ -485,7 +446,7 @@ export default function Profile() {
                     animate={{ opacity: isEntering ? 0 : 1 }}
                     transition={{ delay: 0.8, duration: 0.3 }}
                     className="text-sm mt-1"
-                    style={{ color: '#A78BFA' }}
+                    style={{ color: '#60A5FA' }}
                   >
                     {user?.email}
                   </motion.p>
@@ -503,18 +464,18 @@ export default function Profile() {
                       }}
                       className="w-full h-10 px-6 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
                       style={{
-                        background: 'rgba(35, 29, 51, 0.6)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        ...getGlassCardStyle({ intensity: 'medium', elevated: false }),
+                        borderRadius: '16px',
+                        padding: '10px 24px',
                         color: '#FFFFFF',
                       }}
                     >
                       <Edit className="w-4 h-4" />
-                      Edit Profile
+                      Edit
                     </motion.button>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
             </motion.div>
 
             {/* Statistics Cards */}
@@ -526,11 +487,13 @@ export default function Profile() {
             >
               <div className="flex gap-3">
                 {/* Total Documents */}
-                <div 
-                  className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
+                <GlassContainer
+                  intensity="medium"
+                  padding="small"
+                  rounded="lg"
+                  className="flex-1 flex flex-col items-center justify-center h-20"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))',
-                    backdropFilter: 'blur(10px)',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.15))',
                     border: '1px solid rgba(59, 130, 246, 0.3)',
                   }}
                 >
@@ -538,15 +501,16 @@ export default function Profile() {
                   <span className="text-2xl font-bold text-white">
                     {statistics.totalDocuments}
                   </span>
-                  <span className="text-xs" style={{ color: '#A78BFA' }}>Documents</span>
-                </div>
+                </GlassContainer>
 
                 {/* Expiring Soon */}
-                <div 
-                  className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
+                <GlassContainer
+                  intensity="medium"
+                  padding="small"
+                  rounded="lg"
+                  className="flex-1 flex flex-col items-center justify-center h-20"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(234, 88, 12, 0.2))',
-                    backdropFilter: 'blur(10px)',
+                    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.15))',
                     border: '1px solid rgba(249, 115, 22, 0.3)',
                   }}
                 >
@@ -557,15 +521,16 @@ export default function Profile() {
                   >
                     {statistics.expiringSoon}
                   </span>
-                  <span className="text-xs" style={{ color: '#A78BFA' }}>Expiring</span>
-                </div>
+                </GlassContainer>
 
                 {/* Expired */}
-                <div 
-                  className="flex-1 rounded-2xl p-3 flex flex-col items-center justify-center h-20"
+                <GlassContainer
+                  intensity="medium"
+                  padding="small"
+                  rounded="lg"
+                  className="flex-1 flex flex-col items-center justify-center h-20"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2))',
-                    backdropFilter: 'blur(10px)',
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15))',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
                   }}
                 >
@@ -576,8 +541,7 @@ export default function Profile() {
                   >
                     {statistics.expired}
                   </span>
-                  <span className="text-xs" style={{ color: '#A78BFA' }}>Expired</span>
-                </div>
+                </GlassContainer>
               </div>
             </motion.div>
 
@@ -586,116 +550,58 @@ export default function Profile() {
               initial={{ opacity: 0 }}
               animate={{ opacity: isEntering ? 0 : 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
-              className="px-4 space-y-6"
+              className="px-4 space-y-4"
             >
-          {/* Account Settings */}
+          {/* Settings */}
           <div>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#A78BFA' }}>
-              Account Settings
-            </h3>
-            <div 
-              className="rounded-2xl overflow-hidden"
+            <GlassCard
               style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                borderRadius: '20px',
+                padding: 0,
+                overflow: 'hidden',
               }}
             >
+              <div className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5" style={{ color: '#60A5FA' }} />
+                  <span className="text-white">Email</span>
+                </div>
+                <Toggle
+                  checked={emailNotifications}
+                  onChange={(checked) => handleToggle('email', checked)}
+                />
+              </div>
+              <div className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5" style={{ color: '#60A5FA' }} />
+                  <span className="text-white">Push</span>
+                </div>
+                <Toggle
+                  checked={pushNotifications}
+                  onChange={(checked) => handleToggle('push', checked)}
+                />
+              </div>
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   triggerHaptic('light');
-                  navigate('/settings');
+                  setIsQuietHoursOpen(true);
                 }}
-                className="w-full h-14 px-4 flex items-center justify-between"
+                className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
               >
                 <div className="flex items-center gap-3">
-                  <Lock className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Settings</span>
+                  <Clock className="w-5 h-5" style={{ color: '#60A5FA' }} />
+                  <div className="flex flex-col items-start">
+                    <span className="text-white">Quiet Hours</span>
+                    {quietHours.enabled && (
+                      <span className="text-xs" style={{ color: '#60A5FA' }}>
+                        {formatTime(quietHours.start)} - {formatTime(quietHours.end)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                <ChevronRight className="w-5 h-5" style={{ color: '#60A5FA' }} />
               </motion.button>
-              <div className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Email Notifications</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={emailNotifications}
-                    onChange={(e) => handleToggle('email', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"
-                    style={{
-                      background: emailNotifications ? '#8B5CF6' : 'rgba(255, 255, 255, 0.2)',
-                    }}
-                  />
-                </label>
-              </div>
-              <div className="w-full h-14 px-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Push Notifications</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={pushNotifications}
-                    onChange={(e) => handleToggle('push', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"
-                    style={{
-                      background: pushNotifications ? '#8B5CF6' : 'rgba(255, 255, 255, 0.2)',
-                    }}
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* App Settings */}
-          <div>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#A78BFA' }}>
-              App Settings
-            </h3>
-            <div 
-              className="rounded-2xl overflow-hidden"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-              }}
-            >
-              <div className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5">
-                <div className="flex items-center gap-3">
-                  {theme === 'dark' ? (
-                    <Moon className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  ) : (
-                    <Sun className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  )}
-                  <span className="text-white">Theme</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={theme === 'dark'}
-                    onChange={(e) => handleToggle('darkMode', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"
-                    style={{
-                      background: theme === 'dark' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.2)',
-                    }}
-                  />
-                </label>
-              </div>
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
@@ -705,202 +611,51 @@ export default function Profile() {
                 className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
               >
                 <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <Globe className="w-5 h-5" style={{ color: '#60A5FA' }} />
                   <span className="text-white">Language</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm" style={{ color: '#A78BFA' }}>{getLanguageDisplayName()}</span>
-                  <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <span className="text-sm" style={{ color: '#60A5FA' }}>
+                    {getLanguageDisplayName()}
+                  </span>
+                  <ChevronRight className="w-5 h-5" style={{ color: '#60A5FA' }} />
                 </div>
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  setIsTimePickerOpen(true);
-                }}
-                className="w-full h-14 px-4 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Reminder Time</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm" style={{ color: '#A78BFA' }}>{reminderTime}</span>
-                  <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                </div>
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Data & Storage */}
-          <div>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#A78BFA' }}>
-              Data & Storage
-            </h3>
-            <div 
-              className="rounded-2xl overflow-hidden"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-              }}
-            >
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  setIsExportDataOpen(true);
-                }}
-                className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
-              >
-                <div className="flex items-center gap-3">
-                  <Download className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Export Data</span>
-                </div>
-                <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
               </motion.button>
               <div className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5">
                 <div className="flex items-center gap-3">
-                  <Database className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Storage Used</span>
+                  <Shield className="w-5 h-5" style={{ color: '#60A5FA' }} />
+                  <div className="flex flex-col items-start">
+                    <span className="text-white">Profile Lock</span>
+                    <span className="text-xs" style={{ color: '#60A5FA' }}>
+                      {profileLockEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-sm" style={{ color: '#A78BFA' }}>{storageUsed}</span>
+                <Toggle
+                  checked={profileLockEnabled}
+                  onChange={(checked) => {
+                    triggerHaptic('light');
+                    setIsSetProfileLockOpen(true);
+                  }}
+                />
               </div>
               <motion.button
                 whileTap={{ scale: 0.98 }}
-                onClick={handleClearCache}
+                onClick={() => {
+                  triggerHaptic('light');
+                  navigate('/settings');
+                }}
                 className="w-full h-14 px-4 flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
-                  <Trash2 className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Clear Cache</span>
+                  <SettingsIcon className="w-5 h-5" style={{ color: '#60A5FA' }} />
+                  <span className="text-white">All Settings</span>
                 </div>
-                <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                <ChevronRight className="w-5 h-5" style={{ color: '#60A5FA' }} />
               </motion.button>
-            </div>
-          </div>
-
-          {/* About */}
-          <div>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#A78BFA' }}>
-              About
-            </h3>
-            <div 
-              className="rounded-2xl overflow-hidden"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-              }}
-            >
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
-              >
-                <div className="flex items-center gap-3">
-                  <HelpCircle className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Help & Support</span>
-                </div>
-                <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  navigate('/privacy');
-                }}
-                className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
-              >
-                <div className="flex items-center gap-3">
-                  <Shield className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Privacy Policy</span>
-                </div>
-                <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  navigate('/terms');
-                }}
-                className="w-full h-14 px-4 flex items-center justify-between border-b border-white/5"
-              >
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Terms of Service</span>
-                </div>
-                <ChevronRight className="w-5 h-5" style={{ color: '#A78BFA' }} />
-              </motion.button>
-              <div className="w-full h-14 px-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Info className="w-5 h-5" style={{ color: '#A78BFA' }} />
-                  <span className="text-white">Version</span>
-                </div>
-                <span className="text-sm" style={{ color: '#A78BFA' }}>1.0.0</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Account */}
-          <div>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#A78BFA' }}>
-              Account
-            </h3>
-            <div 
-              className="rounded-2xl overflow-hidden"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-              }}
-            >
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  setIsDeleteAccountOpen(true);
-                }}
-                className="w-full h-14 px-4 flex items-center justify-between text-red-400"
-              >
-                <div className="flex items-center gap-3">
-                  <Trash2 className="w-5 h-5" />
-                  <span className="font-medium">Delete Account</span>
-                </div>
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Logout Button */}
-          <div className="pt-6 pb-24">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                triggerHaptic('medium');
-                setIsLogoutOpen(true);
-              }}
-              className="w-full h-[52px] rounded-xl font-medium flex items-center justify-center gap-2"
-              style={{
-                background: 'rgba(42, 38, 64, 0.6)',
-                backdropFilter: 'blur(20px)',
-                border: '2px solid rgba(239, 68, 68, 0.5)',
-                color: '#F87171',
-              }}
-            >
-              <LogOut className="w-5 h-5" />
-              Logout
-            </motion.button>
+            </GlassCard>
           </div>
             </motion.div>
-          </>
-        )}
       </motion.div>
 
       {/* Modals */}
@@ -915,63 +670,68 @@ export default function Profile() {
         />
       )}
 
-      {isLanguagePickerOpen && (
-        <LanguagePickerModal
-          isOpen={isLanguagePickerOpen}
-          onClose={() => setIsLanguagePickerOpen(false)}
-        />
-      )}
-
-      {isTimePickerOpen && (
-        <TimePickerModal
-          isOpen={isTimePickerOpen}
-          selectedTime={reminderTime}
-          onClose={() => setIsTimePickerOpen(false)}
-          onSelect={(time) => {
-            setReminderTime(time);
-            setIsTimePickerOpen(false);
-            showToast('Reminder time updated', 'success');
-          }}
-        />
-      )}
-
-      {isDeleteAccountOpen && (
-        <DeleteAccountModal
-          isOpen={isDeleteAccountOpen}
-          onClose={() => setIsDeleteAccountOpen(false)}
-          onConfirm={handleDeleteAccount}
-        />
-      )}
-
-      {isLogoutOpen && (
-        <LogoutConfirmationModal
-          isOpen={isLogoutOpen}
-          onClose={() => setIsLogoutOpen(false)}
-          onConfirm={handleLogout}
-        />
-      )}
-
-      {isExportDataOpen && (
-        <ExportDataModal
-          isOpen={isExportDataOpen}
-          onClose={() => setIsExportDataOpen(false)}
-        />
-      )}
-
-      <NotificationPreferencesModal
-        isOpen={isNotificationPreferencesOpen}
-        onClose={() => setIsNotificationPreferencesOpen(false)}
+      <LanguagePickerModal
+        isOpen={isLanguagePickerOpen}
+        onClose={() => setIsLanguagePickerOpen(false)}
       />
 
-      {/* Toast Notifications */}
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
-    </div>
+      <QuietHoursModal
+        isOpen={isQuietHoursOpen}
+        onClose={async () => {
+          setIsQuietHoursOpen(false);
+          // Reload quiet hours after closing
+          if (user?.id) {
+            try {
+              const prefs = await getNotificationPreferences(user.id);
+              if (prefs.quiet_hours_start && prefs.quiet_hours_end) {
+                setQuietHours({
+                  enabled: true,
+                  start: prefs.quiet_hours_start,
+                  end: prefs.quiet_hours_end,
+                });
+              }
+            } catch (error) {
+              console.error('Failed to reload quiet hours:', error);
+            }
+          }
+        }}
+        currentStart={quietHours.start}
+        currentEnd={quietHours.end}
+      />
+
+      <SetProfileLockModal
+        isOpen={isSetProfileLockOpen}
+        onClose={() => setIsSetProfileLockOpen(false)}
+        onSuccess={() => {
+          if (user?.id) {
+            supabase
+              .from('user_profiles')
+              .select('profile_lock_enabled')
+              .eq('user_id', user.id)
+              .single()
+              .then(({ data }) => {
+                setProfileLockEnabled(data?.profile_lock_enabled ?? false);
+                showToast(
+                  data?.profile_lock_enabled ? 'Profile lock enabled' : 'Profile lock disabled',
+                  'success'
+                );
+              });
+          }
+        }}
+        isEnabled={profileLockEnabled}
+      />
+
+
+        {/* Toast Notifications */}
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+    </>
   );
 }

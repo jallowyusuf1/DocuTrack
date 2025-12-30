@@ -26,7 +26,7 @@ export default function DocumentUniverse() {
     if (!container) return;
 
     const icons = [FileText, CreditCard, Shield, Calendar];
-    const colors = ['#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE'];
+    const colors = ['#2563EB', '#60A5FA', '#C4B5FD', '#DDD6FE'];
 
     // Create floating documents
     const createDocs = () => {

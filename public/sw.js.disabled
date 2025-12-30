@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-/* Service Worker for DocuTrack PWA */
+/* Service Worker for DocuTrackr PWA */
 
 const CACHE_NAME = 'doctrack-v2'; // Increment version
 const RUNTIME_CACHE = 'doctrack-runtime-v2';
@@ -148,7 +148,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('DocuTrack', options)
+    self.registration.showNotification('DocuTrackr', options)
   );
 });
 

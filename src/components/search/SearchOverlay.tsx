@@ -160,7 +160,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             <div className="px-4 md:px-6 pt-20 md:pt-24 pb-6">
               <div className="max-w-4xl mx-auto">
                 <div className="relative">
-                  <Search className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-purple-400 z-10" style={{ width: '20px', height: '20px' }} data-tablet-icon="true" />
+                  <Search className="absolute left-4 md:left-5 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-blue-400 z-10" style={{ width: '20px', height: '20px' }} data-tablet-icon="true" />
                   <style>{`
                     @media (min-width: 768px) {
                       [data-tablet-icon="true"] {
@@ -221,10 +221,10 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                           }`}
                           style={{
                             background: activeFilter === filter.value
-                              ? 'rgba(139, 92, 246, 0.3)'
+                              ? 'rgba(37, 99, 235, 0.3)'
                               : 'rgba(42, 38, 64, 0.5)',
                             border: activeFilter === filter.value
-                              ? '1px solid rgba(139, 92, 246, 0.5)'
+                              ? '1px solid rgba(37, 99, 235, 0.5)'
                               : '1px solid rgba(255, 255, 255, 0.1)',
                             height: '36px',
                           }}
@@ -256,12 +256,12 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                       <>
                         <div className="flex items-center justify-between mb-4">
                           <h2 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-purple-400" />
+                            <Clock className="w-5 h-5 text-blue-400" />
                             Recent Searches
                           </h2>
                           <button
                             onClick={handleClearRecent}
-                            className="text-sm text-purple-400 hover:text-purple-300"
+                            className="text-sm text-blue-400 hover:text-blue-300"
                           >
                             Clear
                           </button>
@@ -284,7 +284,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                               data-tablet-recent="true"
                             >
                               <div className="flex items-center gap-3">
-                                <Clock className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                                <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
                                 <span className="text-white text-base md:text-[19px] truncate">{query}</span>
                               </div>
                             </motion.button>
@@ -306,9 +306,9 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                         className="flex flex-col items-center justify-center py-20 md:py-32"
                       >
                         <div
-                          className="w-20 h-20 md:w-[100px] md:h-[100px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6"
+                          className="w-20 h-20 md:w-[100px] md:h-[100px] rounded-full bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center mb-6"
                           style={{
-                            boxShadow: '0 0 40px rgba(139, 92, 246, 0.5)',
+                            boxShadow: '0 0 40px rgba(37, 99, 235, 0.5)',
                           }}
                         >
                           <Search className="w-10 h-10 md:w-12 md:h-12 text-white" />
@@ -323,7 +323,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 ) : isSearching ? (
                   /* Loading */
                   <div className="flex items-center justify-center py-20">
-                    <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : results.length === 0 ? (
                   /* No Results */
@@ -333,9 +333,9 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                     className="flex flex-col items-center justify-center py-20 md:py-32"
                   >
                     <div
-                      className="w-20 h-20 md:w-[100px] md:h-[100px] rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6"
+                      className="w-20 h-20 md:w-[100px] md:h-[100px] rounded-full bg-gradient-to-br from-blue-600 to-pink-500 flex items-center justify-center mb-6"
                       style={{
-                        boxShadow: '0 0 40px rgba(139, 92, 246, 0.5)',
+                        boxShadow: '0 0 40px rgba(37, 99, 235, 0.5)',
                       }}
                     >
                       <FileText className="w-10 h-10 md:w-12 md:h-12 text-white" />

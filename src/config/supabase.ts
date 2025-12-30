@@ -46,11 +46,10 @@ export const supabase: SupabaseClient = (() => {
         // Enable automatic token refresh to maintain sessions
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        // Use conditional storage that respects "Remember Me" preference
-        // If "Remember Me" is false, uses sessionStorage (clears on tab close)
-        // If "Remember Me" is true, uses localStorage (persists)
-        storage: conditionalStorage,
-        storageKey: 'supabase.auth.token',
+        flowType: 'pkce',
+        // Use localStorage directly for persistent sessions (fixed logout on refresh)
+        storage: window.localStorage,
+        storageKey: 'sb-auth-token',
       },
       global: {
         headers: {

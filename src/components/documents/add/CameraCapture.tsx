@@ -188,7 +188,7 @@ export default function CameraCapture({ isOpen, onClose, onCapture }: CameraCapt
                     <p className="text-red-400 mb-4">{error}</p>
                     <button
                       onClick={startCamera}
-                      className="px-6 py-2 rounded-xl bg-purple-600 text-white font-medium"
+                      className="px-6 py-2 rounded-xl bg-blue-800 text-white font-medium"
                     >
                       Retry
                     </button>
@@ -216,8 +216,8 @@ export default function CameraCapture({ isOpen, onClose, onCapture }: CameraCapt
                   className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: isCapturing
-                      ? 'rgba(139, 92, 246, 0.5)'
-                      : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                      ? 'rgba(37, 99, 235, 0.5)'
+                      : 'linear-gradient(135deg, #2563EB, #1E40AF)',
                   }}
                 >
                   {isCapturing ? (

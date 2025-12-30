@@ -71,8 +71,8 @@ export default function MemberDetailModal({
                   className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                  <span className="text-xl text-purple-300">
+                <div className="w-12 h-12 rounded-full bg-blue-800/20 flex items-center justify-center">
+                  <span className="text-xl text-blue-300">
                     {(member?.connected_user?.full_name || member?.connected_user?.email || 'U').charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export default function MemberDetailModal({
                   <div className="space-y-2">
                     {activity.map((item, index) => (
                       <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-white/5">
-                        <div className="w-2 h-2 rounded-full bg-purple-400 mt-2" />
+                        <div className="w-2 h-2 rounded-full bg-blue-400 mt-2" />
                         <div className="flex-1">
                           <p className="text-sm text-white">{item.description}</p>
                           <p className="text-xs text-white/40 mt-1">

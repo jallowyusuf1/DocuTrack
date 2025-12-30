@@ -10,19 +10,30 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Get initial theme safely
+// Get initial theme safely - Apply immediately before React renders
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark';
   try {
-    const saved = localStorage.getItem('app_theme') as Theme;
-    if (saved === 'light' || saved === 'dark') {
-      return saved;
+    // Check stored preference first
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') {
+      // Apply immediately to prevent flash
+      document.documentElement.setAttribute('data-theme', stored);
+      return stored as Theme;
     }
+    // Check system preference
     if (window.matchMedia) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      // Apply immediately
+      document.documentElement.setAttribute('data-theme', systemPreference);
+      return systemPreference;
     }
   } catch (e) {
     // If localStorage fails, just return default
+  }
+  // Default to dark and apply immediately
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', 'dark');
   }
   return 'dark';
 }
@@ -32,12 +43,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      // Apply theme to document
+      // Apply theme to document immediately
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
       }
+      // Save to localStorage with standard key
       if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('app_theme', theme);
+        localStorage.setItem('theme', theme);
       }
     } catch (e) {
       console.error('Failed to apply theme:', e);

@@ -114,7 +114,7 @@ export default function QuietHoursModal({
             <div className="px-6 py-4 border-b border-white/10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Clock className="w-6 h-6" style={{ color: '#A78BFA' }} />
+                  <Clock className="w-6 h-6" style={{ color: '#60A5FA' }} />
                   <h2 className="text-xl font-bold text-white">Quiet Hours</h2>
                 </div>
                 <motion.button
@@ -131,7 +131,7 @@ export default function QuietHoursModal({
                   <X className="w-5 h-5 text-white" />
                 </motion.button>
               </div>
-              <p className="text-sm mt-2" style={{ color: '#A78BFA' }}>
+              <p className="text-sm mt-2" style={{ color: '#60A5FA' }}>
                 No notifications during these hours
               </p>
             </div>
@@ -155,8 +155,8 @@ export default function QuietHoursModal({
                       border: '1px solid rgba(255, 255, 255, 0.15)',
                     }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                      e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
+                      e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.5)';
+                      e.currentTarget.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.3)';
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
@@ -169,7 +169,7 @@ export default function QuietHoursModal({
                       </option>
                     ))}
                   </select>
-                  <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: '#A78BFA' }} />
+                  <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: '#60A5FA' }} />
                 </div>
               </div>
 
@@ -190,8 +190,8 @@ export default function QuietHoursModal({
                       border: '1px solid rgba(255, 255, 255, 0.15)',
                     }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
-                      e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
+                      e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.5)';
+                      e.currentTarget.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.3)';
                     }}
                     onBlur={(e) => {
                       e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
@@ -204,7 +204,7 @@ export default function QuietHoursModal({
                       </option>
                     ))}
                   </select>
-                  <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: '#A78BFA' }} />
+                  <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: '#60A5FA' }} />
                 </div>
               </div>
 
@@ -215,9 +215,9 @@ export default function QuietHoursModal({
                 className="w-full h-14 rounded-2xl font-bold text-white flex items-center justify-center gap-2"
                 style={{
                   background: isSaving
-                    ? 'rgba(139, 92, 246, 0.5)'
-                    : 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                  boxShadow: '0 8px 24px rgba(139, 92, 246, 0.5)',
+                    ? 'rgba(37, 99, 235, 0.5)'
+                    : 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                  boxShadow: '0 8px 24px rgba(37, 99, 235, 0.5)',
                 }}
                 whileHover={!isSaving ? { scale: 1.02 } : {}}
                 whileTap={!isSaving ? { scale: 0.98 } : {}}

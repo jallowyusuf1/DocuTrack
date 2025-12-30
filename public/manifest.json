@@ -1,6 +1,6 @@
 {
-  "name": "DocuTrack - Document Tracker",
-  "short_name": "DocuTrack",
+  "name": "DocuTrackr - Document Tracker",
+  "short_name": "DocuTrackr",
   "description": "Never miss a document expiration deadline. Track passports, IDs, insurance, and more with smart reminders.",
   "start_url": "/",
   "display": "standalone",

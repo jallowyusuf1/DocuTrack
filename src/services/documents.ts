@@ -2,6 +2,7 @@ import { supabase } from '../config/supabase';
 import { uploadDocumentImage as uploadImage } from '../utils/imageHandler';
 import { createNotifications, cancelNotifications } from './notifications';
 import type { Document, DocumentFormData } from '../types';
+import { documentFieldsService } from './documentFields';
 
 const BUCKET_NAME = 'document-images';
 
@@ -118,6 +119,17 @@ export const documentService = {
       name: data.document_name,
       userId: data.user_id,
     });
+
+    // Save field values if provided (check both fieldValues and field_values for compatibility)
+    const fieldValues = (formData as any).fieldValues || (formData as any).field_values;
+    if (fieldValues) {
+      try {
+        await documentFieldsService.saveDocumentFields(data.id, fieldValues);
+      } catch (fieldError) {
+        console.error('Failed to save field values:', fieldError);
+        // Don't fail document creation if field values fail
+      }
+    }
     
     // Create notification reminders
     try {
@@ -179,6 +191,17 @@ export const documentService = {
       throw new Error(`Failed to fetch document: ${error.message}`);
     }
 
+    // Load field values
+    if (data) {
+      try {
+        const fieldValues = await documentFieldsService.getDocumentFields(documentId);
+        (data as any).fieldValues = fieldValues;
+      } catch (fieldError) {
+        console.error('Failed to load field values:', fieldError);
+        // Don't fail document fetch if field values fail
+      }
+    }
+
     return data;
   },
 
@@ -223,6 +246,17 @@ export const documentService = {
 
     if (error) {
       throw new Error(`Failed to update document: ${error.message}`);
+    }
+
+    // Update field values if provided (check both fieldValues and field_values for compatibility)
+    const fieldValues = (updates as any).fieldValues || (updates as any).field_values;
+    if (fieldValues) {
+      try {
+        await documentFieldsService.saveDocumentFields(documentId, fieldValues);
+      } catch (fieldError) {
+        console.error('Failed to update field values:', fieldError);
+        // Don't fail document update if field values fail
+      }
     }
 
     // Update notifications if expiration date changed

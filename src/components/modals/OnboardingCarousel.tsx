@@ -27,7 +27,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
     {
       id: 1,
       icon: <FileText size={120} strokeWidth={1.5} />,
-      title: 'Welcome to DocuTrack',
+      title: 'Welcome to DocuTrackr',
       description: 'Your personal document management system that keeps all your important documents organized and accessible.',
       features: [
         'Securely store all your documents',
@@ -159,7 +159,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
       <div className="flex h-full">
         {/* Left Side - Illustration */}
         <div
-          className="w-1/2 flex items-center justify-center bg-gradient-to-br from-purple-500 via-purple-600 to-blue-600 relative overflow-hidden"
+          className="w-1/2 flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-800 to-blue-600 relative overflow-hidden"
           style={{
             animation: `slideInLeft 0.5s ease-out`,
           }}
@@ -240,7 +240,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
                     animation: `slideInRight 0.5s ease-out ${index * 0.1}s both`,
                   }}
                 >
-                  <div className="flex-shrink-0 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center mt-1">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mt-1">
                     <svg
                       className="w-4 h-4 text-white"
                       fill="none"
@@ -272,9 +272,9 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
                     onClick={() => setCurrentScreen(index)}
                     className={`transition-all ${
                       index === currentScreen
-                        ? 'w-16 h-2 bg-purple-500'
+                        ? 'w-16 h-2 bg-blue-600'
                         : index < currentScreen
-                        ? 'w-8 h-2 bg-purple-300 dark:bg-purple-700'
+                        ? 'w-8 h-2 bg-blue-300 dark:bg-blue-800'
                         : 'w-8 h-2 bg-gray-300 dark:bg-gray-700'
                     } rounded-full`}
                   />
@@ -295,7 +295,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
 
                 <button
                   onClick={handleNext}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-purple-500 text-white hover:bg-purple-600 transition-all font-semibold shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50"
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-800 transition-all font-semibold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50"
                   style={{
                     minWidth: isLastScreen ? '320px' : '140px',
                     height: isLastScreen ? '64px' : '48px',
@@ -345,7 +345,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
       {!isLastScreen && (
         <button
           onClick={handleNext}
-          className="absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 bg-purple-500 rounded-full shadow-xl flex items-center justify-center text-white hover:bg-purple-600 transition-all hover:scale-110"
+          className="absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 bg-blue-600 rounded-full shadow-xl flex items-center justify-center text-white hover:bg-blue-800 transition-all hover:scale-110"
         >
           <ChevronRight size={32} />
         </button>

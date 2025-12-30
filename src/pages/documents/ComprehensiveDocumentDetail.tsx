@@ -361,7 +361,7 @@ export default function ComprehensiveDocumentDetail() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/documents')}
-            className="px-6 py-3 rounded-xl bg-purple-600 text-white font-medium"
+            className="px-6 py-3 rounded-xl bg-blue-800 text-white font-medium"
           >
             Back to Documents
           </motion.button>
@@ -561,7 +561,7 @@ export default function ComprehensiveDocumentDetail() {
                 <div>
                   <h1 className="text-3xl font-bold text-white mb-2">{document.document_name}</h1>
                   <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-purple-300">
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-600/20 text-blue-300">
                       {document.category}
                     </span>
                     <span
@@ -650,7 +650,7 @@ export default function ComprehensiveDocumentDetail() {
                     <textarea
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
-                      className="w-full h-32 p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-purple-500 resize-none"
+                      className="w-full h-32 p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-blue-600 resize-none"
                       placeholder="Add notes..."
                     />
                     <div className="flex items-center gap-2">
@@ -658,7 +658,7 @@ export default function ComprehensiveDocumentDetail() {
                         whileTap={{ scale: 0.95 }}
                         onClick={handleSaveNotes}
                         disabled={isSavingNotes}
-                        className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 rounded-lg bg-blue-800 text-white text-sm font-medium disabled:opacity-50 flex items-center gap-2"
                       >
                         {isSavingNotes ? (
                           <>

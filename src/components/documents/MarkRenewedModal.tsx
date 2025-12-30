@@ -70,7 +70,7 @@ export default function MarkRenewedModal({
                 triggerHaptic('light');
                 onClose();
               }}
-              className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+              className="p-2 rounded-lg hover:bg-blue-600/20 active:bg-blue-600/30 transition-colors"
             >
               <X className="w-5 h-5 text-glass-primary" />
             </motion.button>

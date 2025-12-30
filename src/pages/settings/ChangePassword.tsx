@@ -239,7 +239,7 @@ export default function ChangePassword() {
                       <span
                         className="text-sm"
                         style={{
-                          color: req.met ? '#10B981' : '#A78BFA',
+                          color: req.met ? '#10B981' : '#60A5FA',
                         }}
                       >
                         {req.text}

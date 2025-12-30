@@ -76,14 +76,33 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="min-h-screen pb-[72px]">
+    <div className="min-h-screen pb-[72px] relative" style={{ background: '#000000' }}>
+      {/* Background Gradient Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[100px] opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(37, 99, 235, 0) 70%)',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-[250px] h-[250px] rounded-full blur-[100px] opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0) 70%)',
+            transform: 'translate(50%, 50%)',
+          }}
+        />
+      </div>
       {/* Header */}
-      <header 
+      <header
         className="sticky top-0 z-10 px-5 py-4 flex items-center gap-4"
         style={{
-          background: 'rgba(35, 29, 51, 0.8)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.3) 100%)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(50px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(50px) saturate(150%)',
+          boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08), inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
@@ -93,12 +112,19 @@ export default function FAQ() {
             triggerHaptic('light');
             navigate(-1);
           }}
-          className="p-2 rounded-lg hover:bg-purple-500/20 transition-colors"
+          className="p-2 rounded-lg transition-colors"
+          style={{
+            background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
+            border: '1px solid rgba(255,255,255,0.16)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            boxShadow: '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
+          }}
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </motion.button>
         <div className="flex items-center gap-3">
-          <HelpCircle className="w-6 h-6 text-purple-400" />
+          <HelpCircle className="w-6 h-6 text-white/80" />
           <h1 className="text-xl font-bold text-white">Frequently Asked Questions</h1>
         </div>
       </header>
@@ -107,7 +133,7 @@ export default function FAQ() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="px-5 py-6 max-w-4xl mx-auto"
+        className="px-5 py-6 max-w-4xl mx-auto relative z-10"
       >
         {faqs.map((section, sectionIndex) => (
           <div key={sectionIndex} className="mb-8">
@@ -124,9 +150,11 @@ export default function FAQ() {
                     transition={{ delay: index * 0.05 }}
                     className="rounded-xl overflow-hidden"
                     style={{
-                      background: 'rgba(42, 38, 64, 0.7)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.3) 100%)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      backdropFilter: 'blur(50px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(50px) saturate(150%)',
+                      boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08), inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)',
                     }}
                   >
                     <button
@@ -170,10 +198,11 @@ export default function FAQ() {
           transition={{ delay: 0.4 }}
           className="rounded-2xl p-6 text-center"
           style={{
-            background: 'rgba(42, 38, 64, 0.7)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.3) 100%)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(50px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(50px) saturate(150%)',
+            boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08), inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)',
           }}
         >
           <h3 className="text-xl font-semibold text-white mb-2">Still Have Questions?</h3>
@@ -183,10 +212,14 @@ export default function FAQ() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/help')}
-              className="px-6 py-3 text-sm font-semibold text-white rounded-full"
+              className="px-6 py-3 text-sm font-semibold rounded-full"
               style={{
-                background: 'rgba(139, 92, 246, 0.2)',
-                border: '1px solid rgba(139, 92, 246, 0.5)',
+                background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                boxShadow: '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
+                color: 'rgba(255, 255, 255, 0.92)',
               }}
             >
               Help Center
@@ -195,9 +228,14 @@ export default function FAQ() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => window.location.href = 'mailto:support@docutrackr.com'}
-              className="px-6 py-3 text-sm font-semibold text-white rounded-full"
+              className="px-6 py-3 text-sm font-semibold rounded-full"
               style={{
-                background: 'linear-gradient(135deg, #8B5CF6, #EC4899)',
+                background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                boxShadow: '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
+                color: 'rgba(255, 255, 255, 0.92)',
               }}
             >
               Contact Support

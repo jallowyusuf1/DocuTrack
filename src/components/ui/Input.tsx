@@ -72,7 +72,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {icon && (
             <motion.div
               animate={{
-                color: isFocused ? '#2563eb' : '#9ca3af',
+                color: isFocused ? '#2563EB' : '#9ca3af',
               }}
               transition={{ duration: 0.2 }}
               className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"
@@ -90,9 +90,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               text-[15px]
               ${icon ? 'pl-11' : ''}
               ${isPassword ? 'pr-11' : ''}
-              ${error 
-                ? 'border-2 border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' 
-                : 'border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
+              ${error
+                ? 'border-2 border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                : 'border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20'
               }
               ${props.disabled ? 'opacity-50 cursor-not-allowed' : ''}
               ${className}
@@ -101,8 +101,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               background: '#FFFFFF',
               color: '#000000',
               boxShadow: isFocused && !error
-                ? '0 0 0 3px rgba(139, 92, 246, 0.3)'
-                : '0 0 0 0px rgba(139, 92, 246, 0)',
+                ? '0 0 0 3px rgba(37, 99, 235, 0.3)'
+                : '0 0 0 0px rgba(37, 99, 235, 0)',
             }}
             placeholder={props.placeholder}
             transition={{ duration: 0.2 }}

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, FileText, MoreVertical, Download, RefreshCw, Trash2, Eye, AlertCircle } from 'lucide-react';
+import { Calendar, FileText, MoreVertical, Download, RefreshCw, Trash2, Eye, AlertCircle, CreditCard, Shield, Plane, DollarSign, Receipt, FileCheck, Home, Heart, GraduationCap, Briefcase } from 'lucide-react';
 import type { Document } from '../../types';
 import { formatDate, getDaysUntil, getUrgencyLevel, type UrgencyLevel } from '../../utils/dateUtils';
 import { useImageUrl } from '../../hooks/useImageUrl';
@@ -19,14 +19,23 @@ interface DocumentGridCardProps {
 }
 
 const DOCUMENT_TYPE_ICONS: Record<string, React.ComponentType<any>> = {
-  passport: FileText,
-  visa: FileText,
-  id_card: FileText,
-  insurance: FileText,
-  subscription: FileText,
-  receipt: FileText,
+  passport: Plane,
+  visa: Plane,
+  national_id: CreditCard,
+  driver_license: CreditCard,
+  id_card: CreditCard,
+  insurance: Shield,
+  health_insurance: Heart,
+  auto_insurance: Shield,
+  home_insurance: Home,
+  subscription: Receipt,
+  receipt: Receipt,
   bill: FileText,
-  contract: FileText,
+  contract: FileCheck,
+  bank_statement: DollarSign,
+  credit_card: CreditCard,
+  professional_license: Briefcase,
+  academic_transcript: GraduationCap,
   other: FileText,
 };
 
@@ -52,10 +61,30 @@ const formatDocumentType = (type: string): string => {
 };
 
 const getDocumentTypeColor = (type: string): { bg: string; border: string; text: string } => {
-  return {
-    bg: 'rgba(139, 92, 246, 0.25)',
-    border: 'rgba(167, 139, 250, 0.6)',
-    text: '#C4B5FD',
+  const colors: Record<string, { bg: string; border: string; text: string }> = {
+    passport: { bg: 'rgba(59, 130, 246, 0.25)', border: 'rgba(96, 165, 250, 0.6)', text: '#60A5FA' },
+    visa: { bg: 'rgba(16, 185, 129, 0.25)', border: 'rgba(52, 211, 153, 0.6)', text: '#34D399' },
+    national_id: { bg: 'rgba(139, 92, 246, 0.25)', border: 'rgba(167, 139, 250, 0.6)', text: '#A78BFA' },
+    driver_license: { bg: 'rgba(234, 179, 8, 0.25)', border: 'rgba(251, 191, 36, 0.6)', text: '#FBBF24' },
+    id_card: { bg: 'rgba(139, 92, 246, 0.25)', border: 'rgba(167, 139, 250, 0.6)', text: '#A78BFA' },
+    insurance: { bg: 'rgba(236, 72, 153, 0.25)', border: 'rgba(244, 114, 182, 0.6)', text: '#F472B6' },
+    health_insurance: { bg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(248, 113, 113, 0.6)', text: '#F87171' },
+    auto_insurance: { bg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(251, 191, 36, 0.6)', text: '#FBBF24' },
+    home_insurance: { bg: 'rgba(99, 102, 241, 0.25)', border: 'rgba(129, 140, 248, 0.6)', text: '#818CF8' },
+    subscription: { bg: 'rgba(168, 85, 247, 0.25)', border: 'rgba(192, 132, 252, 0.6)', text: '#C084FC' },
+    receipt: { bg: 'rgba(34, 197, 94, 0.25)', border: 'rgba(74, 222, 128, 0.6)', text: '#4ADE80' },
+    bill: { bg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(248, 113, 113, 0.6)', text: '#F87171' },
+    contract: { bg: 'rgba(99, 102, 241, 0.25)', border: 'rgba(129, 140, 248, 0.6)', text: '#818CF8' },
+    bank_statement: { bg: 'rgba(16, 185, 129, 0.25)', border: 'rgba(52, 211, 153, 0.6)', text: '#34D399' },
+    credit_card: { bg: 'rgba(234, 88, 12, 0.25)', border: 'rgba(251, 146, 60, 0.6)', text: '#FB923C' },
+    professional_license: { bg: 'rgba(14, 165, 233, 0.25)', border: 'rgba(56, 189, 248, 0.6)', text: '#38BDF8' },
+    academic_transcript: { bg: 'rgba(168, 85, 247, 0.25)', border: 'rgba(192, 132, 252, 0.6)', text: '#C084FC' },
+  };
+
+  return colors[type] || {
+    bg: 'rgba(37, 99, 235, 0.25)',
+    border: 'rgba(96, 165, 250, 0.6)',
+    text: '#60A5FA',
   };
 };
 
@@ -195,17 +224,25 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
-        whileHover={{ y: -4, scale: 1.02 }}
+        whileHover={{ y: -6, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleClick}
-        className={`glass-card-elevated glass-tiled rounded-[28px] overflow-hidden cursor-pointer ${
-          isUrgent ? 'ring-1 ring-red-400/30' : ''
+        className={`rounded-[28px] overflow-hidden cursor-pointer ${
+          isUrgent ? 'ring-2 ring-red-400/40' : ''
         }`}
+        style={{
+          background: 'rgba(26, 26, 26, 0.8)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: isUrgent
+            ? '0 8px 32px rgba(239, 68, 68, 0.3), 0 0 20px rgba(239, 68, 68, 0.2)'
+            : '0 8px 32px rgba(0, 0, 0, 0.4)',
+        }}
       >
         <div className="relative h-[220px] overflow-hidden">
           {imageLoading && !imageError ? (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20 animate-pulse">
-              <FileText className="w-16 h-16 text-purple-400/50" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-pink-500/20 animate-pulse">
+              <FileText className="w-16 h-16 text-blue-400/50" />
             </div>
           ) : imageUrl && !imageError ? (
             <img
@@ -215,8 +252,8 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-              <FileText className="w-16 h-16 text-purple-400/50" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-pink-500/20">
+              <FileText className="w-16 h-16 text-blue-400/50" />
             </div>
           )}
 
@@ -245,8 +282,9 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
               }}
               className="p-2 rounded-full backdrop-blur-xl"
               style={{
-                background: 'rgba(0, 0, 0, 0.5)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(0, 0, 0, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
               }}
             >
               <MoreVertical className="w-4 h-4 text-white" />
@@ -286,11 +324,11 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
               exit={{ opacity: 0, y: -10 }}
               className="absolute top-14 right-3 rounded-2xl overflow-hidden z-50 min-w-[180px]"
               style={{
-                background: 'rgba(30, 24, 44, 0.95)',
+                background: 'rgba(26, 26, 26, 0.95)',
                 backdropFilter: 'blur(30px)',
                 WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.7)',
               }}
             >
               <button
@@ -299,7 +337,7 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
                   handleClick();
                   setIsMenuOpen(false);
                 }}
-                className="w-full h-12 px-4 flex items-center gap-3 hover:bg-purple-500/20 transition-colors border-b border-white/10"
+                className="w-full h-12 px-4 flex items-center gap-3 hover:bg-blue-600/20 transition-colors border-b border-white/10"
               >
                 <Eye className="w-4 h-4 text-white" />
                 <span className="text-sm text-white">View Details</span>
@@ -307,7 +345,7 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
 
               <button
                 onClick={handleDownload}
-                className="w-full h-12 px-4 flex items-center gap-3 hover:bg-purple-500/20 transition-colors border-b border-white/10"
+                className="w-full h-12 px-4 flex items-center gap-3 hover:bg-blue-600/20 transition-colors border-b border-white/10"
               >
                 <Download className="w-4 h-4 text-white" />
                 <span className="text-sm text-white">Download</span>
@@ -315,7 +353,7 @@ export default function DocumentGridCard({ document }: DocumentGridCardProps) {
 
               <button
                 onClick={handleRenewal}
-                className="w-full h-12 px-4 flex items-center gap-3 hover:bg-purple-500/20 transition-colors border-b border-white/10"
+                className="w-full h-12 px-4 flex items-center gap-3 hover:bg-blue-600/20 transition-colors border-b border-white/10"
               >
                 <RefreshCw className="w-4 h-4 text-white" />
                 <span className="text-sm text-white">Mark Renewed</span>

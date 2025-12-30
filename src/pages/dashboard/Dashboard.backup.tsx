@@ -206,7 +206,7 @@ export default function Dashboard() {
         <div
           className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full blur-[80px] opacity-30"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)',
+            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.6) 0%, rgba(37, 99, 235, 0) 70%)',
             transform: 'translate(-50%, -50%)',
           }}
         />
@@ -282,8 +282,8 @@ export default function Dashboard() {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-6 h-6 rounded-full border-2 border-purple-500 border-t-transparent"
-              style={{ boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' }}
+              className="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent"
+              style={{ boxShadow: '0 0 20px rgba(37, 99, 235, 0.5)' }}
             />
           </motion.div>
         )}
@@ -304,7 +304,7 @@ export default function Dashboard() {
               variants={fadeInUp}
               transition={getTransition(transitions.medium)}
               className="glass-card-elevated rounded-3xl p-12 flex flex-col items-center justify-center my-8"
-              style={{ boxShadow: '0 0 40px rgba(139, 92, 246, 0.3)' }}
+              style={{ boxShadow: '0 0 40px rgba(37, 99, 235, 0.3)' }}
             >
               <motion.div
                 animate="animate"
@@ -312,7 +312,7 @@ export default function Dashboard() {
                 transition={getTransition({ duration: 2, repeat: Infinity, ease: 'easeInOut' })}
                 className="w-24 h-24 rounded-full glass-card flex items-center justify-center mb-6"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
                 }}
               >
                 <CheckCircle className="w-12 h-12 text-green-400" />

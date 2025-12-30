@@ -81,7 +81,7 @@ export default function Modal({
                 border: '1px solid rgba(255, 255, 255, 0.14)',
                 borderBottom: 'none',
                 boxShadow:
-                  '0 -18px 54px rgba(0, 0, 0, 0.70), 0 0 90px rgba(139, 92, 246, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+                  '0 -18px 54px rgba(0, 0, 0, 0.70), 0 0 90px rgba(37, 99, 235, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
                 maxWidth: '100%',
               }}
               data-tablet-bottom-sheet="true"
@@ -92,7 +92,7 @@ export default function Modal({
                 className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
                 style={{
                   background:
-                    'linear-gradient(90deg, rgba(139, 92, 246, 0.0), rgba(139, 92, 246, 0.55), rgba(34, 211, 238, 0.30), rgba(139, 92, 246, 0.0))',
+                    'linear-gradient(90deg, rgba(37, 99, 235, 0.0), rgba(37, 99, 235, 0.55), rgba(34, 211, 238, 0.30), rgba(37, 99, 235, 0.0))',
                 }}
               />
 
@@ -101,7 +101,7 @@ export default function Modal({
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    'radial-gradient(900px 420px at 15% 10%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0) 55%), radial-gradient(720px 420px at 85% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 60%), radial-gradient(700px 420px at 80% 95%, rgba(34, 211, 238, 0.10) 0%, rgba(34, 211, 238, 0) 55%)',
+                    'radial-gradient(900px 420px at 15% 10%, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 55%), radial-gradient(720px 420px at 85% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 60%), radial-gradient(700px 420px at 80% 95%, rgba(34, 211, 238, 0.10) 0%, rgba(34, 211, 238, 0) 55%)',
                 }}
               />
 
@@ -162,17 +162,17 @@ export default function Modal({
                   }}
                   className="p-2 rounded-lg transition-colors"
                   style={{
-                    color: '#A78BFA',
+                    color: '#60A5FA',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.2)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'transparent';
                   }}
                   aria-label="Close modal"
                 >
-                  <X className="w-5 h-5" style={{ color: '#A78BFA' }} />
+                  <X className="w-5 h-5" style={{ color: '#60A5FA' }} />
                 </motion.button>
               )}
             </div>
@@ -228,7 +228,7 @@ export default function Modal({
                 WebkitBackdropFilter: 'blur(40px)',
                 border: '1px solid rgba(255, 255, 255, 0.14)',
                 boxShadow:
-                  '0 22px 70px rgba(0, 0, 0, 0.72), 0 0 90px rgba(139, 92, 246, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+                  '0 22px 70px rgba(0, 0, 0, 0.72), 0 0 90px rgba(37, 99, 235, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -237,7 +237,7 @@ export default function Modal({
                 className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
                 style={{
                   background:
-                    'linear-gradient(90deg, rgba(139, 92, 246, 0.0), rgba(139, 92, 246, 0.55), rgba(34, 211, 238, 0.30), rgba(139, 92, 246, 0.0))',
+                    'linear-gradient(90deg, rgba(37, 99, 235, 0.0), rgba(37, 99, 235, 0.55), rgba(34, 211, 238, 0.30), rgba(37, 99, 235, 0.0))',
                 }}
               />
 
@@ -246,7 +246,7 @@ export default function Modal({
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    'radial-gradient(900px 420px at 15% 10%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0) 55%), radial-gradient(720px 420px at 85% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 60%), radial-gradient(700px 420px at 80% 95%, rgba(34, 211, 238, 0.10) 0%, rgba(34, 211, 238, 0) 55%)',
+                    'radial-gradient(900px 420px at 15% 10%, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 55%), radial-gradient(720px 420px at 85% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0) 60%), radial-gradient(700px 420px at 80% 95%, rgba(34, 211, 238, 0.10) 0%, rgba(34, 211, 238, 0) 55%)',
                 }}
               />
 
@@ -279,7 +279,7 @@ export default function Modal({
                         triggerHaptic('light');
                         onClose();
                       }}
-                      className="p-2 rounded-lg hover:bg-purple-500/20 active:bg-purple-500/30 transition-colors"
+                      className="p-2 rounded-lg hover:bg-blue-500/20 active:bg-blue-500/30 transition-colors"
                       aria-label="Close modal"
                     >
                       <X className="w-5 h-5 text-glass-primary" />

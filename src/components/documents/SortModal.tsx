@@ -85,9 +85,9 @@ export default function SortModal({
                       onClick={() => handleSelect(option.value)}
                       className="w-full flex items-center justify-between px-5 py-4 rounded-xl transition-all duration-200 touch-manipulation"
                       style={isSelected ? {
-                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
-                        border: '1px solid rgba(139, 92, 246, 0.5)',
-                        boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
+                        border: '1px solid rgba(37, 99, 235, 0.5)',
+                        boxShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
                       } : {
                         background: 'rgba(35, 29, 51, 0.5)',
                         backdropFilter: 'blur(10px)',
@@ -105,7 +105,7 @@ export default function SortModal({
                       }}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5" style={{ color: isSelected ? '#A78BFA' : '#9CA3AF' }} />
+                        <Icon className="w-5 h-5" style={{ color: isSelected ? '#60A5FA' : '#9CA3AF' }} />
                         <span className={`font-medium ${isSelected ? 'text-white' : 'text-glass-primary'}`}>
                           {option.label}
                         </span>
@@ -116,7 +116,7 @@ export default function SortModal({
                           animate={{ scale: 1 }}
                           transition={{ type: 'spring', stiffness: 300 }}
                         >
-                          <Check className="w-5 h-5 text-purple-400" />
+                          <Check className="w-5 h-5 text-blue-400" />
                         </motion.div>
                       )}
                     </motion.button>

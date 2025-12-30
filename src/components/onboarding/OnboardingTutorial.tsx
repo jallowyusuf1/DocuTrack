@@ -35,7 +35,7 @@ interface OnboardingTutorialProps {
   onSkip: () => void;
 }
 
-const TOTAL_PAGES = 4;
+const TOTAL_PAGES = 6;
 
 export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: OnboardingTutorialProps) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -167,9 +167,9 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
       exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9998]"
         style={{
-          background: 'rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         }}
         onClick={() => {}} // Prevent closing on backdrop click
       />
@@ -189,13 +189,13 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="w-full max-w-lg flex flex-col rounded-2xl overflow-hidden"
+          className="w-full max-w-lg flex flex-col rounded-3xl overflow-hidden"
       style={{
-        background: 'rgba(26, 22, 37, 0.95)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(139,92,246,0.12) 100%)',
+            backdropFilter: 'blur(34px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(34px) saturate(180%)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            boxShadow: '0 26px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.22)',
           }}
         >
       {/* Header - Minimal */}
@@ -220,9 +220,9 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
                   width: isCurrent ? '10px' : isCompleted ? '8px' : '8px',
                   height: isCurrent ? '10px' : isCompleted ? '8px' : '8px',
                   background: isCurrent
-                    ? '#8B5CF6'
+                    ? '#2563EB'
                     : isCompleted
-                    ? '#8B5CF6'
+                    ? '#2563EB'
                       : 'rgba(255, 255, 255, 0.2)',
                 }}
                 data-tablet-onboarding-dot="true"
@@ -245,7 +245,7 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
           whileTap={{ scale: 0.9 }}
           onClick={handleSkip}
           className="text-xs font-medium transition-colors"
-          style={{ color: '#A78BFA' }}
+          style={{ color: '#60A5FA' }}
           aria-label="Skip tutorial"
         >
           Skip
@@ -260,6 +260,8 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
             {currentPage === 2 && <Page2 key="page2" />}
             {currentPage === 3 && <Page3 key="page3" />}
             {currentPage === 4 && <Page4 key="page4" />}
+            {currentPage === 5 && <Page5 key="page5" />}
+            {currentPage === 6 && <Page6 key="page6" />}
         </AnimatePresence>
         </div>
       </div>
@@ -289,7 +291,7 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
         )}
 
         {/* Page Indicator */}
-          <span className="text-xs" style={{ color: '#A78BFA' }} aria-live="polite">
+          <span className="text-xs" style={{ color: '#60A5FA' }} aria-live="polite">
             {currentPage} / {TOTAL_PAGES}
           </span>
 
@@ -299,7 +301,7 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
             onClick={currentPage === TOTAL_PAGES ? handleComplete : handleNext}
             className="h-10 px-6 rounded-xl text-sm font-semibold text-white transition-all flex items-center gap-2"
           style={{
-            background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+            background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
           }}
             aria-label={currentPage === TOTAL_PAGES ? 'Complete tutorial and start using app' : 'Go to next page'}
         >
@@ -363,8 +365,8 @@ export default function OnboardingTutorial({ isOpen, onComplete, onSkip }: Onboa
                   onClick={confirmSkip}
                   className="w-full h-12 rounded-xl font-semibold text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                    boxShadow: '0 4px 20px rgba(139, 92, 246, 0.5)',
+                    background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                    boxShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
                   }}
                 >
                   Skip Anyway
@@ -423,8 +425,8 @@ function Page1() {
         }
         className="w-32 h-32 rounded-full flex items-center justify-center mb-6"
         style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
-          boxShadow: '0 0 40px rgba(139, 92, 246, 0.5)',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(109, 40, 217, 0.8))',
+          boxShadow: '0 0 40px rgba(37, 99, 235, 0.5)',
         }}
       >
         <Calendar className="w-16 h-16 md:w-20 md:h-20 text-white" data-tablet-onboarding-icon="true" />
@@ -441,16 +443,16 @@ function Page1() {
       <h1
         className="text-3xl font-bold mb-3"
         style={{
-          background: 'linear-gradient(135deg, #FFFFFF 0%, #A78BFA 100%)',
+          background: 'linear-gradient(135deg, #FFFFFF 0%, #60A5FA 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
-          textShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+          textShadow: '0 0 20px rgba(37, 99, 235, 0.5)',
         }}
       >
         Welcome to DocuTrackr!
       </h1>
-      <p className="text-lg mb-8" style={{ color: '#A78BFA' }}>
+      <p className="text-lg mb-8" style={{ color: '#60A5FA' }}>
         Never miss an important deadline again
       </p>
 
@@ -463,11 +465,14 @@ function Page1() {
             transition={{ delay: index * 0.1 }}
             className="px-5 py-3 rounded-2xl"
             style={{
-              background: 'rgba(42, 38, 64, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
             }}
           >
-            <span className="text-sm text-white">{pill}</span>
+            <span className="text-sm font-medium text-white">{pill}</span>
           </motion.div>
         ))}
     </div>
@@ -494,10 +499,10 @@ function Page2() {
           transition={reducedMotion ? {} : { duration: 2, repeat: Infinity }}
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
           style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
           }}
         >
-          <Bell className="w-10 h-10" style={{ color: '#A78BFA' }} />
+          <Bell className="w-10 h-10" style={{ color: '#60A5FA' }} />
         </motion.div>
         <h2 className="text-2xl md:text-[40px] font-bold text-white mb-3">Never Miss an Expiry Date</h2>
         <p className="text-base md:text-[20px]" style={{ color: '#C7C3D9', lineHeight: '1.6' }}>
@@ -544,11 +549,11 @@ function Page2() {
       <div
         className="flex items-start gap-3 p-4 rounded-xl"
         style={{
-          background: 'rgba(139, 92, 246, 0.1)',
-          border: '1px solid rgba(139, 92, 246, 0.3)',
+          background: 'rgba(37, 99, 235, 0.1)',
+          border: '1px solid rgba(37, 99, 235, 0.3)',
         }}
       >
-        <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#A78BFA' }} />
+        <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#60A5FA' }} />
         <p className="text-sm" style={{ color: '#C7C3D9' }}>
           Customize reminder times and quiet hours in Settings
           </p>
@@ -576,10 +581,10 @@ function Page3() {
           transition={reducedMotion ? {} : { duration: 2, repeat: Infinity }}
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
           style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
           }}
         >
-          <Share2 className="w-10 h-10" style={{ color: '#A78BFA' }} />
+          <Share2 className="w-10 h-10" style={{ color: '#60A5FA' }} />
         </motion.div>
         <h2 className="text-2xl md:text-[40px] font-bold text-white mb-3">Share with Family & Friends</h2>
         <p className="text-base" style={{ color: '#C7C3D9', lineHeight: '1.6' }}>
@@ -590,7 +595,7 @@ function Page3() {
       <div className="space-y-4">
         {[
           { icon: Users, title: 'Add Connections', desc: 'Connect with family and friends', color: '#3B82F6' },
-          { icon: Share2, title: 'Share Documents', desc: 'Choose view-only or edit permissions', color: '#8B5CF6' },
+          { icon: Share2, title: 'Share Documents', desc: 'Choose view-only or edit permissions', color: '#2563EB' },
           { icon: Shield, title: 'Stay Secure', desc: 'Only share with trusted connections', color: '#10B981' },
         ].map((feature, index) => (
           <motion.div
@@ -626,11 +631,11 @@ function Page3() {
       <div
         className="flex items-start gap-3 p-4 rounded-xl"
         style={{
-          background: 'rgba(139, 92, 246, 0.1)',
-          border: '1px solid rgba(139, 92, 246, 0.3)',
+          background: 'rgba(37, 99, 235, 0.1)',
+          border: '1px solid rgba(37, 99, 235, 0.3)',
         }}
       >
-        <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#A78BFA' }} />
+        <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#60A5FA' }} />
         <p className="text-sm" style={{ color: '#C7C3D9' }}>
           Access the Family & Friends page from the bottom navigation
         </p>
@@ -650,7 +655,7 @@ function Page4() {
       transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
       className="space-y-6 relative"
       role="region"
-      aria-label="Page 4 of 4: Important Dates & Get Started"
+      aria-label="Page 4 of 6: Important Dates"
     >
       {/* Confetti Effect */}
       {!reducedMotion && (
@@ -660,7 +665,7 @@ function Page4() {
               key={i}
               className="absolute w-2 h-2 rounded-full"
               style={{
-                background: ['#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE'][i % 4],
+                background: ['#2563EB', '#60A5FA', '#C4B5FD', '#DDD6FE'][i % 4],
                 left: `${(i * 5) % 100}%`,
                 top: `${(i * 7) % 100}%`,
               }}
@@ -687,10 +692,10 @@ function Page4() {
           transition={reducedMotion ? {} : { duration: 2, repeat: Infinity }}
           className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
         style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(109, 40, 217, 0.3))',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
         }}
       >
-          <Calendar className="w-10 h-10" style={{ color: '#A78BFA' }} />
+          <Calendar className="w-10 h-10" style={{ color: '#60A5FA' }} />
       </motion.div>
         <h2 className="text-2xl md:text-[40px] font-bold text-white mb-3">Track Important Dates</h2>
         <p className="text-base" style={{ color: '#C7C3D9', lineHeight: '1.6' }}>
@@ -698,69 +703,248 @@ function Page4() {
         </p>
     </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
+      <div className="grid grid-cols-2 gap-4 relative z-10">
       <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="p-4 rounded-2xl"
         style={{
             background: 'rgba(42, 38, 64, 0.5)',
-            border: '2px solid rgba(139, 92, 246, 0.5)',
+            border: '2px solid rgba(37, 99, 235, 0.5)',
           }}
         >
-          <Calendar className="w-8 h-8 mb-2" style={{ color: '#A78BFA' }} />
+          <Calendar className="w-8 h-8 mb-2" style={{ color: '#60A5FA' }} />
           <div className="text-sm font-semibold text-white mb-1">Calendar View</div>
           <div className="text-xs" style={{ color: '#C7C3D9' }}>
             Visual overview
           </div>
       </motion.div>
-      
+
           <motion.div
           initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
           className="p-4 rounded-2xl"
             style={{
               background: 'rgba(42, 38, 64, 0.5)',
-            border: '2px solid rgba(139, 92, 246, 0.5)',
+            border: '2px solid rgba(37, 99, 235, 0.5)',
           }}
         >
-          <List className="w-8 h-8 mb-2" style={{ color: '#A78BFA' }} />
+          <List className="w-8 h-8 mb-2" style={{ color: '#60A5FA' }} />
           <div className="text-sm font-semibold text-white mb-1">List View</div>
           <div className="text-xs" style={{ color: '#C7C3D9' }}>
             By month
             </div>
           </motion.div>
       </div>
+    </motion.div>
+  );
+}
 
-      {/* Congratulations Section */}
-      <div className="text-center relative z-10">
+function Page5() {
+  const reducedMotion = prefersReducedMotion();
+
+  return (
+    <motion.div
+      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -20 }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
+      className="space-y-6"
+      role="region"
+      aria-label="Page 5 of 6: Smart Document Scanner"
+    >
+      <div className="text-center mb-8">
+        <motion.div
+          animate={reducedMotion ? {} : { rotate: [0, 5, -5, 0] }}
+          transition={reducedMotion ? {} : { duration: 3, repeat: Infinity }}
+          className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+          style={{
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(109, 40, 217, 0.3))',
+          }}
+        >
+          <Camera className="w-10 h-10" style={{ color: '#60A5FA' }} />
+        </motion.div>
+        <h2 className="text-2xl md:text-[40px] font-bold text-white mb-3">Smart Document Scanner</h2>
+        <p className="text-base" style={{ color: '#C7C3D9', lineHeight: '1.6' }}>
+          AI-powered OCR extracts text from your documents automatically
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {[
+          { icon: Camera, title: 'Scan with Camera', desc: 'Snap a photo or upload from gallery', color: '#3B82F6' },
+          { icon: Search, title: 'Auto-Extract Data', desc: 'AI reads document numbers & dates', color: '#2563EB' },
+          { icon: Edit, title: 'Review & Edit', desc: 'Verify extracted info before saving', color: '#10B981' },
+        ].map((feature, index) => (
           <motion.div
-          animate={reducedMotion ? {} : { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
-          transition={reducedMotion ? {} : { duration: 2, repeat: Infinity }}
-          className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4"
+            key={index}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="flex items-center gap-4 p-4 rounded-2xl"
             style={{
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
-            boxShadow: '0 0 40px rgba(139, 92, 246, 0.5)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12)',
             }}
           >
-          <CheckCircle2 className="w-12 h-12 text-white" />
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{
+                background: `${feature.color}20`,
+                border: `1px solid ${feature.color}`,
+              }}
+            >
+              <feature.icon className="w-7 h-7" style={{ color: feature.color }} />
+            </div>
+            <div className="flex-1">
+              <div className="text-base font-semibold text-white mb-1">{feature.title}</div>
+              <div className="text-sm" style={{ color: '#C7C3D9' }}>
+                {feature.desc}
+              </div>
+            </div>
           </motion.div>
-        <h1
-          className="text-3xl font-bold mb-3"
+        ))}
+      </div>
+
+      <div
+        className="flex items-start gap-3 p-4 rounded-xl"
         style={{
-            background: 'linear-gradient(135deg, #FFFFFF 0%, #8B5CF6 50%, #A78BFA 100%)',
+          background: 'rgba(59, 130, 246, 0.1)',
+          border: '1px solid rgba(59, 130, 246, 0.3)',
+        }}
+      >
+        <ImageIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#3B82F6' }} />
+        <p className="text-sm" style={{ color: '#C7C3D9' }}>
+          Support for passports, IDs, visas, insurance cards & more!
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function Page6() {
+  const reducedMotion = prefersReducedMotion();
+
+  return (
+    <motion.div
+      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -20 }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
+      className="space-y-6 relative"
+      role="region"
+      aria-label="Page 6 of 6: Get Started"
+    >
+      {/* Confetti Effect */}
+      {!reducedMotion && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 rounded-full"
+              style={{
+                background: ['#2563EB', '#60A5FA', '#C4B5FD', '#DDD6FE', '#3B82F6', '#10B981'][i % 6],
+                left: `${(i * 3.3) % 100}%`,
+                top: `${(i * 5) % 100}%`,
+              }}
+              animate={{
+                y: [0, -120, 0],
+                x: [0, (i % 2 === 0 ? 1 : -1) * 60, 0],
+                opacity: [1, 0.7, 0],
+                scale: [1, 1.8, 0],
+                rotate: [0, 360],
+              }}
+              transition={{
+                duration: 2.5,
+                delay: i * 0.08,
+                repeat: Infinity,
+                repeatDelay: 2,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="text-center relative z-10">
+        <motion.div
+          animate={reducedMotion ? {} : { scale: [1, 1.15, 1], rotate: [0, 10, -10, 0] }}
+          transition={reducedMotion ? {} : { duration: 2.5, repeat: Infinity }}
+          className="w-28 h-28 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(109, 40, 217, 0.9))',
+            boxShadow: '0 0 60px rgba(37, 99, 235, 0.6), 0 0 100px rgba(37, 99, 235, 0.3)',
+          }}
+        >
+          <CheckCircle2 className="w-14 h-14 text-white" />
+        </motion.div>
+
+        <h1
+          className="text-4xl font-bold mb-4"
+          style={{
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #2563EB 50%, #60A5FA 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            textShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+            filter: 'drop-shadow(0 0 20px rgba(37, 99, 235, 0.5))',
           }}
         >
-          Congratulations! 🎉
+          You're All Set! 🎉
         </h1>
-        <p className="text-lg" style={{ color: '#A78BFA' }}>
-          You're all set! Let's get started.
+
+        <p className="text-lg mb-8" style={{ color: '#60A5FA' }}>
+          Ready to take control of your documents?
         </p>
-    </div>
+
+        <div className="space-y-3 mb-8">
+          {[
+            { icon: Folder, text: 'Add your first document', color: '#2563EB' },
+            { icon: Bell, text: 'Set up reminders', color: '#3B82F6' },
+            { icon: Users, text: 'Invite family members', color: '#10B981' },
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.15 }}
+              className="flex items-center gap-3 p-3 rounded-xl mx-auto max-w-xs"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: `${item.color}30`,
+                  border: `1px solid ${item.color}`,
+                }}
+              >
+                <item.icon className="w-5 h-5" style={{ color: item.color }} />
+              </div>
+              <span className="text-sm font-medium text-white">{item.text}</span>
+            </motion.div>
+          ))}
+        </div>
+
+        <div
+          className="p-4 rounded-2xl"
+          style={{
+            background: 'rgba(37, 99, 235, 0.15)',
+            border: '1px solid rgba(37, 99, 235, 0.4)',
+          }}
+        >
+          <p className="text-sm font-semibold text-white mb-1">✨ Pro Tip</p>
+          <p className="text-xs" style={{ color: '#C7C3D9' }}>
+            Start by adding documents that expire soon for maximum benefit!
+          </p>
+        </div>
+      </div>
     </motion.div>
   );
 }

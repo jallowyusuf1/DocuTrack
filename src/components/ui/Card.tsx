@@ -31,7 +31,7 @@ export default function Card({
   };
 
   const interactiveStyles = onClick
-    ? 'cursor-pointer active:scale-[0.98] hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200'
+    ? 'cursor-pointer active:scale-[0.98] hover:shadow-lg hover:shadow-blue-600/20 transition-all duration-200'
     : '';
 
   return (

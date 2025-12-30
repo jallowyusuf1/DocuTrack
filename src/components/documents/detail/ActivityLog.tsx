@@ -120,7 +120,7 @@ export default function ActivityLog({ documentId }: ActivityLogProps) {
       case 'updated':
         return 'text-blue-400 bg-blue-400/20';
       case 'shared':
-        return 'text-purple-400 bg-purple-400/20';
+        return 'text-blue-400 bg-blue-400/20';
       case 'deleted':
         return 'text-red-400 bg-red-400/20';
       default:

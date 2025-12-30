@@ -341,8 +341,8 @@ export default function ComprehensiveCalendar({
             onClick={handleToday}
             className="px-3 md:px-4 py-2 rounded-xl font-medium text-white transition-all hover:bg-white/10 text-sm md:text-base"
             style={{
-              background: 'rgba(139, 92, 246, 0.2)',
-              border: '1px solid rgba(139, 92, 246, 0.5)',
+              background: 'rgba(37, 99, 235, 0.2)',
+              border: '1px solid rgba(37, 99, 235, 0.5)',
             }}
           >
             Today
@@ -364,8 +364,8 @@ export default function ComprehensiveCalendar({
                 style={
                   view === v
                     ? {
-                        background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-                        boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)',
+                        background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+                        boxShadow: '0 0 20px rgba(37, 99, 235, 0.4)',
                       }
                     : {}
                 }
@@ -391,8 +391,8 @@ export default function ComprehensiveCalendar({
             onClick={() => handleAddImportantDate(selectedDate || undefined)}
             className="w-10 h-10 md:w-auto md:px-4 md:py-2 rounded-xl font-medium text-white flex items-center justify-center gap-2 transition-all hover:scale-105 text-sm md:text-base"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-              boxShadow: '0 0 20px rgba(139, 92, 246, 0.4)',
+              background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
+              boxShadow: '0 0 20px rgba(37, 99, 235, 0.4)',
             }}
           >
             <Plus className="w-4 h-4 md:w-5 md:h-5" />
@@ -564,12 +564,12 @@ function MonthView({
               className="relative rounded-xl p-2 md:p-3 text-left transition-all min-h-[60px] md:min-h-[100px]"
               style={{
                 background: isSelected
-                  ? 'rgba(139, 92, 246, 0.2)'
+                  ? 'rgba(37, 99, 235, 0.2)'
                   : isCurrentMonth
                   ? 'rgba(42, 38, 64, 0.4)'
                   : 'rgba(35, 29, 51, 0.2)',
                 border: isSelected
-                  ? '2px solid #8B5CF6'
+                  ? '2px solid #2563EB'
                   : isTodayDate
                   ? '2px solid #3B82F6'
                   : '1px solid rgba(255, 255, 255, 0.1)',
@@ -580,7 +580,7 @@ function MonthView({
               {/* Day Number */}
               <div
                 className="text-sm md:text-base font-bold mb-1"
-                style={{ color: isCurrentMonth ? '#FFFFFF' : '#A78BFA' }}
+                style={{ color: isCurrentMonth ? '#FFFFFF' : '#60A5FA' }}
               >
                 {format(day, 'd')}
               </div>
@@ -649,7 +649,7 @@ function WeekView({
               className="rounded-xl p-4 text-left glass-card-primary min-h-[200px]"
               style={{
                 border: isSelected
-                  ? '2px solid #8B5CF6'
+                  ? '2px solid #2563EB'
                   : isTodayDate
                   ? '2px solid #3B82F6'
                   : '1px solid rgba(255, 255, 255, 0.1)',
@@ -901,7 +901,7 @@ function DatePanel({
                   onClick={onAddEvent}
                   className="px-4 py-2 rounded-xl text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                    background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
                   }}
                 >
                   Add Document for this Date
@@ -955,7 +955,7 @@ function DatePanel({
               onClick={onAddEvent}
               className="px-4 py-2 rounded-xl text-white"
               style={{
-                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                background: 'linear-gradient(135deg, #2563EB, #1E40AF)',
               }}
             >
               Add Document
@@ -1006,7 +1006,7 @@ function DocumentPanelItem({
       <div
         className="w-12 h-16 md:w-16 md:h-20 rounded-lg overflow-hidden flex-shrink-0"
         style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(109, 40, 217, 0.8))',
         }}
       >
         {imageUrl && (
@@ -1092,7 +1092,7 @@ function DocumentListItem({
       <div
         className="w-12 h-16 rounded-lg overflow-hidden flex-shrink-0"
         style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(109, 40, 217, 0.8))',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(109, 40, 217, 0.8))',
         }}
       >
         {imageUrl && (

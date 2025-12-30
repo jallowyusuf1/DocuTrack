@@ -1,83 +1,60 @@
-import React from 'react';
+import { forwardRef, type ReactNode, type ButtonHTMLAttributes } from 'react';
+import { motion } from 'framer-motion';
+import { getGlassButtonStyle } from '../../utils/glassStyles';
+import { prefersReducedMotion } from '../../utils/animations';
 
-export type GlassButtonVariant = 'primary' | 'secondary' | 'ghost';
-export type GlassButtonSize = 'sm' | 'md' | 'lg';
-
-interface GlassButtonProps {
-  children: React.ReactNode;
-  variant?: GlassButtonVariant;
-  size?: GlassButtonSize;
+interface GlassButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'style'> {
+  children: ReactNode;
+  variant?: 'primary' | 'secondary' | 'ghost';
   className?: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  icon?: React.ReactNode;
-  iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
-  loading?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export const GlassButton: React.FC<GlassButtonProps> = ({
-  children,
-  variant = 'primary',
-  size = 'md',
-  className = '',
-  onClick,
-  disabled = false,
-  type = 'button',
-  icon,
-  iconPosition = 'left',
-  fullWidth = false,
-  loading = false,
-}) => {
-  const baseClasses = 'rounded-glass-sm font-medium transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2';
-
-  const variantClasses = {
-    primary: 'glass-btn-primary',
-    secondary: 'glass-btn-secondary',
-    ghost: 'bg-transparent border border-glass-border text-white hover:bg-white/5 hover:border-glass-border-strong',
-  };
-
-  const sizeClasses = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-5 py-3 text-base',
-    lg: 'px-6 py-4 text-lg',
-  };
-
-  const widthClasses = fullWidth ? 'w-full' : '';
-
-  return (
-    <button
-      type={type}
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses} ${className}`}
-      onClick={onClick}
-      disabled={disabled || loading}
-    >
-      {loading && (
-        <svg
-          className="animate-spin h-5 w-5"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
-      )}
-      {!loading && icon && iconPosition === 'left' && icon}
-      {children}
-      {!loading && icon && iconPosition === 'right' && icon}
-    </button>
-  );
+const sizeMap = {
+  sm: { padding: '8px 16px', fontSize: '14px', height: '36px' },
+  md: { padding: '12px 24px', fontSize: '16px', height: '44px' },
+  lg: { padding: '16px 32px', fontSize: '18px', height: '52px' },
 };
+
+export const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
+  (
+    {
+      children,
+      variant = 'primary',
+      className = '',
+      fullWidth = false,
+      size = 'md',
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const reduced = prefersReducedMotion();
+    const baseStyle = getGlassButtonStyle(variant);
+    const sizeStyle = sizeMap[size];
+
+    return (
+      <motion.button
+        ref={ref}
+        className={className}
+        disabled={disabled}
+        style={{
+          ...baseStyle,
+          ...sizeStyle,
+          width: fullWidth ? '100%' : 'auto',
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+        }}
+        whileHover={!reduced && !disabled ? { y: -2 } : undefined}
+        whileTap={!reduced && !disabled ? { scale: 0.98 } : undefined}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        {...props}
+      >
+        {children}
+      </motion.button>
+    );
+  }
+);
+
+GlassButton.displayName = 'GlassButton';
