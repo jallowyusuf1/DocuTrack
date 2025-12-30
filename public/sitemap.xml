@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://docutrackr.xyz/</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Authentication Pages -->
+  <url>
+    <loc>https://docutrackr.xyz/login</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/signup</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/forgot-password</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Information Pages -->
+  <url>
+    <loc>https://docutrackr.xyz/about</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/faq</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/features</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/help</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/info/security</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/family-sharing</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://docutrackr.xyz/privacy</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/terms</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/cookies</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/security</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://docutrackr.xyz/dpa</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Sitemap Page -->
+  <url>
+    <loc>https://docutrackr.xyz/sitemap</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+</urlset>
+

@@ -1,0 +1,47 @@
+# robots.txt for DocuTrackr
+# https://docutrackr.xyz/robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow private/auth pages from indexing
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /auth/
+Disallow: /onboarding/
+Disallow: /verify-email
+Disallow: /dashboard
+Disallow: /documents/
+Disallow: /profile
+Disallow: /settings
+Disallow: /family
+Disallow: /dates
+Disallow: /calendar
+Disallow: /notifications
+Disallow: /search
+Disallow: /add-document
+Disallow: /requests
+Disallow: /my-requests
+
+# Allow public pages
+Allow: /
+Allow: /about
+Allow: /faq
+Allow: /features
+Allow: /help
+Allow: /info/
+Allow: /family-sharing
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /security
+Allow: /dpa
+Allow: /sitemap
+
+# Sitemap location
+Sitemap: https://docutrackr.xyz/sitemap.xml
+
+# Crawl delay (optional - helps prevent server overload)
+Crawl-delay: 1
+
