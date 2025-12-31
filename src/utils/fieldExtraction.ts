@@ -281,3 +281,4 @@ export function extractFields(text: string, documentType?: string): ExtractedFie
 }
 
 
+
