@@ -5,6 +5,7 @@ import Step2SelectType from './Step2SelectType';
 import Step3DocumentDetails from './Step3DocumentDetails';
 import Step4ReviewSave from './Step4ReviewSave';
 import SuccessAnimation from './SuccessAnimation';
+import { useOCR } from '../../../hooks/useOCR';
 import type { DocumentFormData, DocumentType } from '../../../types';
 
 type FlowStep = 1 | 2 | 3 | 4 | 'success';
@@ -30,9 +31,10 @@ export default function AddDocumentFlow({
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [formData, setFormData] = useState<Partial<DocumentFormData>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const { scanImage, isProcessing: isOCRProcessing, result: ocrResult } = useOCR();
 
   // Step 1: Handle image selection
-  const handleImageSelected = (file: File) => {
+  const handleImageSelected = async (file: File) => {
     setSelectedFile(file);
     
     // Create preview URL
@@ -42,6 +44,14 @@ export default function AddDocumentFlow({
       setCurrentStep(2); // Move to Step 2: Select Type
     };
     reader.readAsDataURL(file);
+
+    // Auto-trigger OCR scanning
+    try {
+      await scanImage(file);
+    } catch (error) {
+      console.warn('OCR scanning failed:', error);
+      // Don't block the flow if OCR fails
+    }
   };
 
   // Step 2: Handle document type selection
@@ -152,6 +162,9 @@ export default function AddDocumentFlow({
             documentType={selectedDocumentType}
             documentTypeLabel={selectedDocumentTypeLabel}
             imageFile={selectedFile}
+            ocrResult={ocrResult}
+            isOCRProcessing={isOCRProcessing}
+            onRetryOCR={() => selectedFile && scanImage(selectedFile)}
             onContinue={handleFormDataContinue}
             onBack={handleBack}
           />

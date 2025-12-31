@@ -60,7 +60,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
             // Session is valid - restore it
             try {
-              const profile = await authService.getProfile(user.id);
+              const profile = await authService.getUserProfile(user.id);
               useAuthStore.setState({
                 user,
                 profile,
@@ -134,7 +134,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         if (event === 'INITIAL_SESSION' && session) {
           // Restore session on page load/refresh
           try {
-            const profile = await authService.getProfile(session.user.id);
+            const profile = await authService.getUserProfile(session.user.id);
             useAuthStore.setState({
               user: session.user,
               profile,

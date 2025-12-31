@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { prefersReducedMotion } from '../utils/animations';
 import { useAuthStore } from '../store/authStore';
 import { idleSecurityService, type IdleSecuritySettings } from '../services/idleSecurityService';
+import { authService } from '../services/authService';
 
 type IdleTimeoutContextValue = {
   settings: IdleSecuritySettings | null;
@@ -15,6 +16,7 @@ type IdleTimeoutContextValue = {
   markActive: () => void;
   acknowledgeWarning: () => void;
   lockNow: () => void;
+  logout: () => Promise<void>;
   setLocked: (locked: boolean) => void;
 };
 
@@ -85,6 +87,18 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
       setWarningOpen(false);
     }
   }, [isAuthenticated, userId]);
+
+  const logout = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      setWarningOpen(false);
+      warnedRef.current = false;
+      await authService.logout();
+      // Navigation will happen via auth state change
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  }, [isAuthenticated]);
 
   // Load settings when auth changes
   useEffect(() => {
@@ -223,12 +237,12 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [warningOpen]);
 
-  // Lock when countdown hits 0
+  // Logout when countdown hits 0
   useEffect(() => {
     if (!warningOpen) return;
     if (countdownSeconds > 0) return;
-    lockNow();
-  }, [countdownSeconds, lockNow, warningOpen]);
+    logout();
+  }, [countdownSeconds, logout, warningOpen]);
 
   // Visibility handling: lock immediately on return if exceeded
   useEffect(() => {
@@ -259,6 +273,7 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
       markActive,
       acknowledgeWarning,
       lockNow,
+      logout,
       setLocked,
     }),
     [
@@ -272,6 +287,7 @@ export function IdleTimeoutProvider({ children }: { children: ReactNode }) {
       markActive,
       acknowledgeWarning,
       lockNow,
+      logout,
     ]
   );
 

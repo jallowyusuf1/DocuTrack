@@ -156,7 +156,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
         // Session is valid - restore it
         try {
-          const profile = await authService.getProfile(user.id);
+          const profile = await authService.getUserProfile(user.id);
           set({
             user,
             profile,

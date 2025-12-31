@@ -20,6 +20,12 @@ export function useAuth() {
     clearError,
   } = useAuthStore();
 
+  // Derive accountType from profile.account_role
+  const accountType = profile?.account_role || null;
+
+  // TODO: Implement child context when child account feature is fully integrated
+  const childContext = null;
+
   return {
     user,
     profile,
@@ -28,6 +34,8 @@ export function useAuth() {
     isLoading,
     hasCheckedAuth,
     error,
+    accountType, // Add accountType for backward compatibility
+    childContext, // Placeholder for child account context
     signup,
     login,
     logout,

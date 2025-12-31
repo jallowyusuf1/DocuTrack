@@ -1,68 +1,35 @@
 /**
  * OCR Utility - Extract text from document images
- * Uses Tesseract.js for client-side OCR processing
- * Enhanced with multi-language support
+ * Uses comprehensive OCR service with multi-provider fallback:
+ * 1. Microblink BlinkID (for ID documents)
+ * 2. Google Cloud Vision
+ * 3. Tesseract.js (offline fallback)
  */
 
-import { getTesseractCode, DATE_FORMATS_BY_LANGUAGE } from '../constants/languages';
-import type { OCRResult } from '../types';
+import { performOCR } from '../services/ocrService';
+import type { OCRResult, DocumentType } from '../types';
 
 interface OCROptions {
   language?: string; // Language code (e.g., 'en', 'es', 'ar')
+  documentType?: DocumentType;
   progressCallback?: (progress: number) => void;
+  preferredService?: 'microblink' | 'google' | 'tesseract' | 'auto';
 }
 
 /**
  * Extract text from an image file using OCR with multi-language support
+ * Uses comprehensive OCR service with automatic fallback
  */
 export async function extractTextFromImage(
   file: File,
   options: OCROptions = {}
 ): Promise<OCRResult> {
-  try {
-    const { language = 'en', progressCallback } = options;
-
-    // Get Tesseract language code
-    const tesseractLang = getTesseractCode(language);
-
-    console.log(`[OCR] Starting extraction with language: ${language} (Tesseract: ${tesseractLang})`);
-
-    // Dynamically import Tesseract to avoid loading it if not needed
-    const Tesseract = await import('tesseract.js');
-
-    const worker = await Tesseract.createWorker(tesseractLang, 1, {
-      logger: (m) => {
-        // Log and report progress
-        if (m.status === 'recognizing text') {
-          const progress = Math.round(m.progress * 100);
-          console.log(`[OCR] Progress: ${progress}%`);
-          progressCallback?.(progress);
-        }
-      },
-    });
-
-    // Perform OCR
-    console.log('[OCR] Recognizing text...');
-    const { data } = await worker.recognize(file);
-
-    // Terminate worker
-    await worker.terminate();
-
-    console.log(`[OCR] Extraction complete. Confidence: ${data.confidence}%`);
-
-    // Extract structured fields from OCR text (language-aware)
-    const fields = extractFieldsFromText(data.text, language);
-
-    return {
-      text: data.text,
-      confidence: data.confidence || 0,
-      language,
-      fields,
-    };
-  } catch (error) {
-    console.error('[OCR] Extraction failed:', error);
-    throw new Error('Failed to extract text from image. Please try again or enter details manually.');
-  }
+  return performOCR(file, {
+    language: options.language,
+    documentType: options.documentType,
+    progressCallback: options.progressCallback,
+    preferredService: options.preferredService || 'auto',
+  });
 }
 
 /**
@@ -72,7 +39,8 @@ export async function extractTextFromImage(
 export async function extractTextWithAutoLanguage(
   file: File,
   preferredLanguages?: string[],
-  progressCallback?: (progress: number) => void
+  progressCallback?: (progress: number) => void,
+  documentType?: DocumentType
 ): Promise<OCRResult & { detectedLanguage: string }> {
   try {
     console.log('[OCR] Auto-language extraction starting...');
@@ -93,6 +61,7 @@ export async function extractTextWithAutoLanguage(
     // Step 2: Perform OCR with detected language (30-100% progress)
     const result = await extractTextFromImage(file, {
       language: detection.languageCode,
+      documentType,
       progressCallback: (ocrProgress) => {
         // Map OCR progress from 30-100%
         const totalProgress = 30 + (ocrProgress * 0.7);
@@ -115,6 +84,7 @@ export async function extractTextWithAutoLanguage(
  * Extract structured fields from OCR text
  * Attempts to identify document number, dates, and names
  * Language-aware extraction
+ * @deprecated This function is now handled by the OCR service. Kept for backward compatibility.
  */
 function extractFieldsFromText(text: string, language: string = 'en'): NonNullable<OCRResult['fields']> {
   const fields: NonNullable<OCRResult['fields']> = {};

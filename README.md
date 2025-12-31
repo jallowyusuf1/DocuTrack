@@ -139,7 +139,13 @@ DocuTrack-1/
    ```env
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   
+   # OCR Services (Optional)
+   # Google Cloud Vision API Key - Optional, Tesseract.js works offline as fallback
+   VITE_GOOGLE_CLOUD_VISION_API_KEY=your_google_cloud_vision_api_key
    ```
+
+   **Note:** OCR functionality works without Google Cloud Vision API key. The system will automatically use Tesseract.js (offline) as a fallback. Google Cloud Vision provides higher accuracy but requires an API key.
 
 4. **Set up Supabase**
 
@@ -183,6 +189,7 @@ This project is configured for easy deployment on Vercel.
 3. **Add environment variables:**
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_GOOGLE_CLOUD_VISION_API_KEY` (Optional - for enhanced OCR accuracy)
 
 4. **Deploy!**
 
@@ -215,6 +222,43 @@ See `supabase/schema.sql` for complete schema.
 |----------|-------------|----------|
 | `VITE_SUPABASE_URL` | Your Supabase project URL | Yes |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase anonymous key | Yes |
+| `VITE_GOOGLE_CLOUD_VISION_API_KEY` | Google Cloud Vision API key for enhanced OCR | No |
+
+## OCR Scanning
+
+DocuTrack includes advanced OCR (Optical Character Recognition) functionality for automatically extracting information from document images.
+
+### Features
+
+- **Multi-Service OCR**: Uses Google Cloud Vision (primary) with Tesseract.js (offline fallback)
+- **Automatic Field Extraction**: Extracts document numbers, dates, names, and other fields
+- **Document Type Detection**: Automatically detects document type from OCR text
+- **Multi-Language Support**: Supports 12+ languages including English, Spanish, French, German, Arabic, Chinese, Japanese, and more
+- **Image Quality Assessment**: Checks image quality before processing
+- **Smart Suggestions**: Shows OCR results as suggestions that you can accept or reject
+- **Manual Re-scan**: Option to re-scan documents if results are unsatisfactory
+
+### Setup
+
+1. **Google Cloud Vision (Optional)**: 
+   - Get an API key from [Google Cloud Console](https://console.cloud.google.com/)
+   - Enable the Cloud Vision API
+   - Add the key to your `.env` file as `VITE_GOOGLE_CLOUD_VISION_API_KEY`
+   - Provides higher accuracy but requires internet connection
+
+2. **Tesseract.js (Default)**:
+   - Works offline, no API key required
+   - Automatically used as fallback if Google Cloud Vision is unavailable
+   - Supports multiple languages
+
+### Usage
+
+1. Capture or upload a document image
+2. OCR automatically scans the image when you reach the document details step
+3. Review extracted fields in the OCR Results Panel
+4. Accept or reject individual fields, or accept/reject all at once
+5. Accepted fields are automatically populated in the form
+6. You can manually edit any field or re-scan if needed
 
 ## Browser Support
 
@@ -225,7 +269,7 @@ See `supabase/schema.sql` for complete schema.
 
 ## Features in Development
 
-- [ ] Document OCR (text extraction from images)
+- [x] Document OCR (text extraction from images) ✅
 - [ ] Email notifications for expiring documents
 - [ ] Document templates
 - [ ] Bulk document operations

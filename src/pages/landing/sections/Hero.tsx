@@ -317,26 +317,30 @@ function HeroShowcase() {
         </div>
 
         <div className="relative overflow-hidden" style={{ minHeight: '380px', height: '380px' }}>
-          <AnimatePresence initial={false}>
+          <AnimatePresence initial={false} mode="wait">
             {slides.map((s, i) => {
               if (i !== idx) return null;
               return (
-                <motion.div
+            <motion.div
                   key={s.key}
-                  initial={{ x: 100 }}
-                  animate={{ x: 0 }}
-                  exit={{ x: -100 }}
+                  initial={{ x: '100%', opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: '-100%', opacity: 0 }}
                   transition={{ 
-                    duration: 0.5, 
-                    ease: [0.22, 1, 0.36, 1],
+                    duration: 0.4, 
+                    ease: [0.25, 0.1, 0.25, 1],
                   }}
                   className="absolute inset-0 overflow-hidden"
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ 
+                    width: '100%', 
+                    height: '100%',
+                    willChange: 'transform',
+                  }}
                 >
                   <div className="h-full overflow-y-auto" style={{ paddingRight: '4px' }}>
                     {s.content}
                   </div>
-                </motion.div>
+            </motion.div>
               );
             })}
           </AnimatePresence>
@@ -430,48 +434,36 @@ export default function Hero({
                     e.preventDefault();
                     setIsVideoOpen(true);
                   }}
-                  className="group relative overflow-hidden rounded-full px-10 py-4 text-lg font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] inline-flex items-center justify-center gap-3"
+                  className="group relative overflow-hidden rounded-full px-8 py-4 text-base font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] inline-flex items-center justify-center gap-3"
                   style={{
-                    background: 'radial-gradient(ellipse at 25% 35%, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.08) 100%), linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(59,130,246,0.12) 100%)',
-                    border: '1.5px solid rgba(255,255,255,0.28)',
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                    boxShadow: '0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.15)',
-                    color: 'rgba(255,255,255,0.98)',
-                    minWidth: '240px',
+                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 50%, rgba(59, 130, 246, 0.10) 100%)',
+                    border: '1.5px solid rgba(139, 92, 246, 0.25)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    boxShadow: '0 8px 32px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.15)',
+                    color: 'rgba(255,255,255,0.95)',
                   }}
                 >
-                  {/* Glass highlight */}
+                  {/* Glass highlight on hover */}
                   <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{
-                      background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.2) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.15) 0%, transparent 70%)',
                     }}
                   />
 
-                  {/* Animated gradient border glow */}
+                  {/* Glow effect on hover */}
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full pointer-events-none"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(139,92,246,0.35) 0%, rgba(59,130,246,0.35) 100%)',
-                      filter: 'blur(24px)',
+                      background: 'linear-gradient(135deg, rgba(139,92,246,0.4) 0%, rgba(59,130,246,0.4) 100%)',
+                      filter: 'blur(20px)',
                       zIndex: -1,
                     }}
                   />
 
-                  <div className="relative flex items-center justify-center gap-3">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(139,92,246,0.3) 0%, rgba(59,130,246,0.25) 100%)',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        boxShadow: '0 6px 16px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.25)',
-                      }}
-                    >
-                      <Play className="w-6 h-6 fill-white ml-0.5" style={{ color: '#FFFFFF' }} />
-                    </div>
-                    <span className="tracking-wide">Watch demo</span>
-                  </div>
+                  <Play className="w-5 h-5 fill-white relative" style={{ color: '#FFFFFF' }} />
+                  <span className="relative tracking-wide">Watch demo</span>
                 </button>
               </div>
             </MotionInView>

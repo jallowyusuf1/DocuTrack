@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { triggerHaptic, prefersReducedMotion } from '../../../utils/animations';
 import { GlassButton } from '../../ui/glass/Glass';
-import { extractTextFromImage } from '../../../utils/ocr';
 import { useToast } from '../../../hooks/useToast';
-import type { DocumentFormData, DocumentType } from '../../../types';
+import type { DocumentFormData, DocumentType, OCRResult } from '../../../types';
 import { DynamicDocumentForm } from '../DynamicDocumentForm';
 import { validateAllFields } from '../../../utils/fieldValidation';
 import { documentTypesService } from '../../../services/documentTypes';
+import OCRResultsPanel from '../ocr/OCRResultsPanel';
 
 interface Step3DocumentDetailsProps {
   documentType: DocumentType;
   documentTypeLabel: string;
   imageFile: File;
+  ocrResult?: OCRResult | null;
+  isOCRProcessing?: boolean;
+  onRetryOCR?: () => void;
   onContinue: (data: Partial<DocumentFormData>) => void;
   onBack: () => void;
 }
@@ -22,56 +25,121 @@ export default function Step3DocumentDetails({
   documentType,
   documentTypeLabel,
   imageFile,
+  ocrResult,
+  isOCRProcessing = false,
+  onRetryOCR,
   onContinue,
   onBack,
 }: Step3DocumentDetailsProps) {
   const reduced = prefersReducedMotion();
   const { showToast } = useToast();
-  const [isExtractingOCR, setIsExtractingOCR] = useState(false);
   const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [acceptedFields, setAcceptedFields] = useState<Set<string>>(new Set());
 
-  // Auto-extract fields using OCR when component mounts
+  // Auto-populate fields from accepted OCR results
   useEffect(() => {
-    const extractOCR = async () => {
-      setIsExtractingOCR(true);
-      try {
-        const result = await extractTextFromImage(imageFile);
+    if (!ocrResult?.fields) return;
         
-        // Auto-fill fields if found
-        if (result.fields) {
           const updates: Record<string, any> = {};
-          
-          if (result.fields.documentNumber && !fieldValues.document_number) {
-            updates.document_number = result.fields.documentNumber;
-          }
-          if (result.fields.expirationDate && !fieldValues.expiry_date && !fieldValues.expiration_date) {
-            updates.expiry_date = result.fields.expirationDate;
-            updates.expiration_date = result.fields.expirationDate;
-          }
-          if (result.fields.issueDate && !fieldValues.issue_date) {
-            updates.issue_date = result.fields.issueDate;
-          }
-          if (result.fields.name && !fieldValues.document_name && !fieldValues.full_name) {
-            updates.document_name = result.fields.name;
-            updates.full_name = result.fields.name;
-          }
-          
-          if (Object.keys(updates).length > 0) {
-            setFieldValues(prev => ({ ...prev, ...updates }));
-            showToast(`Extracted ${Object.keys(updates).length} field${Object.keys(updates).length > 1 ? 's' : ''} from document!`, 'success');
-          }
-        }
-      } catch (error: any) {
-        console.warn('OCR extraction failed:', error);
-        // Don't show error toast - OCR is optional
-      } finally {
-        setIsExtractingOCR(false);
-      }
-    };
+    let hasUpdates = false;
 
-    extractOCR();
-  }, [imageFile, showToast]);
+    // Map OCR fields to form fields
+    Object.entries(ocrResult.fields).forEach(([fieldKey, field]) => {
+      if (!field || !acceptedFields.has(fieldKey)) return;
+
+      switch (fieldKey) {
+        case 'documentNumber':
+          if (!fieldValues.document_number) {
+            updates.document_number = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'expirationDate':
+          if (!fieldValues.expiry_date && !fieldValues.expiration_date) {
+            updates.expiry_date = field.value;
+            updates.expiration_date = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'issueDate':
+          if (!fieldValues.issue_date) {
+            updates.issue_date = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'fullName':
+          if (!fieldValues.document_name && !fieldValues.full_name) {
+            updates.document_name = field.value;
+            updates.full_name = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'firstName':
+          if (!fieldValues.first_name && !fieldValues.given_names) {
+            updates.first_name = field.value;
+            updates.given_names = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'lastName':
+          if (!fieldValues.last_name && !fieldValues.surname) {
+            updates.last_name = field.value;
+            updates.surname = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'dateOfBirth':
+          if (!fieldValues.date_of_birth && !fieldValues.dob) {
+            updates.date_of_birth = field.value;
+            updates.dob = field.value;
+            hasUpdates = true;
+          }
+          break;
+        case 'nationality':
+          if (!fieldValues.nationality) {
+            updates.nationality = field.value;
+            hasUpdates = true;
+          }
+          break;
+      }
+    });
+
+    if (hasUpdates) {
+      setFieldValues((prev) => ({ ...prev, ...updates }));
+    }
+  }, [ocrResult, acceptedFields, fieldValues]);
+
+  // Handle field acceptance
+  const handleAcceptField = (fieldKey: string, value: string) => {
+    setAcceptedFields((prev) => new Set(prev).add(fieldKey));
+    triggerHaptic('light');
+  };
+
+  // Handle field rejection
+  const handleRejectField = (fieldKey: string) => {
+    setAcceptedFields((prev) => {
+      const next = new Set(prev);
+      next.delete(fieldKey);
+      return next;
+    });
+    triggerHaptic('light');
+  };
+
+  // Handle accept all
+  const handleAcceptAll = () => {
+    if (!ocrResult?.fields) return;
+    const allFields = new Set(Object.keys(ocrResult.fields).filter((k) => ocrResult.fields?.[k] !== undefined));
+    setAcceptedFields(allFields);
+    triggerHaptic('success');
+    showToast('All fields accepted!', 'success');
+  };
+
+  // Handle reject all
+  const handleRejectAll = () => {
+    setAcceptedFields(new Set());
+    triggerHaptic('light');
+  };
 
   // Get icon based on document type
   const getDocumentIcon = () => {
@@ -206,13 +274,45 @@ export default function Step3DocumentDetails({
                 <span className="text-2xl">{getDocumentIcon()}</span>
                 <h2 className="text-white font-semibold text-xl">{documentTypeLabel} Details</h2>
               </div>
-              {isExtractingOCR && (
+              <div className="flex items-center gap-2">
+                {isOCRProcessing && (
                 <div className="flex items-center gap-2 text-white/60 text-sm">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Extracting text...</span>
+                    <span>Scanning...</span>
                 </div>
               )}
+                {onRetryOCR && !isOCRProcessing && (
+                  <button
+                    onClick={() => {
+                      triggerHaptic('light');
+                      onRetryOCR();
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-white/80 hover:text-white transition-colors"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Re-scan
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* OCR Results Panel */}
+            {ocrResult && !isOCRProcessing && (
+              <div className="mb-6">
+                <OCRResultsPanel
+                  result={ocrResult}
+                  onAcceptField={handleAcceptField}
+                  onRejectField={handleRejectField}
+                  onAcceptAll={handleAcceptAll}
+                  onRejectAll={handleRejectAll}
+                  acceptedFields={acceptedFields}
+                />
+              </div>
+            )}
 
             {/* Dynamic Form */}
             <div className="space-y-6">

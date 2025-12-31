@@ -21,7 +21,7 @@ interface LoginFormData {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isLoading, accountType, logout } = useAuth();
+  const { login, isAuthenticated, isLoading, profile } = useAuth();
   const reduced = prefersReducedMotion();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -49,12 +49,23 @@ export default function Login() {
   });
 
   const [isLocked, setIsLocked] = useState(() => {
-    const lastAttempt = localStorage.getItem('lastLoginAttempt');
-    if (lastAttempt && loginAttempts >= 5) {
-      const timeSinceLastAttempt = Date.now() - parseInt(lastAttempt);
-      return timeSinceLastAttempt < 900000;
+    try {
+      const lastAttempt = localStorage.getItem('lastLoginAttempt');
+      const attempts = localStorage.getItem('loginAttempts');
+      const attemptCount = attempts ? parseInt(attempts) : 0;
+
+      if (lastAttempt && attemptCount >= 5) {
+        const lastAttemptTime = parseInt(lastAttempt);
+        if (!isNaN(lastAttemptTime)) {
+          const timeSinceLastAttempt = Date.now() - lastAttemptTime;
+          return timeSinceLastAttempt < 900000; // 15 minutes
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking login lock status:', error);
+      return false;
     }
-    return false;
   });
 
   const [lockoutTimeRemaining, setLockoutTimeRemaining] = useState(0);
@@ -82,7 +93,7 @@ export default function Login() {
     // Child accounts go to the same routes but with supervision UI enabled everywhere.
     // Keeping path stable avoids duplicating dashboards.
     navigate('/dashboard', { replace: true });
-  }, [isAuthenticated, accountType, navigate]);
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (!isLocked) return;

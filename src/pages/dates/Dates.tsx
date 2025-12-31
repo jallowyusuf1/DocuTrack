@@ -14,7 +14,7 @@ import ViewToggle from '../../components/dates/ViewToggle';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import BackButton from '../../components/ui/BackButton';
-import AddImportantDateModal from '../../components/dates/AddImportantDateModal';
+import AddImportantDateModalEnhanced from '../../components/dates/AddImportantDateModalEnhanced';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePageLock } from '../../hooks/usePageLock';
 import EnhancedPageLockModal from '../../components/lock/EnhancedPageLockModal';
@@ -732,7 +732,7 @@ export default function Dates() {
       </motion.div>
 
       {/* Add Important Date Modal */}
-      <AddImportantDateModal
+      <AddImportantDateModalEnhanced
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={() => {

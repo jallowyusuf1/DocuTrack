@@ -137,7 +137,7 @@ export interface Notification {
   };
 }
 
-// Important date types (keeping for backward compatibility)
+// Important date types
 export interface ImportantDate {
   id: string;
   title: string;
@@ -145,6 +145,8 @@ export interface ImportantDate {
   date: string;
   category: string;
   reminder_days?: number;
+  priority?: 'high' | 'medium' | 'low';
+  repeat_annually?: boolean;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -157,6 +159,29 @@ export interface DateFormData {
   date: string;
   category: string;
   reminder_days?: number;
+  priority?: 'high' | 'medium' | 'low';
+  repeat_annually?: boolean;
+  linked_document_ids?: string[];
+  reminders?: {
+    enabled: boolean;
+    preset_reminders?: {
+      '30_days': boolean;
+      '7_days': boolean;
+      '1_day': boolean;
+      'on_day': boolean;
+    };
+    custom_reminders?: Array<{
+      days_before: number;
+      time_of_day: string;
+    }>;
+    time_of_day?: string;
+    notification_methods?: {
+      in_app: boolean;
+      push: boolean;
+      email: boolean;
+      sms: boolean;
+    };
+  };
 }
 
 // Social/Connection types
@@ -293,12 +318,25 @@ export interface OCRResult {
   text: string;
   confidence: number;
   language?: string;
+  source: 'microblink' | 'google' | 'tesseract';
   fields?: {
-    documentNumber?: string;
-    expirationDate?: string;
-    issueDate?: string;
-    name?: string;
-    [key: string]: string | undefined;
+    documentNumber?: { value: string; confidence: number };
+    expirationDate?: { value: string; confidence: number };
+    issueDate?: { value: string; confidence: number };
+    firstName?: { value: string; confidence: number };
+    lastName?: { value: string; confidence: number };
+    fullName?: { value: string; confidence: number };
+    dateOfBirth?: { value: string; confidence: number };
+    nationality?: { value: string; confidence: number };
+    [key: string]: { value: string; confidence: number } | undefined;
+  };
+  detectedDocumentType?: {
+    type: DocumentType;
+    confidence: number;
+  };
+  quality?: {
+    score: number;
+    issues: string[];
   };
 }
 

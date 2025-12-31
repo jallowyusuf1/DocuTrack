@@ -17,13 +17,13 @@ import { useAuth } from '../hooks/useAuth';
 import { childAccountsService } from '../services/childAccounts';
 
 function IdleCountdownMount() {
-  const { warningOpen, countdownSeconds, acknowledgeWarning, lockNow, settings } = useIdleTimeout();
+  const { warningOpen, countdownSeconds, acknowledgeWarning, logout, settings } = useIdleTimeout();
   return (
     <IdleCountdownModal
       open={warningOpen}
       seconds={countdownSeconds}
       onImHere={acknowledgeWarning}
-      onLockNow={lockNow}
+      onLogout={logout}
       soundEnabled={!!settings?.idleSoundAlertsEnabled}
     />
   );

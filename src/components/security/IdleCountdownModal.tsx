@@ -3,6 +3,7 @@ import { AlarmClock, ShieldAlert } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { prefersReducedMotion, triggerHaptic } from '../../utils/animations';
 import { GlassButton, GlassCard } from '../ui/glass/Glass';
+import { useTheme } from '../../contexts/ThemeContext';
 
 function countdownColor(seconds: number) {
   if (seconds <= 10) return 'rgba(248,113,113,1)'; // red-400
@@ -37,20 +38,27 @@ export default function IdleCountdownModal({
   open,
   seconds,
   onImHere,
-  onLockNow,
+  onLogout,
   soundEnabled = false,
 }: {
   open: boolean;
   seconds: number;
   onImHere: () => void;
-  onLockNow: () => void;
+  onLogout: () => void;
   soundEnabled?: boolean;
 }) {
   const reduced = prefersReducedMotion();
   const lastBuzzRef = useRef<number>(0);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const color = useMemo(() => countdownColor(seconds), [seconds]);
   const pulse = seconds <= 10 && !reduced;
+  
+  const bgColor = isDark ? '#000000' : '#FFFFFF';
+  const textColor = isDark ? '#FFFFFF' : '#000000';
+  const glassBg = isDark ? 'rgba(26, 26, 26, 0.8)' : 'rgba(255, 255, 255, 0.85)';
+  const glassBorder = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)';
 
   useEffect(() => {
     if (!open) return;
@@ -81,10 +89,9 @@ export default function IdleCountdownModal({
           <div
             className="absolute inset-0"
             style={{
-              background:
-                'radial-gradient(circle at 40% 20%, rgba(139,92,246,0.22), transparent 55%), radial-gradient(circle at 70% 65%, rgba(59,130,246,0.22), transparent 55%), rgba(0,0,0,0.55)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
+              background: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
             }}
           />
 
@@ -100,11 +107,13 @@ export default function IdleCountdownModal({
               className="p-6 md:p-7 overflow-hidden"
               style={{
                 borderRadius: 24,
-                border: '1px solid rgba(255,255,255,0.16)',
-                background:
-                  'radial-gradient(circle at 20% 10%, rgba(255,255,255,0.16), rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.04) 100%)',
-                boxShadow:
-                  '0 40px 120px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.18)',
+                border: `1px solid ${glassBorder}`,
+                background: glassBg,
+                backdropFilter: 'blur(60px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(60px) saturate(150%)',
+                boxShadow: isDark
+                  ? '0 20px 60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                  : '0 20px 60px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
               }}
             >
               {/* Glass highlight */}
@@ -112,7 +121,9 @@ export default function IdleCountdownModal({
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-24 -left-24 h-56 w-56 rounded-full blur-2xl"
                 style={{
-                  background: 'radial-gradient(circle, rgba(255,255,255,0.20), transparent 60%)',
+                  background: isDark
+                    ? 'radial-gradient(circle, rgba(255,255,255,0.10), transparent 60%)'
+                    : 'radial-gradient(circle, rgba(255,255,255,0.30), transparent 60%)',
                 }}
               />
 
@@ -121,9 +132,11 @@ export default function IdleCountdownModal({
                   <motion.div
                     className="h-11 w-11 rounded-2xl flex items-center justify-center"
                     style={{
-                      background:
-                        'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22), rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 100%)',
-                      border: '1px solid rgba(255,255,255,0.14)',
+                      background: isDark
+                        ? 'rgba(40, 40, 40, 0.6)'
+                        : 'rgba(255, 255, 255, 0.6)',
+                      backdropFilter: 'blur(30px)',
+                      border: glassBorder,
                     }}
                     animate={
                       reduced
@@ -138,18 +151,22 @@ export default function IdleCountdownModal({
                       ease: 'easeInOut',
                     }}
                   >
-                    <AlarmClock className="h-5 w-5 text-white/90" />
+                    <AlarmClock className="h-5 w-5" style={{ color: textColor }} />
                   </motion.div>
 
                   <div>
-                    <div className="text-white font-semibold tracking-tight">Still there?</div>
-                    <div className="text-white/65 text-sm">We’ll lock the app to protect your data.</div>
+                    <div className="font-semibold tracking-tight" style={{ color: textColor }}>
+                      Still there?
+                    </div>
+                    <div className="text-sm" style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
+                      You'll be logged out automatically for security.
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-white/70 text-xs">
+                <div className="flex items-center gap-2 text-xs" style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
                   <ShieldAlert className="h-4 w-4" />
-                  <span>Secure lock</span>
+                  <span>Auto logout</span>
                 </div>
               </div>
 
@@ -165,7 +182,9 @@ export default function IdleCountdownModal({
                   >
                     {Math.max(0, seconds)}
                   </div>
-                  <div className="mt-1 text-center text-white/55 text-sm">seconds</div>
+                  <div className="mt-1 text-center text-sm" style={{ color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)' }}>
+                    seconds
+                  </div>
 
                   <div
                     aria-hidden="true"
@@ -178,19 +197,29 @@ export default function IdleCountdownModal({
               </div>
 
               <div className="mt-7 grid grid-cols-2 gap-3">
-                <GlassButton variant="secondary" onClick={onImHere} className="w-full">
-                  I’m Here
-                </GlassButton>
                 <GlassButton
-                  variant="primary"
-                  onClick={onLockNow}
+                  variant="secondary"
+                  onClick={onImHere}
                   className="w-full"
                   style={{
-                    background:
-                      'linear-gradient(135deg, rgba(248,113,113,0.28), rgba(139,92,246,0.22) 55%, rgba(59,130,246,0.22))',
+                    background: 'rgba(16, 185, 129, 0.8)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    color: '#FFFFFF',
                   }}
                 >
-                  Lock Now
+                  Still Here
+                </GlassButton>
+                <GlassButton
+                  variant="danger"
+                  onClick={onLogout}
+                  className="w-full"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.8)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  Log Me Out
                 </GlassButton>
               </div>
             </GlassCard>

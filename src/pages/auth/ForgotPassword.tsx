@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, AlertCircle, Loader2, Calendar, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Mail, AlertCircle, Loader2, Calendar, CheckCircle, ArrowLeft, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerHaptic } from '../../utils/animations';
 import { authService } from '../../services/authService';
 import { validateEmail } from '../../utils/validation';
+import { useTheme } from '../../contexts/ThemeContext';
+import { GlassCard, GlassTile } from '../../components/ui/glass/Glass';
+import GlassButton from '../../components/ui/glass/GlassButton';
+import GlassInput from '../../components/ui/glass/GlassInput';
 
 interface ForgotPasswordFormData {
   email: string;
@@ -52,47 +56,88 @@ export default function ForgotPassword() {
     }
   };
 
-  const isDarkMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? '#000000' : '#FFFFFF';
+  const textColor = isDark ? '#FFFFFF' : '#000000';
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center px-4 py-8"
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative"
       style={{
-        background: isDarkMode ? '#000000' : '#FFFFFF',
+        background: bgColor,
       }}
     >
+      {/* Navigation Bar - Glass buttons at top */}
+      <div className="absolute top-6 left-0 right-0 flex justify-center gap-3 z-50">
+        <GlassButton
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            triggerHaptic('light');
+            navigate('/login');
+          }}
+          icon={<ArrowLeft className="w-4 h-4" />}
+        >
+          Back to Sign In
+        </GlassButton>
+        <GlassButton
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            triggerHaptic('light');
+            navigate('/');
+          }}
+          icon={<Home className="w-4 h-4" />}
+        >
+          Home
+        </GlassButton>
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-[400px]"
-        style={{ marginTop: '80px' }}
+        className="w-full max-w-[450px]"
       >
-        {/* Logo Area */}
+        {/* Logo Area - Glass Card */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-center mb-10"
+          className="text-center mb-8"
         >
-          <div
-            className="w-32 h-32 rounded-[28px] flex items-center justify-center mx-auto mb-4"
+          <GlassCard
+            className="p-6 mb-6"
             style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+              borderRadius: 28,
+              background: isDark
+                ? 'rgba(26, 26, 26, 0.8)'
+                : 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(40px) saturate(120%)',
+              border: isDark
+                ? '1px solid rgba(255, 255, 255, 0.1)'
+                : '1px solid rgba(0, 0, 0, 0.08)',
             }}
           >
-            <Calendar className="w-16 h-16 text-white" />
-          </div>
-          <h1
-            className="text-[28px] font-semibold mb-0"
-            style={{
-              color: isDarkMode ? '#FFFFFF' : '#000000',
-              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
-            }}
-          >
-            DocuTrackr
-          </h1>
+            <div
+              className="w-24 h-24 rounded-[24px] flex items-center justify-center mx-auto mb-4"
+              style={{
+                background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                boxShadow: '0 8px 24px rgba(139, 92, 246, 0.3)',
+              }}
+            >
+              <Calendar className="w-12 h-12 text-white" />
+            </div>
+            <h1
+              className="text-[28px] font-semibold mb-0"
+              style={{
+                color: textColor,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
+              }}
+            >
+              DocuTrackr
+            </h1>
+          </GlassCard>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -106,65 +151,82 @@ export default function ForgotPassword() {
             >
               {/* Heading */}
               <h1
-                className="text-[34px] font-bold mb-4"
+                className="text-[34px] font-bold mb-6 text-center"
                 style={{
-                  color: isDarkMode ? '#FFFFFF' : '#000000',
+                  color: textColor,
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
                 }}
               >
                 Check your email
               </h1>
 
-              {/* Success Card */}
-              <div
+              {/* Success Card - Glass */}
+              <GlassCard
+                className="p-8 mb-6"
                 style={{
-                  background: isDarkMode ? 'rgba(118, 118, 128, 0.12)' : 'rgba(118, 118, 128, 0.08)',
-                  borderRadius: '16px',
-                  padding: '32px',
-                  marginBottom: '24px',
+                  borderRadius: 24,
+                  background: isDark
+                    ? 'rgba(26, 26, 26, 0.8)'
+                    : 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(40px) saturate(120%)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  boxShadow: '0 10px 40px rgba(16, 185, 129, 0.15)',
                 }}
               >
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
                   style={{
-                    background: '#34C759',
+                    background: '#10B981',
+                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
                   }}
                 >
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
                 <h3
-                  className="text-xl font-semibold mb-2"
+                  className="text-xl font-semibold mb-2 text-center"
                   style={{
-                    color: isDarkMode ? '#FFFFFF' : '#000000',
+                    color: textColor,
                     fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
                   }}
                 >
                   Check your email
                 </h3>
                 <p
+                  className="text-center"
                   style={{
                     fontSize: '15px',
-                    color: isDarkMode ? 'rgba(235, 235, 245, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+                    color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                     lineHeight: '1.5',
                   }}
                 >
                   We've sent a password reset link to<br />
-                  <strong style={{ color: isDarkMode ? '#FFFFFF' : '#000000' }}>{emailSent}</strong>
+                  <strong style={{ color: textColor }}>{emailSent}</strong>
                 </p>
-              </div>
+              </GlassCard>
 
-              {/* Back to Sign In Button */}
-              <button
-                onClick={() => {
-                  triggerHaptic('light');
-                  navigate('/login');
-                }}
-                className="apple-primary-button"
-                style={{ marginTop: '0' }}
-              >
-                <ArrowLeft className="w-5 h-5 inline mr-2" />
-                Back to Sign In
-              </button>
+              {/* Back to Sign In Button - Glass */}
+              <div className="flex gap-3 justify-center">
+                <GlassButton
+                  variant="secondary"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    navigate('/login');
+                  }}
+                  icon={<ArrowLeft className="w-4 h-4" />}
+                >
+                  Back to Sign In
+                </GlassButton>
+                <GlassButton
+                  variant="secondary"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    navigate('/');
+                  }}
+                  icon={<Home className="w-4 h-4" />}
+                >
+                  Home
+                </GlassButton>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -177,7 +239,7 @@ export default function ForgotPassword() {
               <h1
                 className="text-[34px] font-bold mb-4 text-center"
                 style={{
-                  color: isDarkMode ? '#FFFFFF' : '#000000',
+                  color: textColor,
                   fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif',
                 }}
               >
@@ -189,19 +251,30 @@ export default function ForgotPassword() {
                 className="text-center mb-8"
                 style={{
                   fontSize: '15px',
-                  color: isDarkMode ? 'rgba(235, 235, 245, 0.6)' : 'rgba(60, 60, 67, 0.6)',
+                  color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                   lineHeight: '1.5',
                 }}
               >
                 Enter your email address and we'll send you a link to reset your password.
               </p>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit(onSubmit)}>
-                {/* Email Input */}
-                <div className="apple-input-group">
-                  <label htmlFor="email">Email</label>
-                  <input
+              {/* Form - Glass Card */}
+              <GlassCard
+                className="p-6 mb-6"
+                style={{
+                  borderRadius: 24,
+                  background: isDark
+                    ? 'rgba(26, 26, 26, 0.8)'
+                    : 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(40px) saturate(120%)',
+                  border: isDark
+                    ? '1px solid rgba(255, 255, 255, 0.1)'
+                    : '1px solid rgba(0, 0, 0, 0.08)',
+                }}
+              >
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Email Input - Glass */}
+                  <GlassInput
                     {...register('email', {
                       required: 'Email is required',
                       validate: (value) => validateEmail(value) || 'Please enter a valid email address',
@@ -209,64 +282,46 @@ export default function ForgotPassword() {
                     ref={emailInputRef}
                     type="email"
                     id="email"
+                    label="Email"
                     placeholder="name@example.com"
                     autoComplete="email"
-                    className={errors.email ? 'error' : ''}
+                    icon={<Mail className="w-5 h-5" />}
+                    error={errors.email?.message}
                     aria-invalid={errors.email ? 'true' : 'false'}
                   />
-                  {errors.email && (
-                    <p className="apple-error-message">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
 
-                {/* Error Message */}
-                <AnimatePresence>
-                  {submitError && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="apple-error-message"
-                      style={{ marginBottom: '16px' }}
-                    >
-                      <AlertCircle className="w-4 h-4" />
-                      {submitError}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  {/* Error Message */}
+                  <AnimatePresence>
+                    {submitError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="flex items-center gap-2 p-3 rounded-xl"
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.15)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          color: '#F87171',
+                        }}
+                      >
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">{submitError}</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                {/* Send Reset Link Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="apple-primary-button"
-                >
-                  {isLoading ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                      <div className="apple-spinner" />
-                      <span>Sending...</span>
-                    </div>
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </button>
-              </form>
-
-              {/* Back to Sign In Link */}
-              <div className="text-center mt-6">
-                <Link
-                  to="/login"
-                  className="apple-link"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  onClick={() => triggerHaptic('light')}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Sign In
-                </Link>
-              </div>
+                  {/* Send Reset Link Button - Glass */}
+                  <GlassButton
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    disabled={isLoading}
+                    icon={isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
+                  >
+                    {isLoading ? 'Sending...' : 'Send Reset Link'}
+                  </GlassButton>
+                </form>
+              </GlassCard>
             </motion.div>
           )}
         </AnimatePresence>

@@ -15,10 +15,13 @@ export async function ensureBucketExists(): Promise<boolean> {
       // If we can't list buckets (permission issue), assume bucket exists or will be created by admin
       // Don't log as error - this is expected for non-admin users
       if (listError.message?.includes('permission') || listError.message?.includes('policy') || listError.message?.includes('RLS')) {
-        console.log(`Cannot list buckets (permission issue) - assuming "${BUCKET_NAME}" exists or will be created by admin`);
+        // Silent - this is expected for regular users
         return true; // Assume bucket exists to prevent errors
       }
-      console.warn('Error listing buckets:', listError);
+      // Only warn for unexpected errors
+      if (!listError.message?.includes('not found')) {
+        console.warn('Storage setup notice:', listError.message);
+      }
       return false;
     }
 
@@ -41,17 +44,19 @@ export async function ensureBucketExists(): Promise<boolean> {
     if (error) {
       // If it's a permission/RLS error, that's expected - bucket should be created by admin
       if (error.message?.includes('permission') || error.message?.includes('policy') || error.message?.includes('RLS') || error.message?.includes('row-level security')) {
-        console.log(`Cannot create bucket (permission issue) - "${BUCKET_NAME}" should be created by admin. Continuing anyway...`);
+        // Silent - this is expected, bucket should be created manually
         return true; // Return true to allow app to continue
       }
-      
+
       // If bucket already exists (race condition), that's okay
       if (error.message.includes('already exists') || error.message.includes('duplicate')) {
-        console.log(`Bucket "${BUCKET_NAME}" already exists (race condition)`);
         return true;
       }
-      
-      console.warn('Error creating bucket:', error);
+
+      // Only log non-expected errors
+      if (!error.message.includes('not found')) {
+        console.warn('Storage setup notice:', error.message);
+      }
       return false;
     }
 

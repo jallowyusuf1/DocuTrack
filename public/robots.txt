@@ -38,10 +38,13 @@ Allow: /cookies
 Allow: /security
 Allow: /dpa
 Allow: /sitemap
+Allow: /sitemap.xml
 
 # Sitemap location
 Sitemap: https://docutrackr.xyz/sitemap.xml
 
 # Crawl delay (optional - helps prevent server overload)
 Crawl-delay: 1
+
+
 

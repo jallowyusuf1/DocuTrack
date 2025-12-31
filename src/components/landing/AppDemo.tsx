@@ -15,6 +15,9 @@ import {
   Plane,
   Pause,
   Play as PlayIcon,
+  HelpCircle,
+  MessageCircle,
+  Search,
 } from 'lucide-react';
 
 interface DemoSlide {
@@ -23,7 +26,7 @@ interface DemoSlide {
   subtitle: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   description: string;
-  visual: 'ocr' | 'reminders' | 'family' | 'theme' | 'dates' | 'intro';
+  visual: 'ocr' | 'reminders' | 'family' | 'faq' | 'dates' | 'intro';
   accentColor: string;
 }
 
@@ -66,11 +69,11 @@ const slides: DemoSlide[] = [
   },
   {
     id: 5,
-    title: 'Beautiful Themes',
-    subtitle: 'Light & dark mode',
-    icon: Sun,
-    description: 'Premium glass morphism design. Switch themes with a tap.',
-    visual: 'theme',
+    title: 'Help & Support',
+    subtitle: '24/7 assistance',
+    icon: HelpCircle,
+    description: 'Get instant answers to your questions. Comprehensive FAQ and support center.',
+    visual: 'faq',
     accentColor: '#EC4899',
   },
   {
@@ -112,16 +115,16 @@ export default function AppDemo({
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000); // 4 seconds per slide
+    }, 5000); // 5 seconds per slide
 
     return () => clearInterval(timer);
   }, [isPlaying]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      {/* Background */}
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden" style={{ background: '#000000' }}>
+      {/* Background - solid black, no transitions */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background: '#000000',
         }}
@@ -132,10 +135,10 @@ export default function AppDemo({
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
-            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
           >
             {/* Left: Text Content */}
@@ -204,51 +207,12 @@ export default function AppDemo({
               {slide.visual === 'ocr' && <OCRVisual accentColor={slide.accentColor} />}
               {slide.visual === 'reminders' && <RemindersVisual accentColor={slide.accentColor} />}
               {slide.visual === 'family' && <FamilyVisual accentColor={slide.accentColor} />}
-              {slide.visual === 'theme' && <ThemeVisual accentColor={slide.accentColor} />}
+              {slide.visual === 'faq' && <FAQVisual accentColor={slide.accentColor} />}
               {slide.visual === 'dates' && <ImportantDatesVisual accentColor={slide.accentColor} />}
             </motion.div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Pause/Play Button */}
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8 }}
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="absolute top-8 right-8 w-12 h-12 rounded-full flex items-center justify-center"
-          style={{
-            background: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <AnimatePresence mode="wait">
-            {isPlaying ? (
-              <motion.div
-                key="pause"
-                initial={{ scale: 0, rotate: -90 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: 90 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Pause className="w-5 h-5 text-white fill-white" />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="play"
-                initial={{ scale: 0, rotate: 90 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: -90 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PlayIcon className="w-5 h-5 text-white fill-white ml-0.5" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.button>
       </div>
     </div>
   );
@@ -356,50 +320,96 @@ function OCRVisual({ accentColor }: { accentColor: string }) {
 function RemindersVisual({ accentColor }: { accentColor: string }) {
   return (
     <div className="space-y-4">
-      {/* Notification Cards */}
-      {[
-        { days: 7, color: '#EF4444', label: 'Passport expires in 7 days' },
-        { days: 23, color: '#F97316', label: 'License expires in 23 days' },
-        { days: 45, color: '#10B981', label: 'Visa expires in 45 days' },
-      ].map((item, idx) => (
-        <motion.div
-          key={item.label}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 + idx * 0.2 }}
-          className="rounded-2xl p-4"
-          style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: `1px solid ${item.color}44`,
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ background: `${item.color}22` }}
-            >
-              <Bell className="w-6 h-6" style={{ color: item.color }} />
-            </motion.div>
-            <div className="flex-1">
-              <p className="text-white font-medium">{item.label}</p>
-              <p className="text-white/60 text-sm">Tap to renew</p>
-            </div>
-            <div
-              className="px-3 py-1 rounded-full text-sm font-semibold"
-              style={{
-                background: `${item.color}33`,
-                color: item.color,
-              }}
-            >
-              {item.days}d
+      {/* Main Container with Purple Gradient */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-3xl p-6"
+        style={{
+          background: 'linear-gradient(135deg, rgba(88, 86, 214, 0.4) 0%, rgba(139, 92, 246, 0.3) 50%, rgba(59, 130, 246, 0.2) 100%)',
+          border: '1px solid rgba(139, 92, 246, 0.3)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+          boxShadow: '0 20px 60px rgba(88, 86, 214, 0.3)',
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
+          <Bell className="w-5 h-5 text-white" />
+          <span className="text-white font-semibold">Smart reminders</span>
+        </div>
+
+        {/* Description */}
+        <p className="text-white/80 text-sm mb-5">
+          Get notified at 30, 7, and 1 day before expiration - never miss a deadline.
+        </p>
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Upcoming Reminders */}
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
+            <h4 className="text-white/90 font-medium text-sm mb-3">Upcoming reminders</h4>
+            <div className="space-y-2">
+              {[
+                { icon: '🛂', label: 'Passport expires', days: '30 days', color: '#F59E0B' },
+                { icon: '📄', label: 'Insurance renewal', days: '7 days', color: '#F97316' },
+                { icon: '✈️', label: 'Visa expires', days: '1 day', color: '#EF4444' },
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + idx * 0.15 }}
+                  className="flex items-center gap-2 p-2 rounded-lg"
+                  style={{ background: 'rgba(255, 255, 255, 0.05)' }}
+                >
+                  <span className="text-lg">{item.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white/80 text-xs truncate">{item.label}</p>
+                  </div>
+                  <span
+                    className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+                    style={{ background: `${item.color}33`, color: item.color }}
+                  >
+                    {item.days}
+                  </span>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </motion.div>
-      ))}
+
+          {/* Notification Settings */}
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
+            <h4 className="text-white/90 font-medium text-sm mb-3">Notification settings</h4>
+            <div className="space-y-2">
+              {[
+                { label: '30 days before' },
+                { label: '7 days before' },
+                { label: '1 day before' },
+                { label: 'On expiration day' },
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + idx * 0.15 }}
+                  className="flex items-center justify-between p-2 rounded-lg"
+                  style={{ background: 'rgba(255, 255, 255, 0.05)' }}
+                >
+                  <span className="text-white/70 text-xs">{item.label}</span>
+                  <div
+                    className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                    style={{ background: 'rgba(16, 185, 129, 0.3)', color: '#10B981' }}
+                  >
+                    On
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -465,107 +475,101 @@ function FamilyVisual({ accentColor }: { accentColor: string }) {
   );
 }
 
-function ThemeVisual({ accentColor }: { accentColor: string }) {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIsDark((prev) => !prev);
-    }, 2000);
-
-    return () => clearInterval(timer);
-  }, []);
+function FAQVisual({ accentColor }: { accentColor: string }) {
+  const faqs = [
+    { question: 'How secure is my data?', category: 'Security' },
+    { question: 'Can I share documents?', category: 'Features' },
+    { question: 'How do reminders work?', category: 'Notifications' },
+  ];
 
   return (
-    <motion.div
-      animate={{
-        background: isDark ? '#000000' : '#FFFFFF',
-      }}
-      transition={{ duration: 0.8 }}
-      className="rounded-3xl p-8"
-      style={{
-        border: '1px solid rgba(128, 128, 128, 0.2)',
-      }}
-    >
-      {/* Theme Toggle */}
-      <div className="flex justify-center mb-6">
-        <motion.div
-          animate={{
-            background: isDark
-              ? 'rgba(96, 165, 250, 0.2)'
-              : 'rgba(251, 191, 36, 0.2)',
-          }}
-          className="rounded-full p-3"
-        >
-          <AnimatePresence mode="wait">
-            {isDark ? (
-              <motion.div
-                key="moon"
-                initial={{ rotate: -180, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 180, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Moon className="w-8 h-8" style={{ color: '#60A5FA' }} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="sun"
-                initial={{ rotate: -180, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 180, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Sun className="w-8 h-8" style={{ color: '#FBBF24' }} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-2xl p-4 flex items-center gap-3"
+        style={{
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: `1px solid ${accentColor}44`,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+      >
+        <Search className="w-5 h-5" style={{ color: accentColor }} />
+        <input
+          type="text"
+          placeholder="Search help articles..."
+          disabled
+          className="flex-1 bg-transparent text-white/70 text-sm outline-none"
+          style={{ caretColor: accentColor }}
+        />
+      </motion.div>
 
-      {/* Sample Cards */}
-      <div className="space-y-3">
-        {[1, 2].map((i) => (
-          <motion.div
-            key={i}
-            animate={{
-              background: isDark
-                ? 'rgba(255, 255, 255, 0.05)'
-                : 'rgba(0, 0, 0, 0.05)',
-              borderColor: isDark
-                ? 'rgba(255, 255, 255, 0.1)'
-                : 'rgba(0, 0, 0, 0.1)',
-            }}
-            transition={{ duration: 0.8 }}
-            className="rounded-xl p-4"
-            style={{
-              border: '1px solid',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-            }}
-          >
+      {/* FAQ Items */}
+      {faqs.map((faq, idx) => (
+        <motion.div
+          key={faq.question}
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 + idx * 0.2 }}
+          className="rounded-2xl p-5 overflow-hidden"
+          style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+          }}
+        >
+          <div className="flex items-start gap-3">
             <motion.div
-              animate={{
-                color: isDark ? '#FFFFFF' : '#000000',
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear', delay: idx * 0.5 }}
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{
+                background: `${accentColor}22`,
+                border: `1px solid ${accentColor}66`,
               }}
-              className="font-medium"
             >
-              Document {i}
+              <HelpCircle className="w-5 h-5" style={{ color: accentColor }} />
             </motion.div>
-            <motion.div
-              animate={{
-                color: isDark
-                  ? 'rgba(255, 255, 255, 0.6)'
-                  : 'rgba(0, 0, 0, 0.6)',
-              }}
-              className="text-sm mt-1"
-            >
-              Glass morphism styling
-            </motion.div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
+            <div className="flex-1">
+              <p className="text-white font-medium text-sm mb-1">{faq.question}</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-xs px-2 py-1 rounded-full"
+                  style={{
+                    background: `${accentColor}22`,
+                    color: accentColor,
+                  }}
+                >
+                  {faq.category}
+                </span>
+                <MessageCircle className="w-4 h-4 text-white/40" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+
+      {/* Help Footer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2 }}
+        className="rounded-xl p-4 text-center"
+        style={{
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+        }}
+      >
+        <p className="text-white/60 text-sm">Need more help?</p>
+        <p className="text-white font-medium text-sm" style={{ color: accentColor }}>
+          Contact Support 24/7
+        </p>
+      </motion.div>
+    </div>
   );
 }
 
