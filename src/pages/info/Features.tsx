@@ -70,7 +70,7 @@ export default function Features() {
       </div>
       {/* Header */}
       <header
-        className="sticky top-0 z-10 px-5 py-4 flex items-center gap-4"
+        className="sticky top-0 z-10 px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 sm:gap-4"
         style={{
           background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.3) 100%)',
           border: '1px solid rgba(255,255,255,0.15)',
@@ -86,7 +86,7 @@ export default function Features() {
             triggerHaptic('light');
             navigate(-1);
           }}
-          className="p-2 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 rounded-lg transition-colors"
           style={{
             background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
             border: '1px solid rgba(255,255,255,0.16)',
@@ -95,11 +95,11 @@ export default function Features() {
             boxShadow: '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
           }}
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </motion.button>
-        <div className="flex items-center gap-3">
-          <Zap className="w-6 h-6 text-white/80" />
-          <h1 className="text-xl font-bold text-white">Features</h1>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white/80" />
+          <h1 className="text-lg sm:text-xl font-bold text-white">Features</h1>
         </div>
       </header>
 
@@ -107,16 +107,16 @@ export default function Features() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="px-5 py-6 max-w-4xl mx-auto relative z-10"
+        className="px-4 sm:px-5 py-5 sm:py-6 max-w-4xl mx-auto relative z-10"
       >
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-4">Everything You Need to Manage Documents</h2>
-          <p className="text-white/80 text-lg">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">Everything You Need to Manage Documents</h2>
+          <p className="text-white/80 text-base sm:text-lg">
             DocuTrackr provides all the tools you need to stay organized and never miss an important deadline.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -125,7 +125,7 @@ export default function Features() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="rounded-2xl p-6"
+                className="rounded-xl sm:rounded-2xl p-4 sm:p-6"
                 style={{
                   background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.3) 100%)',
                   border: '1px solid rgba(255,255,255,0.15)',
@@ -134,9 +134,9 @@ export default function Features() {
                   boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08), inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)',
                 }}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{
                       background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
                       border: '1px solid rgba(255,255,255,0.16)',
@@ -145,11 +145,11 @@ export default function Features() {
                       boxShadow: '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
                     }}
                   >
-                    <Icon className="w-6 h-6 text-white/80" />
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white/80" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                    <p className="text-white/70 text-sm leading-relaxed">{feature.description}</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-1.5 sm:mb-2">{feature.title}</h3>
+                    <p className="text-white/70 text-xs sm:text-sm leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
               </motion.div>
@@ -162,13 +162,13 @@ export default function Features() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="mt-12 text-center"
+          className="mt-8 sm:mt-12 text-center"
         >
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/signup')}
-            className="px-8 py-4 text-base font-bold rounded-full"
+            className="px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold rounded-full w-full sm:w-auto"
             style={{
               background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
               border: '1px solid rgba(255,255,255,0.16)',

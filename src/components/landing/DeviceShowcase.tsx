@@ -15,7 +15,6 @@ export default function DeviceShowcase({ onComplete }: DeviceShowcaseProps) {
   const [showRipple, setShowRipple] = useState(false);
   const [documentCount, setDocumentCount] = useState(47);
   const [cycleCount, setCycleCount] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
@@ -27,7 +26,7 @@ export default function DeviceShowcase({ onComplete }: DeviceShowcaseProps) {
 
   // Master Timeline - 20 seconds exactly
   useEffect(() => {
-    if (!isLoaded || isPaused || prefersReducedMotion) return;
+    if (!isLoaded || prefersReducedMotion) return;
 
     const timeline = async () => {
       // SCENE 1: iPhone Introduction (0-4s)
@@ -81,7 +80,7 @@ export default function DeviceShowcase({ onComplete }: DeviceShowcaseProps) {
     };
 
     timeline();
-  }, [isLoaded, cycleCount, isPaused, prefersReducedMotion]);
+  }, [isLoaded, cycleCount, prefersReducedMotion]);
 
   // Reduced motion fallback
   if (prefersReducedMotion) {
@@ -599,33 +598,6 @@ export default function DeviceShowcase({ onComplete }: DeviceShowcaseProps) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Pause/Play Button */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        onClick={() => setIsPaused(!isPaused)}
-        className="absolute bottom-6 right-6 z-50 w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-        style={{
-          background: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(40px)',
-          border: '0.5px solid rgba(0, 0, 0, 0.1)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        }}
-        aria-label={isPaused ? 'Play animation' : 'Pause animation'}
-      >
-        {isPaused ? (
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="#8B5CF6">
-            <path d="M5 3l12 7-12 7V3z" />
-          </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="#8B5CF6">
-            <rect x="5" y="3" width="3" height="14" rx="1" />
-            <rect x="12" y="3" width="3" height="14" rx="1" />
-          </svg>
-        )}
-      </motion.button>
     </div>
   );
 }

@@ -45,8 +45,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       // Apply theme to document immediately
       if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', theme);
-        document.body.setAttribute('data-theme', theme);
+        if (document.documentElement) {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        if (document.body) {
+          document.body.setAttribute('data-theme', theme);
+        }
       }
       // Save to localStorage with standard key
       if (typeof window !== 'undefined' && window.localStorage) {

@@ -106,8 +106,17 @@ export default function Signup() {
         fullName: data.fullName,
       });
 
+      if (result?.user?.id) {
+        // Log terms acceptance - try even if no session (will be saved when user confirms email)
+        try {
+          await logTermsAcceptance(result.user.id);
+        } catch (error) {
+          // Non-critical - terms acceptance logging failed, but signup succeeded
+          console.warn('Failed to log terms acceptance:', error);
+        }
+      }
+
       if (result?.session && result.user?.id) {
-        await logTermsAcceptance(result.user.id);
         await checkAuth();
         triggerHaptic('medium');
         // Mark onboarding active so authenticated redirect doesn't jump to dashboard.

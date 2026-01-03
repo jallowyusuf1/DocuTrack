@@ -82,51 +82,79 @@ export const authService = {
       }
       if (!authData.user) throw new Error('Failed to create user');
 
-    // The trigger will automatically create the profile
-    // Wait a moment for the trigger to execute
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Set the session immediately if we have one to ensure RLS policies work
+    if (authData.session) {
+      await supabase.auth.setSession(authData.session);
+    }
 
-    // If we have a session, try to update the profile with full_name
+    // Create or update user profile - ensure data is saved to Supabase
     let profileData = null;
     
     if (authData.session) {
-      // Set the session to ensure RLS policies work
-      await supabase.auth.setSession(authData.session);
-      
-      // Try to update the profile with full_name
-      // The trigger creates it with NULL, so we update it here
-      const { data: updatedProfile, error: updateError } = await supabase
+      // We have a session, so we can create/update the profile immediately
+      // First, check if profile exists
+      const { data: existingProfile } = await supabase
         .from('user_profiles')
-        .update({ full_name: fullName, date_of_birth: dateOfBirth, account_role: accountRole })
-        .eq('user_id', authData.user.id)
         .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
-        .single();
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
       
-      if (!updateError && updatedProfile) {
-        profileData = updatedProfile;
-      } else {
-        // If update fails, try to fetch the profile (created by trigger)
-        const { data: fetchedProfile } = await supabase
+      if (existingProfile) {
+        // Profile exists, update it with the signup data
+        const { data: updatedProfile, error: updateError } = await supabase
           .from('user_profiles')
-          .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+          .update({ 
+            full_name: fullName, 
+            date_of_birth: dateOfBirth, 
+            account_role: accountRole,
+            updated_at: new Date().toISOString()
+          })
           .eq('user_id', authData.user.id)
-          .maybeSingle();
+          .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+          .single();
         
-        profileData = fetchedProfile || {
-          id: '',
-          user_id: authData.user.id,
-          full_name: fullName,
-          date_of_birth: dateOfBirth,
-          age_years: null,
-          account_role: accountRole,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+        if (!updateError && updatedProfile) {
+          profileData = updatedProfile;
+        } else {
+          // Update failed, use existing profile
+          profileData = existingProfile;
+        }
+      } else {
+        // Profile doesn't exist, create it
+        const { data: newProfile, error: createError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: authData.user.id,
+            full_name: fullName,
+            date_of_birth: dateOfBirth,
+            account_role: accountRole,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+          .single();
+        
+        if (!createError && newProfile) {
+          profileData = newProfile;
+        } else {
+          // Create failed, return placeholder but log error
+          console.error('Failed to create user profile:', createError);
+          profileData = {
+            id: '',
+            user_id: authData.user.id,
+            full_name: fullName,
+            date_of_birth: dateOfBirth,
+            age_years: null,
+            account_role: accountRole,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+        }
       }
     } else {
       // No session (email confirmation required)
-      // Profile will be created by trigger, but we can't update it yet
-      // Return a placeholder - profile will be updated on first login
+      // We can't create the profile yet due to RLS, but store metadata
+      // Profile will be created/updated on first login
       profileData = {
         id: '',
         user_id: authData.user.id,
@@ -195,69 +223,73 @@ export const authService = {
       }
       if (!data.user) throw new Error('Login failed');
 
-      // Fetch user profile - non-blocking, don't wait if it takes too long
+      // Fetch or create user profile - ensure data is saved to Supabase
       let profile = null;
       try {
-        // Add timeout for profile fetch (3 seconds max)
-        const profileResult = await Promise.race([
-          supabase
-            .from('user_profiles')
-            .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
-            .eq('user_id', data.user.id)
-            .maybeSingle(),
-          new Promise<{ data: null; error: null }>((resolve) => {
-            setTimeout(() => resolve({ data: null, error: null }), 3000);
-          })
-        ]);
+        // Fetch existing profile
+        const { data: existingProfile, error: fetchError } = await supabase
+          .from('user_profiles')
+          .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
         
-        if (profileResult.data) {
-          profile = profileResult.data;
-        } else if (profileResult.error) {
-          const profileError = profileResult.error;
-          if (profileError.code === 'PGRST116') {
-            // Profile doesn't exist - try once more quickly (1 second timeout)
-            const retryResult = await Promise.race([
-              supabase
-                .from('user_profiles')
-                .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
-                .eq('user_id', data.user.id)
-                .maybeSingle(),
-              new Promise<{ data: null; error: null }>((resolve) => {
-                setTimeout(() => resolve({ data: null, error: null }), 1000);
-              })
-            ]);
-
-            if (retryResult.data) {
-              profile = retryResult.data;
+        if (existingProfile) {
+          profile = existingProfile;
+          
+          // If profile exists but is missing data from metadata, update it
+          const metadata = data.user.user_metadata as any;
+          const needsUpdate = 
+            (metadata?.full_name && !profile.full_name) ||
+            (metadata?.date_of_birth && !profile.date_of_birth) ||
+            (metadata?.account_role && !profile.account_role);
+          
+          if (needsUpdate) {
+            const updateData: any = { updated_at: new Date().toISOString() };
+            if (metadata?.full_name && !profile.full_name) updateData.full_name = metadata.full_name;
+            if (metadata?.date_of_birth && !profile.date_of_birth) updateData.date_of_birth = metadata.date_of_birth;
+            if (metadata?.account_role && !profile.account_role) updateData.account_role = metadata.account_role;
+            
+            const { data: updatedProfile } = await supabase
+              .from('user_profiles')
+              .update(updateData)
+              .eq('user_id', data.user.id)
+              .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+              .single();
+            
+            if (updatedProfile) {
+              profile = updatedProfile;
             }
-          } else if (import.meta.env.MODE === 'development') {
-            // Only log in development mode to reduce console noise
-            console.debug('[Profile] Fetch error (non-critical):', profileError.message);
           }
+        } else if (fetchError?.code === 'PGRST116' || !existingProfile) {
+          // Profile doesn't exist - create it from auth metadata
+          const metadata = data.user.user_metadata as any;
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: data.user.id,
+              full_name: metadata?.full_name || data.user.email?.split('@')[0] || null,
+              date_of_birth: metadata?.date_of_birth || null,
+              account_role: metadata?.account_role || 'user',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
+            .single();
+          
+          if (!createError && newProfile) {
+            profile = newProfile;
+          } else {
+            console.error('Failed to create user profile during login:', createError);
+          }
+        } else if (fetchError && import.meta.env.MODE === 'development') {
+          console.debug('[Profile] Fetch error (non-critical):', fetchError.message);
         }
       } catch (error) {
-        // Profile fetch failed, but login should still succeed
+        // Profile fetch/create failed, but login should still succeed
         if (import.meta.env.MODE === 'development') {
-          console.debug('[Profile] Fetch exception during login (non-critical):', error instanceof Error ? error.message : error);
+          console.debug('[Profile] Exception during login (non-critical):', error instanceof Error ? error.message : error);
         }
         profile = null;
-      }
-
-      // If signup happened with email confirmation, we might only have metadata at first login.
-      // Best-effort: backfill profile DOB from auth metadata.
-      try {
-        const dob = (data.user.user_metadata as any)?.date_of_birth as string | undefined;
-        if (dob && (!profile || !(profile as any).date_of_birth)) {
-          const { data: updated } = await supabase
-            .from('user_profiles')
-            .update({ date_of_birth: dob })
-            .eq('user_id', data.user.id)
-            .select('id, user_id, full_name, date_of_birth, age_years, account_role, created_at, updated_at')
-            .maybeSingle();
-          if (updated) profile = updated;
-        }
-      } catch {
-        // ignore
       }
 
       return {

@@ -70,7 +70,7 @@ export default function HelpCenter() {
       </div>
       {/* Header */}
       <header
-        className="sticky top-0 z-10 px-5 py-4 flex items-center gap-4"
+        className="sticky top-0 z-10 px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 sm:gap-4"
         style={{
           background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(0,0,0,0.3) 100%)',
           border: '1px solid rgba(255,255,255,0.15)',
@@ -86,7 +86,7 @@ export default function HelpCenter() {
             triggerHaptic('light');
             navigate(-1);
           }}
-          className="p-2 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 rounded-lg transition-colors"
           style={{
             background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 45%, rgba(255,255,255,0.04) 100%)',
             border: '1px solid rgba(255,255,255,0.16)',
@@ -95,11 +95,11 @@ export default function HelpCenter() {
             boxShadow: '0 18px 55px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.18)',
           }}
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </motion.button>
-        <div className="flex items-center gap-3">
-          <HelpCircle className="w-6 h-6 text-white/80" />
-          <h1 className="text-xl font-bold text-white">Help Center</h1>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white/80" />
+          <h1 className="text-lg sm:text-xl font-bold text-white">Help Center</h1>
         </div>
       </header>
 
@@ -107,7 +107,7 @@ export default function HelpCenter() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="px-5 py-6 max-w-4xl mx-auto relative z-10"
+        className="px-4 sm:px-5 py-5 sm:py-6 max-w-4xl mx-auto relative z-10"
       >
         {/* Search */}
         <div className="mb-8">

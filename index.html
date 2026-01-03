@@ -59,25 +59,41 @@
         try {
           // Check stored preference first
           var stored = localStorage.getItem('theme');
+          var theme = 'dark'; // default
+          
           if (stored === 'light' || stored === 'dark') {
-            document.documentElement.setAttribute('data-theme', stored);
-            document.body.setAttribute('data-theme', stored);
-            return;
+            theme = stored;
+          } else if (window.matchMedia) {
+            // Check system preference
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
           }
-          // Check system preference
-          if (window.matchMedia) {
-            var systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', systemPreference);
-            document.body.setAttribute('data-theme', systemPreference);
-            return;
+          
+          // Set theme on documentElement (always exists)
+          if (document.documentElement) {
+            document.documentElement.setAttribute('data-theme', theme);
           }
-          // Default to dark
-          document.documentElement.setAttribute('data-theme', 'dark');
-          document.body.setAttribute('data-theme', 'dark');
+          
+          // Set theme on body if it exists (may not exist yet in head)
+          if (document.body) {
+            document.body.setAttribute('data-theme', theme);
+          } else {
+            // Body doesn't exist yet, set it when DOM is ready
+            if (document.addEventListener) {
+              document.addEventListener('DOMContentLoaded', function() {
+                if (document.body) {
+                  document.body.setAttribute('data-theme', theme);
+                }
+              });
+            }
+          }
         } catch (e) {
           // Silently fail and default to dark
-          document.documentElement.setAttribute('data-theme', 'dark');
-          document.body.setAttribute('data-theme', 'dark');
+          if (document.documentElement) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+          if (document.body) {
+            document.body.setAttribute('data-theme', 'dark');
+          }
         }
       })();
     </script>

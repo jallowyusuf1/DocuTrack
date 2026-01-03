@@ -36,7 +36,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 md:px-6 pb-12 md:pb-16">
         <MotionInView preset="fadeUp">
           <GlassCard
-            className="p-6 md:p-8"
+            className="p-4 sm:p-6 md:p-8"
             style={{
               borderRadius: 30,
               background:
@@ -44,13 +44,13 @@ export default function Footer() {
               border: '1px solid rgba(255,255,255,0.12)',
             }}
           >
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 sm:gap-8">
               <div className="max-w-md">
-                <div className="text-white font-semibold text-lg">DocuTrackr</div>
-                <div className="text-white/65 text-sm mt-2 leading-relaxed">
+                <div className="text-white font-semibold text-base sm:text-lg">DocuTrackr</div>
+                <div className="text-white/65 text-xs sm:text-sm mt-2 leading-relaxed">
                   Track important documents, expiry dates, and life deadlines with a calm, glass‑smooth experience.
                 </div>
-                <div className="mt-4 flex items-center gap-3">
+                <div className="mt-3 sm:mt-4 flex items-center gap-2 sm:gap-3 flex-wrap">
                   <SocialIcon type="instagram" href="https://instagram.com" label="Instagram" />
                   <SocialIcon type="tiktok" href="https://tiktok.com" label="TikTok" />
                   <SocialIcon type="linkedin" href="https://linkedin.com" label="LinkedIn" />
@@ -59,7 +59,7 @@ export default function Footer() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-xs sm:text-sm w-full lg:w-auto">
                 <div className="space-y-2">
                   <div className="text-white/85 font-semibold">Product</div>
                   <a href="#overview" className="block text-white/65 hover:text-white transition-colors">
@@ -130,11 +130,11 @@ export default function Footer() {
             </div>
 
             <div
-              className="mt-8 pt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+              className="mt-6 sm:mt-8 pt-4 sm:pt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
               style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}
             >
-              <div className="text-white/55 text-xs">© {new Date().getFullYear()} DocuTrackr. All rights reserved.</div>
-              <div className="flex items-center gap-3 language-picker-container">
+              <div className="text-white/55 text-[10px] sm:text-xs">© {new Date().getFullYear()} DocuTrackr. All rights reserved.</div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 language-picker-container">
                 <div className="relative">
                   <button
                     type="button"
@@ -143,14 +143,14 @@ export default function Footer() {
                       triggerHaptic('light');
                       setShowLanguagePicker(!showLanguagePicker);
                     }}
-                    className="flex items-center gap-2 text-white/55 hover:text-white text-xs transition-colors"
+                    className="flex items-center gap-2 text-white/55 hover:text-white text-[10px] sm:text-xs transition-colors"
                   >
-                    <Globe className="w-4 h-4" />
+                    <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>{languages.find((l) => l.code === language)?.name || 'English'}</span>
                   </button>
                   {showLanguagePicker && (
                     <div
-                      className="absolute bottom-full right-0 mb-2 rounded-2xl p-3 min-w-[200px] z-50"
+                      className="absolute bottom-full left-0 sm:right-0 sm:left-auto mb-2 rounded-2xl p-2 sm:p-3 min-w-[180px] sm:min-w-[200px] z-50"
                       style={{
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.08) 100%)',
                         border: '1px solid rgba(255,255,255,0.18)',
@@ -199,7 +199,7 @@ export default function Footer() {
                     </div>
                   )}
                 </div>
-                <div className="text-white/55 text-xs">Built to feel like a billion‑dollar product.</div>
+                <div className="text-white/55 text-[10px] sm:text-xs leading-relaxed">Built to feel like a billion‑dollar product.</div>
               </div>
             </div>
           </GlassCard>

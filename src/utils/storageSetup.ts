@@ -28,13 +28,13 @@ export async function ensureBucketExists(): Promise<boolean> {
     const bucketExists = buckets?.some(bucket => bucket.name === BUCKET_NAME);
     
     if (bucketExists) {
-      console.log(`Bucket "${BUCKET_NAME}" already exists`);
+      // Silent - bucket exists, no action needed
       return true;
     }
 
     // Only try to create bucket if we have permission
     // Most users won't have this permission - bucket should be created by admin
-    console.log(`Bucket "${BUCKET_NAME}" not found. Attempting to create...`);
+    // Don't log - this is expected behavior for non-admin users
     const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
       public: false, // PRIVATE bucket for security - requires signed URLs
       fileSizeLimit: 10485760, // 10MB
@@ -44,7 +44,7 @@ export async function ensureBucketExists(): Promise<boolean> {
     if (error) {
       // If it's a permission/RLS error, that's expected - bucket should be created by admin
       if (error.message?.includes('permission') || error.message?.includes('policy') || error.message?.includes('RLS') || error.message?.includes('row-level security')) {
-        // Silent - this is expected, bucket should be created manually
+        // Silent - this is expected, bucket should be created manually by admin
         return true; // Return true to allow app to continue
       }
 
@@ -53,14 +53,17 @@ export async function ensureBucketExists(): Promise<boolean> {
         return true;
       }
 
-      // Only log non-expected errors
-      if (!error.message.includes('not found')) {
-        console.warn('Storage setup notice:', error.message);
+      // Only log unexpected errors in development
+      if (import.meta.env.MODE === 'development' && !error.message.includes('not found')) {
+        console.debug('Storage setup notice:', error.message);
       }
       return false;
     }
 
-    console.log(`Bucket "${BUCKET_NAME}" created successfully`);
+    // Only log success in development
+    if (import.meta.env.MODE === 'development') {
+      console.log(`Bucket "${BUCKET_NAME}" created successfully`);
+    }
     return true;
   } catch (error) {
     // Catch all errors gracefully - don't break the app if bucket setup fails
