@@ -12,7 +12,6 @@ import { GlassBackground } from '../../components/ui/glass/GlassBackground';
 import { GlassButton, GlassCard, GlassPill } from '../../components/ui/glass/Glass';
 import AuthGlassNav from '../../components/layout/AuthGlassNav';
 import BrandLogo from '../../components/ui/BrandLogo';
-import SocialAuthButtons from '../../components/auth/SocialAuthButtons';
 
 interface LoginFormData {
   email: string;
@@ -401,13 +400,6 @@ export default function Login() {
                       </>
                     )}
                   </GlassButton>
-
-                  <SocialAuthButtons
-                    mode="login"
-                    onAuthError={(provider, error) => {
-                      setSubmitError(`Failed to connect with ${provider}. ${error}`);
-                    }}
-                  />
 
                   <div className="pt-2 text-center text-white/70 text-sm">
                     New here?{' '}

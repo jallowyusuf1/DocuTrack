@@ -14,7 +14,6 @@ import { GlassButton, GlassCard, GlassPill, GlassTile } from '../../components/u
 import AuthGlassNav from '../../components/layout/AuthGlassNav';
 import { calculateAgeYears } from '../../utils/age';
 import BrandLogo from '../../components/ui/BrandLogo';
-import SocialAuthButtons from '../../components/auth/SocialAuthButtons';
 
 interface SignupFormData {
   fullName: string;
@@ -449,13 +448,6 @@ export default function Signup() {
                       </>
                     )}
                   </GlassButton>
-
-                  <SocialAuthButtons
-                    mode="signup"
-                    onAuthError={(provider, error) => {
-                      setSubmitError(`Failed to connect with ${provider}. ${error}`);
-                    }}
-                  />
 
                   <div className="pt-2 text-center text-white/70 text-sm">
                     Already have an account?{' '}
