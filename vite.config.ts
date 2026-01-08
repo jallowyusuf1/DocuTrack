@@ -21,6 +21,7 @@ export default defineConfig({
     sourcemap: false,
     minify: 'esbuild',
     chunkSizeWarningLimit: 600,
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         // Use deterministic chunk names for better caching
