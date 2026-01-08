@@ -23,30 +23,34 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        // Use deterministic chunk names for better caching
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: (id) => {
-          // React and React Router
+          // React and React Router - stable chunk name
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
             return 'react-vendor';
           }
-          // Supabase
+          // Supabase - stable chunk name
           if (id.includes('node_modules/@supabase')) {
             return 'supabase-vendor';
           }
-          // Framer Motion
+          // Framer Motion - stable chunk name
           if (id.includes('node_modules/framer-motion')) {
             return 'framer-motion-vendor';
           }
-          // Large document-related chunks
+          // Large document-related chunks - stable chunk names
           if (id.includes('pages/documents') && id.includes('ComprehensiveDocumentDetail')) {
             return 'document-detail';
           }
-          if (id.includes('pages/documents') && id.includes('Documents')) {
+          if (id.includes('pages/documents') && (id.includes('Documents.tsx') || id.includes('Documents.jsx'))) {
             return 'documents-page';
           }
           if (id.includes('pages/settings') && id.includes('DesktopSettings')) {
             return 'settings-page';
           }
-          // Landing page
+          // Landing page - stable chunk name
           if (id.includes('pages/landing')) {
             return 'landing-page';
           }
