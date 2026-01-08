@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import AuthProvider from './components/auth/AuthProvider';
+import HelpProvider from './components/help/HelpProvider';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -420,9 +421,11 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
+          <HelpProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </HelpProvider>
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
