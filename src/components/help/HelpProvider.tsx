@@ -51,8 +51,6 @@ export default function HelpProvider({ children }: HelpProviderProps) {
           setIsShortcutsModalOpen(false);
         } else if (isLiveChatOpen) {
           setIsLiveChatOpen(false);
-        } else if (isLiveChatOpen) {
-          setIsLiveChatOpen(false);
         } else if (isContactModalOpen) {
           setIsContactModalOpen(false);
         } else if (isHelpPanelOpen) {

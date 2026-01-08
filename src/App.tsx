@@ -421,11 +421,11 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
-          <HelpProvider>
-            <BrowserRouter>
+          <BrowserRouter>
+            <HelpProvider>
               <AppRoutes />
-            </BrowserRouter>
-          </HelpProvider>
+            </HelpProvider>
+          </BrowserRouter>
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
