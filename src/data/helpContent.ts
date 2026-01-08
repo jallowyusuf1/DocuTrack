@@ -134,33 +134,34 @@ From now on, you'll need both your password and the code from your authenticator
 ];
 
 // Video Tutorials
+// Note: Replace 'placeholder' with actual YouTube video IDs when videos are created
 export const videoTutorials: VideoTutorial[] = [
   {
     id: 'getting-started',
     title: 'Getting Started with DocuTrackr',
     duration: '2 min',
-    youtubeId: 'placeholder', // Replace with actual YouTube ID
+    youtubeId: 'placeholder', // Replace with actual YouTube ID (e.g., 'dQw4w9WgXcQ')
     description: 'Learn the basics of DocuTrackr in just 2 minutes. Perfect for new users.',
   },
   {
     id: 'ocr-scanning',
     title: 'Scanning Documents with OCR',
     duration: '3 min',
-    youtubeId: 'placeholder',
+    youtubeId: 'placeholder', // Replace with actual YouTube ID
     description: 'Discover how to use OCR to automatically extract information from your documents.',
   },
   {
     id: 'family-sharing-tutorial',
     title: 'Setting Up Family Sharing',
     duration: '4 min',
-    youtubeId: 'placeholder',
+    youtubeId: 'placeholder', // Replace with actual YouTube ID
     description: 'Learn how to securely share documents with family members and manage permissions.',
   },
   {
     id: 'reminders-tutorial',
     title: 'Managing Reminders',
     duration: '2 min',
-    youtubeId: 'placeholder',
+    youtubeId: 'placeholder', // Replace with actual YouTube ID
     description: 'Set up and customize expiry reminders so you never miss an important deadline.',
   },
 ];

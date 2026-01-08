@@ -83,7 +83,7 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
 
         {/* Modal */}
         <motion.div
-          className="relative w-full max-w-md rounded-3xl overflow-hidden"
+          className="relative w-full max-w-md m-4 rounded-2xl sm:rounded-3xl overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
             backdropFilter: 'blur(40px) saturate(180%)',
@@ -97,22 +97,22 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <h2 className="text-white text-xl font-bold">Contact Support</h2>
+          <div className="flex items-center justify-between p-4 sm:p-5 md:p-6 border-b border-white/10 flex-shrink-0">
+            <h2 className="text-white text-lg sm:text-xl font-bold pr-2">Contact Support</h2>
             <button
               onClick={() => {
                 triggerHaptic('light');
                 onClose();
               }}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
               aria-label="Close modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6">
             {isSubmitted ? (
               <motion.div
                 className="text-center py-8"
@@ -131,10 +131,10 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
                 </p>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 {/* Subject */}
                 <div>
-                  <label className="block text-white/70 text-sm mb-2" htmlFor="subject">
+                  <label className="block text-white/70 text-xs sm:text-sm mb-1.5 sm:mb-2" htmlFor="subject">
                     Subject
                   </label>
                   <input
@@ -143,14 +143,14 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl text-white placeholder:text-white/50 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base text-white placeholder:text-white/50 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                     placeholder="What do you need help with?"
                   />
                 </div>
 
                 {/* Category */}
                 <div>
-                  <label className="block text-white/70 text-sm mb-2" htmlFor="category">
+                  <label className="block text-white/70 text-xs sm:text-sm mb-1.5 sm:mb-2" htmlFor="category">
                     Category
                   </label>
                   <select
@@ -158,7 +158,7 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
                     required
                     value={formData.category}
                     onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl text-white bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base text-white bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                   >
                     {supportCategories.map((cat) => (
                       <option key={cat} value={cat} className="bg-gray-900 text-white">
@@ -170,7 +170,7 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
 
                 {/* Message */}
                 <div>
-                  <label className="block text-white/70 text-sm mb-2" htmlFor="message">
+                  <label className="block text-white/70 text-xs sm:text-sm mb-1.5 sm:mb-2" htmlFor="message">
                     Message
                   </label>
                   <textarea
@@ -178,9 +178,9 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
                     required
                     value={formData.message}
                     onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
-                    rows={5}
+                    rows={4}
                     maxLength={500}
-                    className="w-full px-4 py-3 rounded-xl text-white placeholder:text-white/50 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base text-white placeholder:text-white/50 bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none"
                     placeholder="Describe your issue or question..."
                   />
                   <div className="text-right text-white/50 text-xs mt-1">
@@ -190,11 +190,11 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
 
                 {/* Attachments */}
                 <div>
-                  <label className="block text-white/70 text-sm mb-2">Attachments (optional)</label>
+                  <label className="block text-white/70 text-xs sm:text-sm mb-1.5 sm:mb-2">Attachments (optional)</label>
                   <div className="space-y-2">
-                    <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 cursor-pointer transition-colors text-white/70 hover:text-white">
-                      <Paperclip className="w-4 h-4" />
-                      <span className="text-sm">Add files</span>
+                    <label className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 cursor-pointer transition-colors text-white/70 hover:text-white text-xs sm:text-sm">
+                      <Paperclip className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>Add files</span>
                       <input
                         type="file"
                         multiple
@@ -208,15 +208,15 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
                         {formData.attachments.map((file, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 text-white text-sm"
+                            className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 text-white text-xs sm:text-sm"
                           >
-                            <span className="truncate flex-1">{file.name}</span>
+                            <span className="truncate flex-1 pr-2">{file.name}</span>
                             <button
                               type="button"
                               onClick={() => removeAttachment(index)}
-                              className="text-white/50 hover:text-white ml-2"
+                              className="text-white/50 hover:text-white flex-shrink-0"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3 h-3 sm:w-4 sm:h-4" />
                             </button>
                           </div>
                         ))}
@@ -229,19 +229,19 @@ export default function ContactSupportModal({ isOpen, onClose }: ContactSupportM
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm sm:text-base touch-manipulation mt-2 sm:mt-4"
                   style={{
                     boxShadow: '0 4px 16px rgba(59, 130, 246, 0.4)',
                   }}
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Submitting...
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4" />
+                      <Send className="w-3 h-3 sm:w-4 sm:h-4" />
                       Submit
                     </>
                   )}

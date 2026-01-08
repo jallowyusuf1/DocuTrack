@@ -16,8 +16,10 @@ export default function HelpButton({ onClick, variant = 'question' }: HelpButton
   return (
     <motion.button
       onClick={handleClick}
-      className="fixed bottom-6 right-6 z-[999] w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-all hover:scale-110 active:scale-95"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[999] w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-all hover:scale-110 active:scale-95 touch-manipulation"
       style={{
+        bottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))',
+        right: 'max(1rem, env(safe-area-inset-right, 1rem))',
         background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
         backdropFilter: 'blur(20px) saturate(180%)',
@@ -32,9 +34,9 @@ export default function HelpButton({ onClick, variant = 'question' }: HelpButton
       aria-label="Open help and support"
     >
       {variant === 'question' ? (
-        <HelpCircle className="w-6 h-6" />
+        <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
       ) : (
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
       )}
     </motion.button>
   );

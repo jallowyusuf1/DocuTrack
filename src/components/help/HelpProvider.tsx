@@ -3,6 +3,8 @@ import HelpButton from './HelpButton';
 import HelpPanel from './HelpPanel';
 import ContactSupportModal from './ContactSupportModal';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+import LiveChatWidget from './LiveChatWidget';
+import ContextualHelpProvider from './ContextualHelpProvider';
 
 interface HelpContextType {
   openHelp: () => void;
@@ -11,6 +13,8 @@ interface HelpContextType {
   closeContactSupport: () => void;
   openKeyboardShortcuts: () => void;
   closeKeyboardShortcuts: () => void;
+  openLiveChat: () => void;
+  closeLiveChat: () => void;
 }
 
 const HelpContext = createContext<HelpContextType | undefined>(undefined);
@@ -31,6 +35,7 @@ export default function HelpProvider({ children }: HelpProviderProps) {
   const [isHelpPanelOpen, setIsHelpPanelOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isLiveChatOpen, setIsLiveChatOpen] = useState(false);
 
   // Keyboard shortcuts handler (? key)
   useEffect(() => {
@@ -44,6 +49,10 @@ export default function HelpProvider({ children }: HelpProviderProps) {
       if (e.key === 'Escape') {
         if (isShortcutsModalOpen) {
           setIsShortcutsModalOpen(false);
+        } else if (isLiveChatOpen) {
+          setIsLiveChatOpen(false);
+        } else if (isLiveChatOpen) {
+          setIsLiveChatOpen(false);
         } else if (isContactModalOpen) {
           setIsContactModalOpen(false);
         } else if (isHelpPanelOpen) {
@@ -54,7 +63,7 @@ export default function HelpProvider({ children }: HelpProviderProps) {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isHelpPanelOpen, isContactModalOpen, isShortcutsModalOpen]);
+  }, [isHelpPanelOpen, isContactModalOpen, isShortcutsModalOpen, isLiveChatOpen]);
 
   const openHelp = () => setIsHelpPanelOpen(true);
   const closeHelp = () => setIsHelpPanelOpen(false);
@@ -65,6 +74,8 @@ export default function HelpProvider({ children }: HelpProviderProps) {
   const closeContactSupport = () => setIsContactModalOpen(false);
   const openKeyboardShortcuts = () => setIsShortcutsModalOpen(true);
   const closeKeyboardShortcuts = () => setIsShortcutsModalOpen(false);
+  const openLiveChat = () => setIsLiveChatOpen(true);
+  const closeLiveChat = () => setIsLiveChatOpen(false);
 
   return (
     <HelpContext.Provider
@@ -75,9 +86,12 @@ export default function HelpProvider({ children }: HelpProviderProps) {
         closeContactSupport,
         openKeyboardShortcuts,
         closeKeyboardShortcuts,
+        openLiveChat,
+        closeLiveChat,
       }}
     >
       {children}
+      <ContextualHelpProvider />
       <HelpButton onClick={openHelp} />
       <HelpPanel
         isOpen={isHelpPanelOpen}
@@ -86,6 +100,7 @@ export default function HelpProvider({ children }: HelpProviderProps) {
       />
       <ContactSupportModal isOpen={isContactModalOpen} onClose={closeContactSupport} />
       <KeyboardShortcutsModal isOpen={isShortcutsModalOpen} onClose={closeKeyboardShortcuts} />
+      <LiveChatWidget isOpen={isLiveChatOpen} onClose={closeLiveChat} />
     </HelpContext.Provider>
   );
 }

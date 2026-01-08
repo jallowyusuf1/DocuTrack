@@ -98,10 +98,10 @@ export default function HeroVideoModal({
       }}
       zIndexClassName="z-[110]"
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full max-h-[90vh] sm:max-h-[85vh] overflow-hidden">
         {/* Header */}
         <div
-          className="px-5 py-4 flex items-center justify-between"
+          className="px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between flex-shrink-0"
           style={{
             background: 'rgba(18, 14, 28, 0.40)',
             backdropFilter: 'blur(26px)',
@@ -109,32 +109,33 @@ export default function HeroVideoModal({
             borderBottom: '1px solid rgba(255,255,255,0.10)',
           }}
         >
-          <div className="min-w-0">
-            <div className="text-white font-semibold text-lg truncate">{title}</div>
-            <div className="text-white/60 text-xs truncate">
+          <div className="min-w-0 flex-1">
+            <div className="text-white font-semibold text-base sm:text-lg truncate pr-2">{title}</div>
+            <div className="text-white/60 text-[10px] sm:text-xs truncate">
               {hasVideo ? 'Tip: Space to play/pause • ←/→ to seek' : 'Automatic slideshow demo'}
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="glass-pill w-10 h-10 flex items-center justify-center"
+            className="glass-pill w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0"
             aria-label="Close"
             title="Close"
           >
-            <X className="w-4 h-4 text-white/85" />
+            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/85" />
           </button>
         </div>
 
         {/* Video or Demo */}
-        <div className="p-5 pb-3">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-5 pb-2 sm:pb-3">
           {!hasVideo ? (
             <div
-              className="w-full rounded-3xl overflow-hidden"
+              className="w-full rounded-2xl sm:rounded-3xl overflow-hidden"
               style={{
                 aspectRatio: '16 / 9',
                 background: '#000000',
                 border: '1px solid rgba(255,255,255,0.12)',
+                minHeight: '200px',
               }}
             >
               <AppDemo
@@ -245,15 +246,16 @@ export default function HeroVideoModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex justify-center gap-2 mt-4 pb-2"
+              className="flex justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4 pb-1 sm:pb-2 px-2 flex-wrap"
             >
               {slides.map((slide, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlideIndex(idx)}
-                  className="relative h-2 rounded-full transition-all"
+                  className="relative h-1.5 sm:h-2 rounded-full transition-all touch-manipulation"
                   style={{
-                    width: idx === currentSlideIndex ? 40 : 20,
+                    width: idx === currentSlideIndex ? '32px' : '16px',
+                    minWidth: idx === currentSlideIndex ? '32px' : '16px',
                     background:
                       idx === currentSlideIndex
                         ? slide.accentColor

@@ -121,7 +121,7 @@ export default function AppDemo({
   }, [isPlaying]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden" style={{ background: '#000000' }}>
+    <div className="relative w-full h-full flex items-center justify-center overflow-y-auto overflow-x-hidden" style={{ background: '#000000' }}>
       {/* Background - solid black, no transitions */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -131,7 +131,7 @@ export default function AppDemo({
       />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-8">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8 overflow-y-auto h-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -139,16 +139,16 @@ export default function AppDemo({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 xl:gap-12 items-start"
           >
             {/* Left: Text Content */}
-            <div className="space-y-4 lg:space-y-6">
+            <div className="space-y-3 sm:space-y-4 lg:space-y-6 min-w-0">
               {/* Icon */}
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="w-20 h-20 rounded-3xl flex items-center justify-center"
+                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center flex-shrink-0"
                 style={{
                   background: `linear-gradient(135deg, ${slide.accentColor}33 0%, ${slide.accentColor}11 100%)`,
                   border: `1px solid ${slide.accentColor}44`,
@@ -157,7 +157,7 @@ export default function AppDemo({
                   boxShadow: `0 20px 60px ${slide.accentColor}33, inset 0 1px 0 rgba(255,255,255,0.1)`,
                 }}
               >
-                <slide.icon className="w-10 h-10" style={{ color: slide.accentColor }} />
+                <slide.icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10" style={{ color: slide.accentColor }} />
               </motion.div>
 
               {/* Title */}
@@ -165,7 +165,7 @@ export default function AppDemo({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-5xl font-bold text-white"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight"
                 style={{
                   letterSpacing: '-0.02em',
                   lineHeight: 1.1,
@@ -179,7 +179,7 @@ export default function AppDemo({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
-                className="text-2xl font-medium"
+                className="text-lg sm:text-xl md:text-2xl font-medium"
                 style={{ color: slide.accentColor }}
               >
                 {slide.subtitle}
@@ -190,7 +190,7 @@ export default function AppDemo({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
-                className="text-base lg:text-lg text-white/70 leading-relaxed max-w-md"
+                className="text-sm sm:text-base lg:text-lg text-white/70 leading-relaxed max-w-md"
               >
                 {slide.description}
               </motion.p>
@@ -201,7 +201,7 @@ export default function AppDemo({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="relative"
+              className="relative w-full min-w-0 overflow-visible"
             >
               {slide.visual === 'intro' && <IntroVisual accentColor={slide.accentColor} />}
               {slide.visual === 'ocr' && <OCRVisual accentColor={slide.accentColor} />}
@@ -225,7 +225,7 @@ export { slides };
 
 function IntroVisual({ accentColor }: { accentColor: string }) {
   return (
-    <div className="relative w-full aspect-square max-w-md mx-auto">
+    <div className="relative w-full aspect-square max-w-xs sm:max-w-sm md:max-w-md mx-auto">
       <motion.div
         animate={{
           rotate: [0, 360],
@@ -247,7 +247,7 @@ function IntroVisual({ accentColor }: { accentColor: string }) {
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full h-full rounded-3xl flex items-center justify-center"
+        className="relative w-full h-full rounded-2xl sm:rounded-3xl flex items-center justify-center"
         style={{
           background: 'rgba(255, 255, 255, 0.05)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -256,7 +256,7 @@ function IntroVisual({ accentColor }: { accentColor: string }) {
           boxShadow: '0 30px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         }}
       >
-        <FileText className="w-32 h-32" style={{ color: accentColor }} />
+        <FileText className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32" style={{ color: accentColor }} />
       </motion.div>
     </div>
   );
@@ -264,13 +264,13 @@ function IntroVisual({ accentColor }: { accentColor: string }) {
 
 function OCRVisual({ accentColor }: { accentColor: string }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4 w-full">
       {/* Document Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="rounded-2xl p-6"
+        className="rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 w-full"
         style={{
           background: 'rgba(255, 255, 255, 0.05)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -278,15 +278,15 @@ function OCRVisual({ accentColor }: { accentColor: string }) {
           WebkitBackdropFilter: 'blur(20px)',
         }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <Camera className="w-6 h-6" style={{ color: accentColor }} />
-          <span className="text-white font-medium">Scanning Document...</span>
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <Camera className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" style={{ color: accentColor }} />
+          <span className="text-white font-medium text-sm sm:text-base">Scanning Document...</span>
         </div>
 
         {/* Scan Line Animation */}
-        <div className="relative h-40 rounded-xl overflow-hidden mb-4" style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
+        <div className="relative h-32 sm:h-36 md:h-40 rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4" style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
           <motion.div
-            animate={{ y: [0, 140, 0] }}
+            animate={{ y: [0, 126, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             className="absolute left-0 right-0 h-1"
             style={{
@@ -297,18 +297,18 @@ function OCRVisual({ accentColor }: { accentColor: string }) {
         </div>
 
         {/* Extracted Fields */}
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           {['Passport Number', 'Full Name', 'Expiry Date'].map((field, idx) => (
             <motion.div
               key={field}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 + idx * 0.2 }}
-              className="flex items-center justify-between p-3 rounded-lg"
+              className="flex items-center justify-between p-2 sm:p-3 rounded-lg"
               style={{ background: 'rgba(255, 255, 255, 0.05)' }}
             >
-              <span className="text-white/60 text-sm">{field}</span>
-              <CheckCircle className="w-5 h-5" style={{ color: '#10B981' }} />
+              <span className="text-white/60 text-xs sm:text-sm truncate pr-2">{field}</span>
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={{ color: '#10B981' }} />
             </motion.div>
           ))}
         </div>
@@ -319,13 +319,13 @@ function OCRVisual({ accentColor }: { accentColor: string }) {
 
 function RemindersVisual({ accentColor }: { accentColor: string }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4 w-full">
       {/* Main Container with Purple Gradient */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="rounded-3xl p-6"
+        className="rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 w-full"
         style={{
           background: 'linear-gradient(135deg, rgba(88, 86, 214, 0.4) 0%, rgba(139, 92, 246, 0.3) 50%, rgba(59, 130, 246, 0.2) 100%)',
           border: '1px solid rgba(139, 92, 246, 0.3)',
@@ -335,22 +335,22 @@ function RemindersVisual({ accentColor }: { accentColor: string }) {
         }}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
-          <Bell className="w-5 h-5 text-white" />
-          <span className="text-white font-semibold">Smart reminders</span>
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-white/10">
+          <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-white flex-shrink-0" />
+          <span className="text-white font-semibold text-sm sm:text-base">Smart reminders</span>
         </div>
 
         {/* Description */}
-        <p className="text-white/80 text-sm mb-5">
+        <p className="text-white/80 text-xs sm:text-sm mb-3 sm:mb-4 md:mb-5">
           Get notified at 30, 7, and 1 day before expiration - never miss a deadline.
         </p>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
           {/* Upcoming Reminders */}
-          <div className="rounded-2xl p-4" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
-            <h4 className="text-white/90 font-medium text-sm mb-3">Upcoming reminders</h4>
-            <div className="space-y-2">
+          <div className="rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-4" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
+            <h4 className="text-white/90 font-medium text-xs sm:text-sm mb-2 sm:mb-3">Upcoming reminders</h4>
+            <div className="space-y-1.5 sm:space-y-2">
               {[
                 { icon: '🛂', label: 'Passport expires', days: '30 days', color: '#F59E0B' },
                 { icon: '📄', label: 'Insurance renewal', days: '7 days', color: '#F97316' },
@@ -361,15 +361,15 @@ function RemindersVisual({ accentColor }: { accentColor: string }) {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + idx * 0.15 }}
-                  className="flex items-center gap-2 p-2 rounded-lg"
+                  className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg"
                   style={{ background: 'rgba(255, 255, 255, 0.05)' }}
                 >
-                  <span className="text-lg">{item.icon}</span>
+                  <span className="text-base sm:text-lg flex-shrink-0">{item.icon}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-white/80 text-xs truncate">{item.label}</p>
                   </div>
                   <span
-                    className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+                    className="text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0"
                     style={{ background: `${item.color}33`, color: item.color }}
                   >
                     {item.days}
@@ -380,9 +380,9 @@ function RemindersVisual({ accentColor }: { accentColor: string }) {
           </div>
 
           {/* Notification Settings */}
-          <div className="rounded-2xl p-4" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
-            <h4 className="text-white/90 font-medium text-sm mb-3">Notification settings</h4>
-            <div className="space-y-2">
+          <div className="rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-4" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
+            <h4 className="text-white/90 font-medium text-xs sm:text-sm mb-2 sm:mb-3">Notification settings</h4>
+            <div className="space-y-1.5 sm:space-y-2">
               {[
                 { label: '30 days before' },
                 { label: '7 days before' },
@@ -394,12 +394,12 @@ function RemindersVisual({ accentColor }: { accentColor: string }) {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + idx * 0.15 }}
-                  className="flex items-center justify-between p-2 rounded-lg"
+                  className="flex items-center justify-between p-1.5 sm:p-2 rounded-lg"
                   style={{ background: 'rgba(255, 255, 255, 0.05)' }}
                 >
-                  <span className="text-white/70 text-xs">{item.label}</span>
+                  <span className="text-white/70 text-[10px] sm:text-xs truncate pr-1">{item.label}</span>
                   <div
-                    className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                    className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0"
                     style={{ background: 'rgba(16, 185, 129, 0.3)', color: '#10B981' }}
                   >
                     On
@@ -418,9 +418,9 @@ function FamilyVisual({ accentColor }: { accentColor: string }) {
   const members = ['Mom', 'Dad', 'Sarah', 'Jake'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5 md:space-y-6 w-full">
       {/* Member Avatars */}
-      <div className="flex justify-center gap-4">
+      <div className="flex justify-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
         {members.map((member, idx) => (
           <motion.div
             key={member}
@@ -430,7 +430,7 @@ function FamilyVisual({ accentColor }: { accentColor: string }) {
             className="relative"
           >
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg"
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center font-bold text-sm sm:text-base md:text-lg"
               style={{
                 background: 'rgba(255, 255, 255, 0.1)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -444,7 +444,7 @@ function FamilyVisual({ accentColor }: { accentColor: string }) {
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.6 + idx * 0.1, duration: 0.3 }}
-                className="absolute top-1/2 -right-4 w-4 h-0.5"
+                className="absolute top-1/2 -right-2 sm:-right-3 md:-right-4 w-2 sm:w-3 md:w-4 h-0.5"
                 style={{ background: accentColor }}
               />
             )}
@@ -457,7 +457,7 @@ function FamilyVisual({ accentColor }: { accentColor: string }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
-        className="rounded-2xl p-6"
+        className="rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 w-full"
         style={{
           background: 'rgba(255, 255, 255, 0.05)',
           border: `1px solid ${accentColor}44`,
@@ -465,11 +465,11 @@ function FamilyVisual({ accentColor }: { accentColor: string }) {
           WebkitBackdropFilter: 'blur(20px)',
         }}
       >
-        <div className="flex items-center gap-3 mb-3">
-          <Users className="w-6 h-6" style={{ color: accentColor }} />
-          <span className="text-white font-medium">Family Passport</span>
+        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" style={{ color: accentColor }} />
+          <span className="text-white font-medium text-sm sm:text-base">Family Passport</span>
         </div>
-        <p className="text-white/60 text-sm">Shared with all members • End-to-end encrypted</p>
+        <p className="text-white/60 text-xs sm:text-sm">Shared with all members • End-to-end encrypted</p>
       </motion.div>
     </div>
   );
@@ -483,13 +483,13 @@ function FAQVisual({ accentColor }: { accentColor: string }) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4 w-full">
       {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="rounded-2xl p-4 flex items-center gap-3"
+        className="rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3 w-full"
         style={{
           background: 'rgba(255, 255, 255, 0.05)',
           border: `1px solid ${accentColor}44`,
@@ -497,12 +497,12 @@ function FAQVisual({ accentColor }: { accentColor: string }) {
           WebkitBackdropFilter: 'blur(20px)',
         }}
       >
-        <Search className="w-5 h-5" style={{ color: accentColor }} />
+        <Search className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={{ color: accentColor }} />
         <input
           type="text"
           placeholder="Search help articles..."
           disabled
-          className="flex-1 bg-transparent text-white/70 text-sm outline-none"
+          className="flex-1 bg-transparent text-white/70 text-xs sm:text-sm outline-none min-w-0"
           style={{ caretColor: accentColor }}
         />
       </motion.div>
@@ -514,7 +514,7 @@ function FAQVisual({ accentColor }: { accentColor: string }) {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 + idx * 0.2 }}
-          className="rounded-2xl p-5 overflow-hidden"
+          className="rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 overflow-hidden w-full"
           style={{
             background: 'rgba(255, 255, 255, 0.05)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -522,23 +522,23 @@ function FAQVisual({ accentColor }: { accentColor: string }) {
             WebkitBackdropFilter: 'blur(20px)',
           }}
         >
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'linear', delay: idx * 0.5 }}
-              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
               style={{
                 background: `${accentColor}22`,
                 border: `1px solid ${accentColor}66`,
               }}
             >
-              <HelpCircle className="w-5 h-5" style={{ color: accentColor }} />
+              <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: accentColor }} />
             </motion.div>
-            <div className="flex-1">
-              <p className="text-white font-medium text-sm mb-1">{faq.question}</p>
-              <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-medium text-xs sm:text-sm mb-1 break-words">{faq.question}</p>
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <span
-                  className="text-xs px-2 py-1 rounded-full"
+                  className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full"
                   style={{
                     background: `${accentColor}22`,
                     color: accentColor,
@@ -546,7 +546,7 @@ function FAQVisual({ accentColor }: { accentColor: string }) {
                 >
                   {faq.category}
                 </span>
-                <MessageCircle className="w-4 h-4 text-white/40" />
+                <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white/40 flex-shrink-0" />
               </div>
             </div>
           </div>
@@ -558,14 +558,14 @@ function FAQVisual({ accentColor }: { accentColor: string }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2 }}
-        className="rounded-xl p-4 text-center"
+        className="rounded-lg sm:rounded-xl p-3 sm:p-4 text-center w-full"
         style={{
           background: 'rgba(255, 255, 255, 0.03)',
           border: '1px solid rgba(255, 255, 255, 0.08)',
         }}
       >
-        <p className="text-white/60 text-sm">Need more help?</p>
-        <p className="text-white font-medium text-sm" style={{ color: accentColor }}>
+        <p className="text-white/60 text-xs sm:text-sm">Need more help?</p>
+        <p className="text-white font-medium text-xs sm:text-sm" style={{ color: accentColor }}>
           Contact Support 24/7
         </p>
       </motion.div>
@@ -581,7 +581,7 @@ function ImportantDatesVisual({ accentColor }: { accentColor: string }) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-3 md:space-y-4 w-full">
       {/* Flight Cards */}
       {flights.map((flight, idx) => (
         <motion.div
@@ -589,7 +589,7 @@ function ImportantDatesVisual({ accentColor }: { accentColor: string }) {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 + idx * 0.2 }}
-          className="relative rounded-2xl p-5 overflow-hidden"
+          className="relative rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 overflow-hidden w-full"
           style={{
             background: 'rgba(255, 255, 255, 0.05)',
             border: `1px solid ${flight.color}44`,
@@ -606,11 +606,11 @@ function ImportantDatesVisual({ accentColor }: { accentColor: string }) {
               delay: idx * 1,
               ease: 'linear',
             }}
-            className="absolute top-3 left-0"
+            className="absolute top-2 sm:top-3 left-0"
             style={{ opacity: 0.3 }}
           >
             <Plane
-              className="w-5 h-5"
+              className="w-4 h-4 sm:w-5 sm:h-5"
               style={{
                 color: flight.color,
                 transform: 'rotate(-45deg)',
@@ -619,27 +619,27 @@ function ImportantDatesVisual({ accentColor }: { accentColor: string }) {
           </motion.div>
 
           {/* Flight Info */}
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
+          <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{
                     background: `${flight.color}22`,
                     border: `1px solid ${flight.color}66`,
                   }}
                 >
                   <Plane
-                    className="w-5 h-5"
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                     style={{
                       color: flight.color,
                       transform: 'rotate(-45deg)',
                     }}
                   />
                 </div>
-                <div>
-                  <p className="text-white font-semibold">{flight.airline}</p>
-                  <p className="text-white/60 text-sm">{flight.route}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-white font-semibold text-xs sm:text-sm md:text-base truncate">{flight.airline}</p>
+                  <p className="text-white/60 text-xs sm:text-sm truncate">{flight.route}</p>
                 </div>
               </div>
             </div>
@@ -654,7 +654,7 @@ function ImportantDatesVisual({ accentColor }: { accentColor: string }) {
                 repeat: Infinity,
                 delay: idx * 0.3,
               }}
-              className="px-4 py-2 rounded-xl font-semibold"
+              className="px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex-shrink-0"
               style={{
                 background: `${flight.color}33`,
                 color: flight.color,
@@ -670,7 +670,7 @@ function ImportantDatesVisual({ accentColor }: { accentColor: string }) {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.5 + idx * 0.2, duration: 0.6 }}
-            className="mt-3 h-0.5 origin-left"
+            className="mt-2 sm:mt-3 h-0.5 origin-left"
             style={{
               background: `linear-gradient(90deg, ${flight.color}88 0%, ${flight.color}22 100%)`,
             }}

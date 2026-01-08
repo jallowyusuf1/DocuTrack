@@ -7,7 +7,7 @@ export interface SignupData {
   email: string;
   password: string;
   fullName: string;
-  dateOfBirth: string; // YYYY-MM-DD
+  dateOfBirth?: string; // YYYY-MM-DD (optional)
   accountRole?: 'user' | 'parent';
 }
 
@@ -47,6 +47,8 @@ function ensureOnline(): void {
 export const authService = {
   // Sign up new user
   async signup({ email, password, fullName, dateOfBirth, accountRole = 'user' }: SignupData) {
+    // Ensure dateOfBirth is provided or use null
+    const dob = dateOfBirth || null;
     // Check online status first
     ensureOnline();
 
@@ -59,7 +61,7 @@ export const authService = {
           options: {
             data: {
               full_name: fullName,
-              date_of_birth: dateOfBirth,
+              date_of_birth: dob,
               account_role: accountRole,
             },
           },
@@ -105,7 +107,7 @@ export const authService = {
           .from('user_profiles')
           .update({ 
             full_name: fullName, 
-            date_of_birth: dateOfBirth, 
+            date_of_birth: dob, 
             account_role: accountRole,
             updated_at: new Date().toISOString()
           })
@@ -126,7 +128,7 @@ export const authService = {
           .insert({
             user_id: authData.user.id,
             full_name: fullName,
-            date_of_birth: dateOfBirth,
+            date_of_birth: dob,
             account_role: accountRole,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
@@ -143,7 +145,7 @@ export const authService = {
             id: '',
             user_id: authData.user.id,
             full_name: fullName,
-            date_of_birth: dateOfBirth,
+            date_of_birth: dob,
             age_years: null,
             account_role: accountRole,
             created_at: new Date().toISOString(),
@@ -159,7 +161,7 @@ export const authService = {
         id: '',
         user_id: authData.user.id,
         full_name: fullName,
-        date_of_birth: dateOfBirth,
+        date_of_birth: dob,
         age_years: null,
         account_role: accountRole,
         created_at: new Date().toISOString(),

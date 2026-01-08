@@ -316,7 +316,7 @@ function HeroShowcase() {
           </motion.button>
         </div>
 
-        <div className="relative overflow-hidden" style={{ minHeight: '380px', height: '380px' }}>
+        <div className="relative overflow-hidden" style={{ minHeight: '300px', height: 'auto', maxHeight: '500px' }}>
           <AnimatePresence initial={false} mode="wait">
             {slides.map((s, i) => {
               if (i !== idx) return null;
@@ -330,14 +330,15 @@ function HeroShowcase() {
                     duration: 0.4, 
                     ease: [0.25, 0.1, 0.25, 1],
                   }}
-                  className="absolute inset-0 overflow-hidden"
+                  className="absolute inset-0 overflow-y-auto overflow-x-hidden"
                   style={{ 
                     width: '100%', 
                     height: '100%',
+                    minHeight: '300px',
                     willChange: 'transform',
                   }}
                 >
-                  <div className="h-full overflow-y-auto" style={{ paddingRight: '4px' }}>
+                  <div className="min-h-full overflow-visible" style={{ paddingRight: '4px', paddingBottom: '1rem' }}>
                     {s.content}
                   </div>
             </motion.div>
